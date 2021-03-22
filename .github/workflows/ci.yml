@@ -1,0 +1,29 @@
+name: Lint
+on: push
+
+jobs:
+    lint:
+        name: Run linters
+        runs-on: ubuntu-latest
+        steps:
+            - name: Check out Git repository
+              uses: actions/checkout@v2
+            - uses: actions/cache@v2
+              with:
+                  path: '**/node_modules'
+                  key: ${{ runner.os }}-modules-${{ hashFiles('**/yarn.lock') }
+
+            - name: Set up Node.js
+              uses: actions/setup-node@v1
+              with:
+                  node-version: 14
+
+            - name: Install Node.js dependencies
+              run: yarn
+
+            - name: Run linters
+              uses: wearerequired/lint-action@v1
+              with:
+                  eslint: true
+                  prettier: true
+                  github_token: ${{ secrets.GITHUB_TOKEN }}
