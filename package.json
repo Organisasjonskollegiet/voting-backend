@@ -11,7 +11,7 @@
     "build": "tsc",
     "test": "jest",
     "lint": "eslint src/",
-    "format" : "prettier --write src/*",
+    "format": "prettier --write src/*",
     "start": "node dist/src/server.js",
     "codegen": "graphql-codegen --config codegen.yml",
     "generate": "prisma generate"
@@ -35,6 +35,7 @@
     "eslint": "^7.22.0",
     "eslint-config-prettier": "^8.1.0",
     "eslint-plugin-graphql": "^4.0.0",
+    "eslint-plugin-prettier": "^3.3.1",
     "prettier": "^2.2.1",
     "prisma": "^2.19.0",
     "ts-jest": "^26.5.4",
