@@ -21,7 +21,7 @@ const init_server = async () => {
       modules: [{ module: ".prisma/client", alias: "PrismaClient" }],
     },
     contextType: {
-      module: join(__dirname, "context.ts"),
+      module: require.resolve("./context"),
       export: "Context", // 3
     },
     shouldExitAfterGenerateArtifacts: Boolean(
