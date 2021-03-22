@@ -16,10 +16,16 @@ const init_server = async () => {
    */
   const schema = makeSchema({
     types,
+    sourceTypes: {
+      modules: [{ module: ".prisma/client", alias: "PrismaClient" }],
+    },
     contextType: {
-      module: join(__dirname, "./context.ts"),
+      module: join(__dirname, "context.ts"),
       export: "Context", // 3
     },
+    shouldExitAfterGenerateArtifacts: Boolean(
+      process.env.NEXUS_SHOULD_EXIT_AFTER_REFLECTION
+    ),
     outputs: {
       typegen: join(__dirname, "../__generated__", "nexus-typegen.ts"),
       schema: join(__dirname, "../__generated__", "schema.graphql"),
