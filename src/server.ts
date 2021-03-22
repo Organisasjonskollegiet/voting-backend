@@ -1,11 +1,38 @@
 // api/server.ts
 
+import { PrismaClient } from "@prisma/client";
 import { ApolloServer } from "apollo-server";
+import { makeSchema } from "nexus";
+import { join } from "path";
+import * as types from "./schema";
 
-import { schema } from "./schema";
+const init_server = async () => {
+  // Connect to database
+  const prisma = new PrismaClient();
+  await prisma.$connect();
 
-const server = new ApolloServer({ schema });
+  /* Create the schema. Imports types from /schema
+   * Paths has to be absolute, and therefor we use __dirname
+   */
+  const schema = makeSchema({
+    types,
+    contextType: {
+      module: join(__dirname, "./context.ts"),
+      export: "Context", // 3
+    },
+    outputs: {
+      typegen: join(__dirname, "../__generated__", "nexus-typegen.ts"),
+      schema: join(__dirname, "../__generated__", "schema.graphql"),
+    },
+  });
 
-server.listen().then(({ url }) => {
-  console.log(`🚀 Server ready at ${url}`);
-});
+  const server = new ApolloServer({
+    context: () => ({ prisma }),
+    schema,
+  });
+
+  server.listen().then(({ url }) => {
+    console.log(`🚀 Server ready at ${url}`);
+  });
+};
+init_server();
