@@ -1,5 +1,4 @@
 import { IMocks, MockList } from "apollo-server";
-import faker from "faker";
 import casual from "casual";
 
 const ApiMock: IMocks = {
