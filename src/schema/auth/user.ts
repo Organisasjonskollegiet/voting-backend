@@ -1,22 +1,46 @@
-import { extendType, list, objectType } from "nexus";
+import { makeExecutableSchema } from "@graphql-tools/schema";
+import { User } from "@prisma/client";
+import { gql } from "apollo-server";
+import { Context } from "../../context";
+import { Resolvers } from "../../__generated__/graphql";
 
-export const User = objectType({
-  name: "User",
-  definition(t) {
-    t.nonNull.id("id");
-    t.string("username");
-    t.string("email");
+export const typeDefs = gql`
+  type User {
+    id: ID!
+    username: String!
+    email: String!
+  }
+
+  type Query {
+    users: [User]!
+  }
+
+  type Mutation {
+    addUser(username: String!, email: String!): User
+  }
+`;
+
+const resolvers: Resolvers = {
+  Query: {
+    users: async (_, __, ctx: Context) => {
+      return ctx.prisma.user.findMany();
+    },
   },
-});
+};
 
-export const UserQuery = extendType({
-  type: "Query",
-  definition(t) {
-    t.nonNull.field("users", {
-      type: list(User),
-      resolve: async (_, __, ctx) => {
+export const authSchema = makeExecutableSchema({
+  typeDefs,
+  resolvers: {
+    Query: {
+      users: async (_, __, ctx: Context): Promise<User[]> => {
         return ctx.prisma.user.findMany();
       },
-    });
+    },
+    Mutation: {
+      addUser: async (_, args, ctx: Context, __) => {
+        const user = await ctx.prisma.user.create({ data: args });
+        return user;
+      },
+    },
   },
 });

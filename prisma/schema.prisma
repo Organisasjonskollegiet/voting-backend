@@ -11,7 +11,7 @@ generator client {
 }
 
 model User {
-  id       Int     @id @default(autoincrement())
-  username String? @db.VarChar(255)
-  email    String  @unique @db.VarChar(255)
+  id       String @id @default(uuid()) @db.Uuid
+  username String @db.VarChar(255)
+  email    String @unique @db.VarChar(255)
 }

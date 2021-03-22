@@ -2,35 +2,17 @@
 
 import { PrismaClient } from "@prisma/client";
 import { ApolloServer } from "apollo-server";
-import { makeSchema } from "nexus";
-import { join } from "path";
+import { stitchSchemas } from "@graphql-tools/stitch";
 import ApiMock from "./mocks/mock";
-import * as types from "./schema";
+import { authSchema } from "./schema";
 
 const init_server = async () => {
   // Connect to database
   const prisma = new PrismaClient();
   await prisma.$connect();
 
-  /* Create the schema. Imports types from /schema
-   * Paths has to be absolute, and therefor we use __dirname
-   */
-  const schema = makeSchema({
-    types,
-    sourceTypes: {
-      modules: [{ module: ".prisma/client", alias: "PrismaClient" }],
-    },
-    contextType: {
-      module: require.resolve("./context"),
-      export: "Context", // 3
-    },
-    shouldExitAfterGenerateArtifacts: Boolean(
-      process.env.NEXUS_SHOULD_EXIT_AFTER_REFLECTION
-    ),
-    outputs: {
-      typegen: join(__dirname, "../__generated__", "nexus-typegen.ts"),
-      schema: join(__dirname, "../__generated__", "schema.graphql"),
-    },
+  const schema = stitchSchemas({
+    subschemas: [authSchema],
   });
 
   const server = new ApolloServer({
