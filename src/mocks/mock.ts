@@ -1,12 +1,14 @@
-import { IMocks, MockList } from "apollo-server";
 import casual from "casual";
 
-const ApiMock: IMocks = {
+const simple_mock = {
   User: () => ({
-    id: () => casual.integer(),
+    id: () => casual.uuid,
     username: () => casual.username,
     email: () => casual.email,
   }),
+  Query: () => ({
+    users: () => new Array(casual.integer(2, 6)).fill({ __typename: "User" }),
+  }),
 };
 
-export default ApiMock;
+export default simple_mock;
