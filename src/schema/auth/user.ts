@@ -1,6 +1,5 @@
 import { makeExecutableSchema } from "@graphql-tools/schema";
-import { User } from "@prisma/client";
-import { gql } from "apollo-server";
+import { gql, IResolvers } from "apollo-server";
 import { Context } from "../../context";
 import { Resolvers } from "../../__generated__/graphql";
 
@@ -26,21 +25,15 @@ const resolvers: Resolvers = {
       return ctx.prisma.user.findMany();
     },
   },
+  Mutation: {
+    addUser: async (_, args, ctx: Context, __) => {
+      const user = await ctx.prisma.user.create({ data: args });
+      return user;
+    },
+  },
 };
 
 export const authSchema = makeExecutableSchema({
   typeDefs,
-  resolvers: {
-    Query: {
-      users: async (_, __, ctx: Context): Promise<User[]> => {
-        return ctx.prisma.user.findMany();
-      },
-    },
-    Mutation: {
-      addUser: async (_, args, ctx: Context, __) => {
-        const user = await ctx.prisma.user.create({ data: args });
-        return user;
-      },
-    },
-  },
+  resolvers: resolvers as IResolvers,
 });
