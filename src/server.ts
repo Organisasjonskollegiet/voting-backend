@@ -4,6 +4,7 @@ import { PrismaClient } from "@prisma/client";
 import { ApolloServer } from "apollo-server";
 import { makeSchema } from "nexus";
 import { join } from "path";
+import ApiMock from "./mocks/mock";
 import * as types from "./schema";
 
 const init_server = async () => {
@@ -35,6 +36,8 @@ const init_server = async () => {
   const server = new ApolloServer({
     context: () => ({ prisma }),
     schema,
+    mocks: process.env.MOCKING == "true" && ApiMock,
+    tracing: process.env.DEVELOPMENT == "true",
   });
 
   server.listen().then(({ url }) => {
