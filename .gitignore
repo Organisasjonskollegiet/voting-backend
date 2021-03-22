@@ -1,4 +1,6 @@
 __generated__
 node_modules
 .env
-package-lock.son
+package-lock.json
+yarn-error.log
+dist
