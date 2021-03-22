@@ -11,7 +11,8 @@
     "dev": "ts-node-dev --transpile-only --no-notify src/server.ts",
     "build": "tsc",
     "start": "node dist/src/server.js",
-    "codegen": "graphql-codegen --config codegen.yml"
+    "codegen": "graphql-codegen --config codegen.yml",
+    "generate": "prisma generate" 
   },
   "dependencies": {
     "@prisma/client": "^2.19.0",

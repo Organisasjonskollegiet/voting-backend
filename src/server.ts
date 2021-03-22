@@ -6,6 +6,8 @@ import { stitchSchemas } from "@graphql-tools/stitch";
 import { authSchema } from "./schema";
 import simple_mock from "./mocks/mock";
 
+const isMocking = process.env.MOCKING == "true";
+
 export const schema = stitchSchemas({
   subschemas: [authSchema],
 });
@@ -13,12 +15,12 @@ export const schema = stitchSchemas({
 const init_server = async () => {
   // Connect to database
   const prisma = new PrismaClient();
-  await prisma.$connect();
+  if (!isMocking) await prisma.$connect();
 
   const server = new ApolloServer({
     context: () => ({ prisma }),
     schema,
-    mocks: process.env.MOCKING == "true" && simple_mock,
+    mocks: isMocking && simple_mock,
     tracing: process.env.DEVELOPMENT == "true",
   });
 
