@@ -4,9 +4,16 @@ schema:
   - "!src/schema/index.ts"
 documents: null
 generates:
-  src/__generated__/graphql.ts:
+  src/__generated__/resolvers.ts:
     plugins:
-      - "typescript"
       - "typescript-resolvers"
     config:
       contextType: ../context#Context
+      optionalInfoArgument: true
+      addUnderscoreToArgsType: true
+      mappers:
+        User: ../../node_modules/.prisma/client/index#User
+        Meeting: ../../node_modules/.prisma/client/index#Meeting
+        Votation: ../../node_modules/.prisma/client/index#Votation
+        Alternative: ../../node_modules/.prisma/client/index#Alternative
+        

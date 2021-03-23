@@ -1,5 +1,5 @@
 import { gql } from 'apollo-server';
-import { Resolvers } from '../../__generated__/graphql';
+import { Resolvers } from '../../__generated__/resolvers';
 export const votationTypeDefs = gql`
     enum MajorityType {
         QUALIFIED

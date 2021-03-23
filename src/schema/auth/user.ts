@@ -1,6 +1,6 @@
 import { gql } from 'apollo-server';
 import { Context } from '../../context';
-import { Resolvers } from '../../__generated__/graphql';
+import { Resolvers } from '../../__generated__/resolvers';
 export const authTypeDefs = gql`
     type User {
         id: ID!
