@@ -1,1 +1,4 @@
 __generated__
+codegen.yml
+package.json
+tsconfig.json
