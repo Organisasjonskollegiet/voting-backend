@@ -11,7 +11,11 @@ export const schema = makeSchema({
         typegen: join(__dirname, '../__generated__', 'nexus-typegen.ts'), // 2
         schema: join(__dirname, '../__generated__', 'schema.graphql'), // 3
     },
-    plugins: [nexusPrisma()],
+    plugins: [
+        nexusPrisma({
+            outputs: { typegen: join(__dirname + '../../__generated__', 'typegen-nexus-plugin-prisma.d.ts') },
+        }),
+    ],
     contextType: {
         module: require.resolve('../context'),
         export: 'Context',
