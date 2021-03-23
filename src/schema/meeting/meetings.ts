@@ -27,9 +27,9 @@ export const Meeting = objectType({
 export const MeetingQuery = extendType({
     type: 'Query',
     definition: (t) => {
-        t.nonNull.list.field('meetings', {
+        t.nonNull.field('meetings', {
             // Also possible to write `type: list(Meeting)` and remove it from the `t` part
-            type: Meeting,
+            type: list(Meeting),
             resolve: async (_, __, ctx: Context) => {
                 const meetings = await ctx.prisma.meeting.findMany();
                 return meetings;

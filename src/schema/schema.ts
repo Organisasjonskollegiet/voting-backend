@@ -1,4 +1,4 @@
-import { makeSchema, queryType } from 'nexus';
+import { makeSchema } from 'nexus';
 import { join } from 'path';
 import * as UserSchema from './auth/user';
 import * as VotationSchema from './votation/votation';
