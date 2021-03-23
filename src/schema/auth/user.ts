@@ -1,29 +1,47 @@
-import { gql } from 'apollo-server';
-import { Context } from '../../context';
-import { Resolvers } from '../../__generated__/resolvers';
-export const authTypeDefs = gql`
-    type User {
-        id: ID!
-        username: String!
-        email: String!
-    }
-    type Query {
-        users: [User]!
-    }
-    type Mutation {
-        addUser(username: String!, email: String!): User
-    }
-`;
-export const authResolvers: Resolvers = {
-    Query: {
-        users: async (_, __, ctx: Context) => {
-            return ctx.prisma.user.findMany();
-        },
+import { extendType, list, nonNull, objectType, stringArg } from 'nexus';
+
+export const User = objectType({
+    name: 'User',
+    definition(t) {
+        // t.model = kommer fra nexus-prisma-plugin. Biblioteket har vært litt stale pga rewrite
+        // Pluginen lager mapper prisma
+        // t.model.id();
+        // t.model.username();
+        // t.model.email();
+        // Evt kan vi definere graphql typene manuelt
+        t.nonNull.id('id');
+        t.nonNull.string('username');
+        t.nonNull.string('email');
     },
-    Mutation: {
-        addUser: async (_, args, ctx: Context) => {
-            const user = await ctx.prisma.user.create({ data: args });
-            return user;
-        },
+});
+
+export const UserQuery = extendType({
+    type: 'Query',
+    definition: (t) => {
+        t.nonNull.field('users', {
+            type: list(User),
+            resolve: async (_, __, ctx) => {
+                const users = await ctx.prisma.user.findMany();
+                return users;
+            },
+        });
     },
-};
+});
+
+export const UserMutation = extendType({
+    type: 'Mutation',
+    definition: (t) => {
+        t.field('addUser', {
+            type: User,
+            args: {
+                username: nonNull(stringArg()),
+                email: nonNull(stringArg()),
+            },
+            // args typen i resolver er mappa til args typen definnert over
+            resolve: async (_, args, ctx) => {
+                const user = await ctx.prisma.user.create({ data: { ...args } });
+                return user;
+            },
+        });
+    },
+});
