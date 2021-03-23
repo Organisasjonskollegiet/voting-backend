@@ -1,4 +1,5 @@
 import { gql } from 'apollo-server';
+import { Context } from '../../context';
 import { Resolvers } from '../../__generated__/graphql';
 export const meetingTypeDefs = gql`
     type Meeting {
@@ -10,15 +11,19 @@ export const meetingTypeDefs = gql`
         votations: [Votation]
         status: Status!
     }
-
     type Query {
-        allMeetings: [Meeting]
+        meetings: [Meeting]!
     }
 `;
 export const meetingResolvers: Resolvers = {
     Query: {
-        allMeetings: () => {
-            return [];
+        meetings: async (_, __, ctx: Context) => {
+            const meetings = await ctx.prisma.meeting.findMany({
+                include: {
+                    owner: true,
+                },
+            });
+            return meetings;
         },
     },
     Mutation: {},

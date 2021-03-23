@@ -17,6 +17,7 @@ const simple_mock = {
     }),
     Query: () => ({
         users: () => new Array(casual.integer(2, 6)).fill({ __typename: 'User' }),
+        meetings: () => new Array(casual.integer(2, 6)).fill({ __typename: 'Meeting' }),
     }),
 };
 
