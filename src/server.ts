@@ -1,17 +1,21 @@
 // api/server.ts
 
 import { PrismaClient } from '@prisma/client';
-import { ApolloServer } from 'apollo-server';
-import { stitchSchemas } from '@graphql-tools/stitch';
-import { authSchema } from './schema';
+import { ApolloServer, IResolvers } from 'apollo-server';
 import simple_mock from './mocks/mock';
-
+import { mergeTypeDefs } from '@graphql-tools/merge';
+import { authTypeDefs, authResolvers } from './schema/auth/user';
+import { meetingResolvers, meetingTypeDefs } from './schema/meeting/meeting';
+import { votationResolvers, votationTypeDefs } from './schema/votation/votation';
+import { mergeResolvers } from '@graphql-tools/merge';
+import { makeExecutableSchema } from '@graphql-tools/schema';
 const isMocking = process.env.MOCKING == 'true';
-
-export const schema = stitchSchemas({
-    subschemas: [authSchema],
+const typeDefs = mergeTypeDefs([authTypeDefs, meetingTypeDefs, votationTypeDefs]);
+const resolvers = mergeResolvers([authResolvers, meetingResolvers, votationResolvers]);
+const schema = makeExecutableSchema({
+    typeDefs,
+    resolvers: resolvers as IResolvers,
 });
-
 const init_server = async () => {
     // Connect to database
     const prisma = new PrismaClient();
