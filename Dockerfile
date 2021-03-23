@@ -9,7 +9,6 @@ RUN yarn
 COPY ./prisma/schema.prisma ./
 RUN yarn generate
 COPY . .
-RUN yarn codegen
 RUN yarn run build
 
 ## this is stage two , where the app actually runs
