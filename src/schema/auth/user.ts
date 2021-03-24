@@ -2,6 +2,7 @@ import { makeExecutableSchema } from '@graphql-tools/schema';
 import { gql, IResolvers } from 'apollo-server';
 import { Context } from '../../context';
 import { Resolvers } from '../../__generated__/graphql';
+import withAuth from 'graphql-auth';
 
 export const typeDefs = gql`
     type User {
@@ -21,15 +22,15 @@ export const typeDefs = gql`
 
 const resolvers: Resolvers = {
     Query: {
-        users: async (_, __, ctx: Context) => {
+        users: withAuth(async (_: any, __: any, ctx: Context) => {
             return ctx.prisma.user.findMany();
-        },
+        }),
     },
     Mutation: {
-        addUser: async (_, args, ctx: Context) => {
+        addUser: withAuth(async (_: any, args: any, ctx: Context) => {
             const user = await ctx.prisma.user.create({ data: args });
             return user;
-        },
+        }),
     },
 };
 
