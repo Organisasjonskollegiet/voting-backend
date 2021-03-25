@@ -34,6 +34,7 @@ export const UserMutation = extendType({
         t.field('addUser', {
             type: User,
             args: {
+                id: nonNull(stringArg()),
                 username: nonNull(stringArg()),
                 email: nonNull(stringArg()),
             },
