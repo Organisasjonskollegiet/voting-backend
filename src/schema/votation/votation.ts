@@ -1,5 +1,4 @@
 import { enumType, extendType, list, objectType } from 'nexus';
-import { Context } from '../../context';
 import { User } from '../auth/user';
 import { Meeting } from '../meeting/meetings';
 
@@ -43,7 +42,7 @@ export const AlternativeQuery = extendType({
     definition: (t) => {
         t.field('hello', {
             type: list(Alternative),
-            resolve: (_: any, __: any, ctx: Context) => {
+            resolve: (_, __, ctx) => {
                 return ctx.prisma.alternative.findMany();
             },
         });

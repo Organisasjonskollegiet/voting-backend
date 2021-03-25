@@ -1,6 +1,5 @@
 import { extendType, list, objectType } from 'nexus';
 import { Meeting as MeetingType } from '@prisma/client';
-import { Context } from '../../context';
 import { User } from '../auth/user';
 import { Votation, Status } from '../votation/votation';
 
@@ -30,7 +29,7 @@ export const MeetingQuery = extendType({
         t.nonNull.field('meetings', {
             // Also possible to write `type: list(Meeting)` and remove it from the `t` part
             type: list(Meeting),
-            resolve: async (_: any, __: any, ctx: Context) => {
+            resolve: async (_, __, ctx) => {
                 const meetings = await ctx.prisma.meeting.findMany();
                 return meetings;
             },

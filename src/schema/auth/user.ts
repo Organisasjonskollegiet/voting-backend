@@ -1,4 +1,3 @@
-import { Context } from '../../context';
 import { extendType, list, nonNull, objectType, stringArg } from 'nexus';
 
 export const User = objectType({
@@ -21,7 +20,7 @@ export const UserQuery = extendType({
     definition: (t) => {
         t.nonNull.field('users', {
             type: list(User),
-            resolve: async (_: any, __: any, ctx: Context) => {
+            resolve: async (_, __, ctx) => {
                 const users = await ctx.prisma.user.findMany();
                 return users;
             },
