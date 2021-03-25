@@ -18,5 +18,5 @@ jobs:
             - name: Report GraphQL Schema
               uses: kamilkisiela/graphql-inspector@v2.5.0
               with:
-                schema: 'master:src/__generated__/schema.graphql'
-                github-token: ${{ secrets.GITHUB_TOKEN }}
+                  schema: 'master:src/__generated__/schema.graphql'
+                  github-token: ${{ secrets.GITHUB_TOKEN }}
