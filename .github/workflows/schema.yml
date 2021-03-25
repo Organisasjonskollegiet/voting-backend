@@ -1,0 +1,22 @@
+name: Inspect GraphQL
+on:
+    pull_request:
+        branches:
+            - master
+
+jobs:
+    inspect_schema:
+        name: Inspect GraphQL schema
+        runs-on: ubuntu-latest
+        steps:
+            - name: Check out Git repository
+              uses: actions/checkout@v2
+            - name: Set up Node.js
+              uses: actions/setup-node@v1
+              with:
+                  node-version: 14
+            - name: Report GraphQL Schema
+              uses: kamilkisiela/graphql-inspector@v2.5.0
+              with:
+                  schema: 'master:src/__generated__/schema.graphql'
+                  github-token: ${{ secrets.GITHUB_TOKEN }}
