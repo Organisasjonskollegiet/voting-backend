@@ -1,8 +1,17 @@
 import { RsaSigningKey } from 'jwks-rsa';
 import jwt, { GetPublicKeyOrSecret } from 'jsonwebtoken';
 import jwksClient from 'jwks-rsa';
-import { DecodedToken } from '../types/types';
 import { Request } from 'express';
+
+interface DecodedToken {
+    iss: string;
+    sub: string;
+    aud: string[];
+    iat: number;
+    exp: number;
+    azp: string;
+    scope: string;
+}
 
 const client = jwksClient({
     jwksUri: `https://${process.env.AUTH0_DOMAIN}/.well-known/jwks.json`,
