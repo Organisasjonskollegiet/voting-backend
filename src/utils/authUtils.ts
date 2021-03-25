@@ -2,6 +2,7 @@ import { RsaSigningKey } from 'jwks-rsa';
 import jwt, { GetPublicKeyOrSecret } from 'jsonwebtoken';
 import jwksClient from 'jwks-rsa';
 import { DecodedToken } from '../types/types';
+import { Request } from 'express';
 
 const client = jwksClient({
     jwksUri: `https://${process.env.AUTH0_DOMAIN}/.well-known/jwks.json`,
@@ -32,7 +33,7 @@ export const verifyToken = async (bearer_token: string) => {
     });
 };
 
-export const userFromRequest = async (req: any) => {
+export const userFromRequest = async (req: Request) => {
     const authHeader = req.headers.authorization;
     if (authHeader) {
         const token = authHeader.split(' ')[1];
