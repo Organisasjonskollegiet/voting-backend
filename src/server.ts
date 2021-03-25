@@ -3,11 +3,11 @@
 import { PrismaClient } from '@prisma/client';
 import { ApolloServer } from 'apollo-server-express';
 import { applyMiddleware } from 'graphql-middleware';
-import simple_mock from './mocks/mock';
-import permissions from './permissions';
-import { schema } from './schema/schema';
-import { userFromRequest } from './utils/authUtils';
 import express from 'express';
+import { userFromRequest } from './utils/authUtils';
+import simple_mock from './lib/mocks/mock';
+import permissions from './lib/permissions';
+import { schema } from './schema';
 
 const PORT = parseInt(process.env.PORT || '') || 4000;
 
