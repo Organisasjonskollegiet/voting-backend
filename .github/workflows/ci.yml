@@ -27,3 +27,7 @@ jobs:
                   eslint: true
                   prettier: true
                   github_token: ${{ secrets.GITHUB_TOKEN }}
+            - name: Report GraphQL Schema
+              uses: kamilkisiela/graphql-inspector@v2.5.0
+              with:
+                  schema: 'master:src/__generated__/schema.graphql'
