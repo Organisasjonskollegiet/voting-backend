@@ -5,7 +5,7 @@ import { ApolloServer } from 'apollo-server';
 import simple_mock from './mocks/mock';
 import { DecodedToken } from './types/types';
 
-import { verifyToken } from './utils/verifyToken';
+import { user_from_token, verifyToken } from './utils/verifyToken';
 import { schema } from './schema/schema';
 
 const isMocking = process.env.MOCKING == 'true';
@@ -16,21 +16,9 @@ const init_server = async () => {
     if (!isMocking) await prisma.$connect();
 
     const server = new ApolloServer({
-        context: async ({ req }) => {
-            let isAuthenticated;
-            let userId;
-            try {
-                const authHeader = req.headers.authorization || '';
-                if (authHeader) {
-                    const token = authHeader.split(' ')[1];
-                    const payload = (await verifyToken(token)) as DecodedToken;
-                    userId = payload.sub;
-                    isAuthenticated = payload ? true : false;
-                }
-            } catch (error) {
-                console.log(error);
-            }
-            return { auth: { isAuthenticated }, userId, prisma };
+        context: async ({ req, res }) => {
+            const userId = user_from_token(req, res);
+            return { userId, prisma };
         },
         schema,
         mocks: isMocking && simple_mock,
