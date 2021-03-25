@@ -1,5 +1,4 @@
 import { Context } from '../../context';
-import withAuth from 'graphql-auth';
 import { extendType, list, nonNull, objectType, stringArg } from 'nexus';
 
 export const User = objectType({
@@ -22,10 +21,10 @@ export const UserQuery = extendType({
     definition: (t) => {
         t.nonNull.field('users', {
             type: list(User),
-            resolve: withAuth(async (_: any, __: any, ctx: Context) => {
+            resolve: async (_: any, __: any, ctx: Context) => {
                 const users = await ctx.prisma.user.findMany();
                 return users;
-            }),
+            },
         });
     },
 });

@@ -1,4 +1,3 @@
-import withAuth from 'graphql-auth';
 import { enumType, extendType, list, objectType } from 'nexus';
 import { Context } from '../../context';
 import { User } from '../auth/user';
@@ -44,9 +43,9 @@ export const AlternativeQuery = extendType({
     definition: (t) => {
         t.field('hello', {
             type: list(Alternative),
-            resolve: withAuth((_: any, __: any, ctx: Context) => {
+            resolve: (_: any, __: any, ctx: Context) => {
                 return ctx.prisma.alternative.findMany();
-            }),
+            },
         });
     },
 });
