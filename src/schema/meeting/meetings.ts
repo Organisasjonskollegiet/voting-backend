@@ -19,7 +19,15 @@ export const Meeting = objectType({
                 return user;
             },
         });
-        t.list.field('votations', { type: Votation });
+        t.list.field('votations', {
+            type: Votation,
+            resolve: async (source, __, ctx) => {
+                const { id } = source as MeetingType;
+                const votation = await ctx.prisma.votation.findMany({ where: { meetingId: id } });
+                console.log(votation);
+                return votation;
+            },
+        });
         t.nonNull.field('status', { type: Status });
     },
 });

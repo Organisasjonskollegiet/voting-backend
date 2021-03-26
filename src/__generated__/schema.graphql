@@ -30,6 +30,7 @@ type Mutation {
 type Query {
   hello: [Alternative]
   meetings: [Meeting]!
+  user(id: String!): User!
   users: [User]!
 }
 

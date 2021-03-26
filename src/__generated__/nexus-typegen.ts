@@ -46,7 +46,6 @@ export interface NexusGenObjects {
     startTime: string; // String!
     status: NexusGenEnums['Status']; // Status!
     title: string; // String!
-    votations?: Array<NexusGenRootTypes['Votation'] | null> | null; // [Votation]
   }
   Mutation: {};
   Query: {};
@@ -101,6 +100,7 @@ export interface NexusGenFieldTypes {
   Query: { // field return type
     hello: Array<NexusGenRootTypes['Alternative'] | null> | null; // [Alternative]
     meetings: Array<NexusGenRootTypes['Meeting'] | null>; // [Meeting]!
+    user: NexusGenRootTypes['User']; // User!
     users: Array<NexusGenRootTypes['User'] | null>; // [User]!
   }
   User: { // field return type
@@ -144,6 +144,7 @@ export interface NexusGenFieldTypeNames {
   Query: { // field return type name
     hello: 'Alternative'
     meetings: 'Meeting'
+    user: 'User'
     users: 'User'
   }
   User: { // field return type name
@@ -172,6 +173,11 @@ export interface NexusGenArgTypes {
       email: string; // String!
       id: string; // String!
       username: string; // String!
+    }
+  }
+  Query: {
+    user: { // args
+      id: string; // String!
     }
   }
 }
