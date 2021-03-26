@@ -49,11 +49,12 @@ model Meeting {
 }
 
 model Participant {
-  role      Role
-  userId    String  @db.Uuid
-  meetingId String  @db.Uuid
-  user      User    @relation(fields: [userId], references: [id])
-  meeting   Meeting @relation(fields: [meetingId], references: [id])
+  role              Role
+  userId            String  @db.Uuid
+  meetingId         String  @db.Uuid
+  isVotingEligiible Boolean @default(true)
+  user              User    @relation(fields: [userId], references: [id])
+  meeting           Meeting @relation(fields: [meetingId], references: [id])
 
   @@id([userId, meetingId])
 }
