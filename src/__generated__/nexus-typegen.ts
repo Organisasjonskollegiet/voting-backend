@@ -106,10 +106,10 @@ export interface NexusGenFieldTypes {
   }
   Query: { // field return type
     alternatives_by_votation: Array<NexusGenRootTypes['Alternative'] | null> | null; // [Alternative]
-    meetings: Array<NexusGenRootTypes['Meeting'] | null>; // [Meeting]!
+    meetings_for_user: Array<NexusGenRootTypes['Meeting'] | null>; // [Meeting]!
     user: NexusGenRootTypes['User']; // User!
     users: Array<NexusGenRootTypes['User'] | null>; // [User]!
-    votations: Array<NexusGenRootTypes['Votation'] | null> | null; // [Votation]
+    votations_by_meeting: Array<NexusGenRootTypes['Votation'] | null> | null; // [Votation]
   }
   User: { // field return type
     email: string; // String!
@@ -163,10 +163,10 @@ export interface NexusGenFieldTypeNames {
   }
   Query: { // field return type name
     alternatives_by_votation: 'Alternative'
-    meetings: 'Meeting'
+    meetings_for_user: 'Meeting'
     user: 'User'
     users: 'User'
-    votations: 'Votation'
+    votations_by_meeting: 'Votation'
   }
   User: { // field return type name
     email: 'String'
@@ -215,6 +215,9 @@ export interface NexusGenArgTypes {
     }
     user: { // args
       id: string; // String!
+    }
+    votations_by_meeting: { // args
+      meetingId: string; // String!
     }
   }
 }

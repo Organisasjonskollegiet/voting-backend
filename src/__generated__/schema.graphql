@@ -32,10 +32,10 @@ type Mutation {
 
 type Query {
   alternatives_by_votation(votationId: String!): [Alternative]
-  meetings: [Meeting]!
+  meetings_for_user: [Meeting]!
   user(id: String!): User!
   users: [User]!
-  votations: [Votation]
+  votations_by_meeting(meetingId: String!): [Votation]
 }
 
 enum Status {

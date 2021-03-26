@@ -35,8 +35,8 @@ interface NexusPrismaInputs {
       ordering: 'id' | 'title' | 'startTime' | 'description' | 'ownerId' | 'status'
     }
     participants: {
-      filtering: 'AND' | 'OR' | 'NOT' | 'role' | 'userId' | 'meetingId' | 'user' | 'meeting'
-      ordering: 'role' | 'userId' | 'meetingId'
+      filtering: 'AND' | 'OR' | 'NOT' | 'role' | 'userId' | 'meetingId' | 'isVotingEligiible' | 'user' | 'meeting'
+      ordering: 'role' | 'userId' | 'meetingId' | 'isVotingEligiible'
     }
     hasVoteds: {
       filtering: 'AND' | 'OR' | 'NOT' | 'userId' | 'votationId' | 'createdAt' | 'user' | 'votation'
@@ -51,7 +51,7 @@ interface NexusPrismaInputs {
       ordering: 'id' | 'text' | 'votationId'
     }
     votes: {
-      filtering: 'AND' | 'OR' | 'NOT' | 'id' | 'alternativeId' | 'alternative' | 'nextVoteId' | 'nextVote' | 'prevVote'
+      filtering: 'AND' | 'OR' | 'NOT' | 'id' | 'alternative' | 'alternativeId' | 'nextVoteId' | 'nextVote' | 'prevVote'
       ordering: 'id' | 'alternativeId' | 'nextVoteId'
     }
   },
@@ -65,8 +65,8 @@ interface NexusPrismaInputs {
       ordering: 'userId' | 'votationId' | 'createdAt'
     }
     participantAt: {
-      filtering: 'AND' | 'OR' | 'NOT' | 'role' | 'userId' | 'meetingId' | 'user' | 'meeting'
-      ordering: 'role' | 'userId' | 'meetingId'
+      filtering: 'AND' | 'OR' | 'NOT' | 'role' | 'userId' | 'meetingId' | 'isVotingEligiible' | 'user' | 'meeting'
+      ordering: 'role' | 'userId' | 'meetingId' | 'isVotingEligiible'
     }
   }
   Meeting: {
@@ -75,8 +75,8 @@ interface NexusPrismaInputs {
       ordering: 'id' | 'title' | 'description' | 'order' | 'status' | 'blankVotes' | 'majorityType' | 'majorityThreshold' | 'meetingId'
     }
     participants: {
-      filtering: 'AND' | 'OR' | 'NOT' | 'role' | 'userId' | 'meetingId' | 'user' | 'meeting'
-      ordering: 'role' | 'userId' | 'meetingId'
+      filtering: 'AND' | 'OR' | 'NOT' | 'role' | 'userId' | 'meetingId' | 'isVotingEligiible' | 'user' | 'meeting'
+      ordering: 'role' | 'userId' | 'meetingId' | 'isVotingEligiible'
     }
   }
   Participant: {
@@ -97,7 +97,7 @@ interface NexusPrismaInputs {
   }
   Alternative: {
     votes: {
-      filtering: 'AND' | 'OR' | 'NOT' | 'id' | 'alternativeId' | 'alternative' | 'nextVoteId' | 'nextVote' | 'prevVote'
+      filtering: 'AND' | 'OR' | 'NOT' | 'id' | 'alternative' | 'alternativeId' | 'nextVoteId' | 'nextVote' | 'prevVote'
       ordering: 'id' | 'alternativeId' | 'nextVoteId'
     }
   }
@@ -191,6 +191,7 @@ interface NexusPrismaOutputs {
     role: 'Role'
     userId: 'String'
     meetingId: 'String'
+    isVotingEligiible: 'Boolean'
     user: 'User'
     meeting: 'Meeting'
   }
@@ -224,8 +225,8 @@ interface NexusPrismaOutputs {
   }
   Vote: {
     id: 'String'
-    alternativeId: 'String'
     alternative: 'Alternative'
+    alternativeId: 'String'
     nextVoteId: 'String'
     nextVote: 'Vote'
     prevVote: 'Vote'
