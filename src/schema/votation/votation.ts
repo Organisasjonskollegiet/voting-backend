@@ -109,10 +109,13 @@ export const Votation = objectType({
 export const VotationQuery = extendType({
     type: 'Query',
     definition: (t) => {
-        t.field('votations', {
+        t.field('votations_by_meeting', {
             type: list(Votation),
-            resolve: (_, __, ctx) => {
-                return ctx.prisma.votation.findMany();
+            args: {
+                meetingId: nonNull(stringArg()),
+            },
+            resolve: (_, { meetingId }, ctx) => {
+                return ctx.prisma.votation.findMany({ where: { meetingId } });
             },
         });
         t.field('alternatives_by_votation', {
