@@ -38,7 +38,7 @@ export interface NexusGenObjects {
   Alternative: { // root type
     id: string; // ID!
     text: string; // String!
-    votation?: NexusGenRootTypes['Votation'] | null; // Votation
+    votationId: string; // String!
   }
   Meeting: { // root type
     description?: string | null; // String
@@ -55,17 +55,21 @@ export interface NexusGenObjects {
     username: string; // String!
   }
   Votation: { // root type
-    alternatives?: Array<NexusGenRootTypes['Alternative'] | null> | null; // [Alternative]
     blankVotes?: boolean | null; // Boolean
     description: string; // String!
     hasVoted?: Array<NexusGenRootTypes['User'] | null> | null; // [User]
     id: string; // ID!
     majorityThreshold: number; // Int!
     majorityType: NexusGenEnums['MajorityType']; // MajorityType!
-    meeting: NexusGenRootTypes['Meeting']; // Meeting!
+    meetingId: string; // String!
     order?: number | null; // Int
     status: NexusGenEnums['Status']; // Status!
     title: string; // String!
+  }
+  Vote: { // root type
+    alternativeId: string; // String!
+    id: string; // ID!
+    nextVoteId?: string | null; // String
   }
 }
 
@@ -84,6 +88,8 @@ export interface NexusGenFieldTypes {
     id: string; // ID!
     text: string; // String!
     votation: NexusGenRootTypes['Votation'] | null; // Votation
+    votationId: string; // String!
+    votes: Array<NexusGenRootTypes['Vote'] | null> | null; // [Vote]
   }
   Meeting: { // field return type
     description: string | null; // String
@@ -96,12 +102,14 @@ export interface NexusGenFieldTypes {
   }
   Mutation: { // field return type
     addUser: NexusGenRootTypes['User'] | null; // User
+    cast_vote: NexusGenRootTypes['Vote'] | null; // Vote
   }
   Query: { // field return type
-    hello: Array<NexusGenRootTypes['Alternative'] | null> | null; // [Alternative]
+    alternatives_by_votation: Array<NexusGenRootTypes['Alternative'] | null> | null; // [Alternative]
     meetings: Array<NexusGenRootTypes['Meeting'] | null>; // [Meeting]!
     user: NexusGenRootTypes['User']; // User!
     users: Array<NexusGenRootTypes['User'] | null>; // [User]!
+    votations: Array<NexusGenRootTypes['Votation'] | null> | null; // [Votation]
   }
   User: { // field return type
     email: string; // String!
@@ -117,9 +125,18 @@ export interface NexusGenFieldTypes {
     majorityThreshold: number; // Int!
     majorityType: NexusGenEnums['MajorityType']; // MajorityType!
     meeting: NexusGenRootTypes['Meeting']; // Meeting!
+    meetingId: string; // String!
     order: number | null; // Int
     status: NexusGenEnums['Status']; // Status!
     title: string; // String!
+  }
+  Vote: { // field return type
+    alternative: NexusGenRootTypes['Alternative'] | null; // Alternative
+    alternativeId: string; // String!
+    id: string; // ID!
+    nextVote: NexusGenRootTypes['Vote'] | null; // Vote
+    nextVoteId: string | null; // String
+    prevVote: NexusGenRootTypes['Vote'] | null; // Vote
   }
 }
 
@@ -128,6 +145,8 @@ export interface NexusGenFieldTypeNames {
     id: 'ID'
     text: 'String'
     votation: 'Votation'
+    votationId: 'String'
+    votes: 'Vote'
   }
   Meeting: { // field return type name
     description: 'String'
@@ -140,12 +159,14 @@ export interface NexusGenFieldTypeNames {
   }
   Mutation: { // field return type name
     addUser: 'User'
+    cast_vote: 'Vote'
   }
   Query: { // field return type name
-    hello: 'Alternative'
+    alternatives_by_votation: 'Alternative'
     meetings: 'Meeting'
     user: 'User'
     users: 'User'
+    votations: 'Votation'
   }
   User: { // field return type name
     email: 'String'
@@ -161,9 +182,18 @@ export interface NexusGenFieldTypeNames {
     majorityThreshold: 'Int'
     majorityType: 'MajorityType'
     meeting: 'Meeting'
+    meetingId: 'String'
     order: 'Int'
     status: 'Status'
     title: 'String'
+  }
+  Vote: { // field return type name
+    alternative: 'Alternative'
+    alternativeId: 'String'
+    id: 'ID'
+    nextVote: 'Vote'
+    nextVoteId: 'String'
+    prevVote: 'Vote'
   }
 }
 
@@ -174,8 +204,15 @@ export interface NexusGenArgTypes {
       id: string; // String!
       username: string; // String!
     }
+    cast_vote: { // args
+      alternativeId: string; // String!
+      votationId: string; // String!
+    }
   }
   Query: {
+    alternatives_by_votation: { // args
+      votationId: string; // String!
+    }
     user: { // args
       id: string; // String!
     }

@@ -51,7 +51,7 @@ interface NexusPrismaInputs {
       ordering: 'id' | 'text' | 'votationId'
     }
     votes: {
-      filtering: 'AND' | 'OR' | 'NOT' | 'id' | 'alternative' | 'alternativeId' | 'nextVoteId' | 'nextVote' | 'prevVote'
+      filtering: 'AND' | 'OR' | 'NOT' | 'id' | 'alternativeId' | 'alternative' | 'nextVoteId' | 'nextVote' | 'prevVote'
       ordering: 'id' | 'alternativeId' | 'nextVoteId'
     }
   },
@@ -97,7 +97,7 @@ interface NexusPrismaInputs {
   }
   Alternative: {
     votes: {
-      filtering: 'AND' | 'OR' | 'NOT' | 'id' | 'alternative' | 'alternativeId' | 'nextVoteId' | 'nextVote' | 'prevVote'
+      filtering: 'AND' | 'OR' | 'NOT' | 'id' | 'alternativeId' | 'alternative' | 'nextVoteId' | 'nextVote' | 'prevVote'
       ordering: 'id' | 'alternativeId' | 'nextVoteId'
     }
   }
@@ -224,8 +224,8 @@ interface NexusPrismaOutputs {
   }
   Vote: {
     id: 'String'
-    alternative: 'Alternative'
     alternativeId: 'String'
+    alternative: 'Alternative'
     nextVoteId: 'String'
     nextVote: 'Vote'
     prevVote: 'Vote'

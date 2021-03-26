@@ -6,6 +6,8 @@ type Alternative {
   id: ID!
   text: String!
   votation: Votation
+  votationId: String!
+  votes: [Vote]
 }
 
 enum MajorityType {
@@ -25,13 +27,15 @@ type Meeting {
 
 type Mutation {
   addUser(email: String!, id: String!, username: String!): User
+  cast_vote(alternativeId: String!, votationId: String!): Vote
 }
 
 type Query {
-  hello: [Alternative]
+  alternatives_by_votation(votationId: String!): [Alternative]
   meetings: [Meeting]!
   user(id: String!): User!
   users: [User]!
+  votations: [Votation]
 }
 
 enum Status {
@@ -55,7 +59,17 @@ type Votation {
   majorityThreshold: Int!
   majorityType: MajorityType!
   meeting: Meeting!
+  meetingId: String!
   order: Int
   status: Status!
   title: String!
+}
+
+type Vote {
+  alternative: Alternative
+  alternativeId: String!
+  id: ID!
+  nextVote: Vote
+  nextVoteId: String
+  prevVote: Vote
 }
