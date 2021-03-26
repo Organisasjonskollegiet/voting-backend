@@ -24,7 +24,6 @@ export const Meeting = objectType({
             resolve: async (source, __, ctx) => {
                 const { id } = source as MeetingType;
                 const votation = await ctx.prisma.votation.findMany({ where: { meetingId: id } });
-                console.log(votation);
                 return votation;
             },
         });
