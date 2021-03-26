@@ -24,7 +24,23 @@ export const UserQuery = extendType({
                 const users = await ctx.prisma.user.findMany();
                 return users;
             },
-        });
+        }),
+            t.nonNull.field('user', {
+                type: User,
+                args: {
+                    id: nonNull(stringArg()),
+                },
+                resolve: async (_, { id }, ctx) => {
+                    if (!id) return new Error('You have to provide a userid');
+                    const user = await ctx.prisma.user.findUnique({
+                        where: {
+                            id,
+                        },
+                    });
+                    if (!user) return new Error('No user with this id');
+                    return user;
+                },
+            });
     },
 });
 
