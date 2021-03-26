@@ -33,12 +33,20 @@ export const Meeting = objectType({
 export const MeetingQuery = extendType({
     type: 'Query',
     definition: (t) => {
-        t.nonNull.field('meetings', {
+        t.nonNull.field('meetings_for_user', {
             // Also possible to write `type: list(Meeting)` and remove it from the `t` part
             type: list(Meeting),
             resolve: async (_, __, ctx) => {
-                const meetings = await ctx.prisma.meeting.findMany();
-                return meetings;
+                if (!ctx.userId) throw new Error('User cannot be null.');
+                const meetingForUser = await ctx.prisma.participant.findMany({
+                    select: {
+                        meeting: true,
+                    },
+                    where: {
+                        userId: ctx.userId,
+                    },
+                });
+                return meetingForUser.map((meeting) => meeting.meeting);
             },
         });
     },
