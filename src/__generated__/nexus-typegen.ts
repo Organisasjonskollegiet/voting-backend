@@ -222,6 +222,7 @@ export interface NexusGenArgTypes {
   Mutation: {
     addUser: { // args
       email: string; // String!
+      id?: string | null; // String
       username: string; // String!
     }
     cast_vote: { // args

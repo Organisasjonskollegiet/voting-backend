@@ -64,6 +64,7 @@ export const UserQuery = extendType({
                 id: nonNull(stringArg()),
             },
             resolve: async (_, { id }, ctx) => {
+                if (!id) throw new Error('You have to provide a userid');
                 const user = await ctx.prisma.user.findUnique({
                     where: {
                         id,
@@ -82,12 +83,20 @@ export const UserMutation = extendType({
         t.field('addUser', {
             type: User,
             args: {
+                id: stringArg(),
                 username: nonNull(stringArg()),
                 email: nonNull(stringArg()),
             },
             // args typen i resolver er mappa til args typen definnert over
             resolve: async (_, args, ctx) => {
-                const user = await ctx.prisma.user.create({ data: { id: ctx.userId, ...args } });
+                const user =
+                    args.id !== null && args.id !== undefined
+                        ? await ctx.prisma.user.create({
+                              data: { id: args.id, username: args.username, email: args.email },
+                          })
+                        : await ctx.prisma.user.create({
+                              data: { username: args.username, email: args.email },
+                          });
                 return user;
             },
         });

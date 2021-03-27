@@ -27,7 +27,7 @@ type Meeting {
 }
 
 type Mutation {
-  addUser(email: String!, username: String!): User
+  addUser(email: String!, id: String, username: String!): User
   cast_vote(alternativeId: String!, votationId: String!): Vote
 }
 
