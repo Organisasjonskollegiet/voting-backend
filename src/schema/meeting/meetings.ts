@@ -1,6 +1,6 @@
-import { extendType, list, objectType } from 'nexus';
+import { extendType, list, nonNull, objectType, stringArg } from 'nexus';
 import { Meeting as MeetingType } from '@prisma/client';
-import { User } from '../auth/user';
+import { Participant, User } from '../auth/user';
 import { Votation, Status } from '../votation/votation';
 
 export const Meeting = objectType({
@@ -28,6 +28,18 @@ export const Meeting = objectType({
             },
         });
         t.nonNull.field('status', { type: Status });
+        t.nonNull.field('participants', {
+            type: list(Participant),
+            resolve: async (source, __, ctx) => {
+                const { id } = source as MeetingType;
+                const participants = await ctx.prisma.participant.findMany({
+                    where: {
+                        meetingId: id,
+                    },
+                });
+                return participants;
+            },
+        });
     },
 });
 export const MeetingQuery = extendType({
@@ -46,6 +58,25 @@ export const MeetingQuery = extendType({
                     },
                 });
                 return meetingForUser.map((meeting) => meeting.meeting);
+            },
+        });
+        t.nonNull.field('meetings_for_user_by_id', {
+            type: Meeting,
+            args: {
+                id: nonNull(stringArg()),
+            },
+            resolve: async (_, { id }, ctx) => {
+                const meetingForUser = await ctx.prisma.participant.findFirst({
+                    select: {
+                        meeting: true,
+                    },
+                    where: {
+                        meetingId: id,
+                        userId: ctx.userId,
+                    },
+                });
+                if (!meetingForUser) throw new Error('No meeting with this id for this user.');
+                return meetingForUser.meeting;
             },
         });
     },

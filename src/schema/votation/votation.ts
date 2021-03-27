@@ -153,7 +153,6 @@ export const VotationMutation = extendType({
                 votationId: nonNull(stringArg()),
             },
             resolve: async (_, { alternativeId, votationId }, ctx) => {
-                if (!alternativeId) throw new Error('AlternativeId must be provided.');
                 const hasVoted = await userHasVoted(ctx, votationId);
                 if (hasVoted) throw new Error('This user has already cast vote for this votation.');
                 const alternativeExists = checkAlternativeExists(ctx, alternativeId);

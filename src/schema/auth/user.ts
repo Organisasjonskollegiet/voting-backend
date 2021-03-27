@@ -1,4 +1,37 @@
-import { extendType, list, nonNull, objectType, stringArg } from 'nexus';
+import { extendType, list, nonNull, objectType, stringArg, enumType } from 'nexus';
+import { Participant as ParticipantType } from '@prisma/client';
+import { Meeting } from '../meeting/meetings';
+
+export const Role = enumType({
+    name: 'Role',
+    members: ['ADMIN', 'PARTICIPANT', 'COUNTER'],
+});
+
+export const Participant = objectType({
+    name: 'Participant',
+    definition(t) {
+        t.nonNull.field('role', { type: Role });
+        t.nonNull.boolean('isVotingEligible');
+        t.nonNull.field('user', {
+            type: User,
+            resolve: async (source, __, ctx) => {
+                const { userId } = source as ParticipantType;
+                const user = await ctx.prisma.user.findUnique({ where: { id: userId } });
+                if (!user) throw new Error('User not found');
+                return user;
+            },
+        });
+        t.nonNull.field('meeting', {
+            type: Meeting,
+            resolve: async (source, __, ctx) => {
+                const { meetingId } = source as ParticipantType;
+                const meeting = await ctx.prisma.meeting.findUnique({ where: { id: meetingId } });
+                if (!meeting) throw new Error('No meeting with this id');
+                return meeting;
+            },
+        });
+    },
+});
 
 export const User = objectType({
     name: 'User',
@@ -50,13 +83,12 @@ export const UserMutation = extendType({
         t.field('addUser', {
             type: User,
             args: {
-                id: nonNull(stringArg()),
                 username: nonNull(stringArg()),
                 email: nonNull(stringArg()),
             },
             // args typen i resolver er mappa til args typen definnert over
             resolve: async (_, args, ctx) => {
-                const user = await ctx.prisma.user.create({ data: { ...args } });
+                const user = await ctx.prisma.user.create({ data: { id: ctx.userId, ...args } });
                 return user;
             },
         });
