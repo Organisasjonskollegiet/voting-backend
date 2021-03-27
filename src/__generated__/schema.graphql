@@ -19,6 +19,7 @@ type Meeting {
   description: String
   id: ID!
   owner: User!
+  participants: [Participant]!
   startTime: String!
   status: Status!
   title: String!
@@ -26,16 +27,30 @@ type Meeting {
 }
 
 type Mutation {
-  addUser(email: String!, id: String!, username: String!): User
+  addUser(email: String!, username: String!): User
   cast_vote(alternativeId: String!, votationId: String!): Vote
+}
+
+type Participant {
+  isVotingEligible: Boolean!
+  meeting: Meeting!
+  role: Role!
+  user: User!
 }
 
 type Query {
   alternatives_by_votation(votationId: String!): [Alternative]
   meetings_for_user: [Meeting]!
+  meetings_for_user_by_id(id: String!): Meeting!
   user(id: String!): User!
   users: [User]!
   votations_by_meeting(meetingId: String!): [Votation]
+}
+
+enum Role {
+  ADMIN
+  COUNTER
+  PARTICIPANT
 }
 
 enum Status {

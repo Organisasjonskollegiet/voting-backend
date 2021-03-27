@@ -9,7 +9,7 @@ CREATE TYPE "Status" AS ENUM ('UPCOMING', 'ONGOING', 'ENDED');
 
 -- CreateTable
 CREATE TABLE "User" (
-    "id" UUID NOT NULL,
+    "id" TEXT NOT NULL,
     "username" VARCHAR(255) NOT NULL,
     "email" VARCHAR(255) NOT NULL,
 
@@ -22,7 +22,7 @@ CREATE TABLE "Meeting" (
     "title" VARCHAR(255) NOT NULL,
     "startTime" TEXT NOT NULL,
     "description" TEXT NOT NULL,
-    "ownerId" UUID NOT NULL,
+    "ownerId" TEXT NOT NULL,
     "status" "Status" NOT NULL,
 
     PRIMARY KEY ("id")
@@ -31,7 +31,7 @@ CREATE TABLE "Meeting" (
 -- CreateTable
 CREATE TABLE "Participant" (
     "role" "Role" NOT NULL,
-    "userId" UUID NOT NULL,
+    "userId" TEXT NOT NULL,
     "meetingId" UUID NOT NULL,
     "isVotingEligible" BOOLEAN NOT NULL DEFAULT true,
 
@@ -40,7 +40,7 @@ CREATE TABLE "Participant" (
 
 -- CreateTable
 CREATE TABLE "HasVoted" (
-    "userId" UUID NOT NULL,
+    "userId" TEXT NOT NULL,
     "votationId" UUID NOT NULL,
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
 

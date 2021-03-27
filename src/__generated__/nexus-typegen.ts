@@ -23,6 +23,7 @@ export interface NexusGenInputs {
 
 export interface NexusGenEnums {
   MajorityType: "QUALIFIED" | "SIMPLE"
+  Role: "ADMIN" | "COUNTER" | "PARTICIPANT"
   Status: "ENDED" | "ONGOING" | "UPCOMING"
 }
 
@@ -48,6 +49,10 @@ export interface NexusGenObjects {
     title: string; // String!
   }
   Mutation: {};
+  Participant: { // root type
+    isVotingEligible: boolean; // Boolean!
+    role: NexusGenEnums['Role']; // Role!
+  }
   Query: {};
   User: { // root type
     email: string; // String!
@@ -95,6 +100,7 @@ export interface NexusGenFieldTypes {
     description: string | null; // String
     id: string; // ID!
     owner: NexusGenRootTypes['User']; // User!
+    participants: Array<NexusGenRootTypes['Participant'] | null>; // [Participant]!
     startTime: string; // String!
     status: NexusGenEnums['Status']; // Status!
     title: string; // String!
@@ -104,9 +110,16 @@ export interface NexusGenFieldTypes {
     addUser: NexusGenRootTypes['User'] | null; // User
     cast_vote: NexusGenRootTypes['Vote'] | null; // Vote
   }
+  Participant: { // field return type
+    isVotingEligible: boolean; // Boolean!
+    meeting: NexusGenRootTypes['Meeting']; // Meeting!
+    role: NexusGenEnums['Role']; // Role!
+    user: NexusGenRootTypes['User']; // User!
+  }
   Query: { // field return type
     alternatives_by_votation: Array<NexusGenRootTypes['Alternative'] | null> | null; // [Alternative]
     meetings_for_user: Array<NexusGenRootTypes['Meeting'] | null>; // [Meeting]!
+    meetings_for_user_by_id: NexusGenRootTypes['Meeting']; // Meeting!
     user: NexusGenRootTypes['User']; // User!
     users: Array<NexusGenRootTypes['User'] | null>; // [User]!
     votations_by_meeting: Array<NexusGenRootTypes['Votation'] | null> | null; // [Votation]
@@ -152,6 +165,7 @@ export interface NexusGenFieldTypeNames {
     description: 'String'
     id: 'ID'
     owner: 'User'
+    participants: 'Participant'
     startTime: 'String'
     status: 'Status'
     title: 'String'
@@ -161,9 +175,16 @@ export interface NexusGenFieldTypeNames {
     addUser: 'User'
     cast_vote: 'Vote'
   }
+  Participant: { // field return type name
+    isVotingEligible: 'Boolean'
+    meeting: 'Meeting'
+    role: 'Role'
+    user: 'User'
+  }
   Query: { // field return type name
     alternatives_by_votation: 'Alternative'
     meetings_for_user: 'Meeting'
+    meetings_for_user_by_id: 'Meeting'
     user: 'User'
     users: 'User'
     votations_by_meeting: 'Votation'
@@ -201,7 +222,6 @@ export interface NexusGenArgTypes {
   Mutation: {
     addUser: { // args
       email: string; // String!
-      id: string; // String!
       username: string; // String!
     }
     cast_vote: { // args
@@ -212,6 +232,9 @@ export interface NexusGenArgTypes {
   Query: {
     alternatives_by_votation: { // args
       votationId: string; // String!
+    }
+    meetings_for_user_by_id: { // args
+      id: string; // String!
     }
     user: { // args
       id: string; // String!
