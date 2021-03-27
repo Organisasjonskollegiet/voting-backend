@@ -7,7 +7,6 @@ export const isAuthenticated = rule({ cache: 'contextual' })(async (_, __, ctx: 
 });
 
 export const isParticipant = rule({ cache: 'contextual' })(async (_, { meetingId }, ctx: Context) => {
-    if (!ctx.userId) throw new Error('User cannot be null.');
     const participant = ctx.prisma.participant.findFirst({
         where: {
             userId: ctx.userId,
@@ -18,7 +17,6 @@ export const isParticipant = rule({ cache: 'contextual' })(async (_, { meetingId
 });
 
 export const isVotingEligible = rule({ cache: 'contextual' })(async (_, { votationId }, ctx: Context) => {
-    if (!ctx.userId) throw new Error('User cannot be null.');
     // logic for checking eligibility
     return true;
 });

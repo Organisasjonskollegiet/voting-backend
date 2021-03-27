@@ -37,7 +37,6 @@ export const MeetingQuery = extendType({
             // Also possible to write `type: list(Meeting)` and remove it from the `t` part
             type: list(Meeting),
             resolve: async (_, __, ctx) => {
-                if (!ctx.userId) throw new Error('User cannot be null.');
                 const meetingForUser = await ctx.prisma.participant.findMany({
                     select: {
                         meeting: true,

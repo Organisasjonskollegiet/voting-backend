@@ -9,7 +9,7 @@ const permissions = shield({
         votations_by_meeting: and(isAuthenticated, isParticipant),
     },
     Mutation: {
-        users: isAuthenticated,
+        addUser: isAuthenticated,
         cast_vote: and(isAuthenticated, isParticipant, isVotingEligible),
     },
 });

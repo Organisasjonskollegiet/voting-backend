@@ -134,7 +134,6 @@ export const VotationQuery = extendType({
 });
 
 const userHasVoted = async (ctx: Context, votationId: string) => {
-    if (!ctx.userId) throw new Error('UserId must not be null');
     const hasVoted = await ctx.prisma.hasVoted.findFirst({ where: { votationId, userId: ctx.userId } });
     return hasVoted !== null;
 };
@@ -154,7 +153,6 @@ export const VotationMutation = extendType({
                 votationId: nonNull(stringArg()),
             },
             resolve: async (_, { alternativeId, votationId }, ctx) => {
-                if (!ctx.userId) throw new Error('UserId must not be null');
                 if (!alternativeId) throw new Error('AlternativeId must be provided.');
                 const hasVoted = await userHasVoted(ctx, votationId);
                 if (hasVoted) throw new Error('This user has already cast vote for this votation.');
