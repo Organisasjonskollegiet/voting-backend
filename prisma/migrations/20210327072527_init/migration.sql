@@ -33,7 +33,7 @@ CREATE TABLE "Participant" (
     "role" "Role" NOT NULL,
     "userId" UUID NOT NULL,
     "meetingId" UUID NOT NULL,
-    "isVotingEligiible" BOOLEAN NOT NULL DEFAULT true,
+    "isVotingEligible" BOOLEAN NOT NULL DEFAULT true,
 
     PRIMARY KEY ("userId","meetingId")
 );
