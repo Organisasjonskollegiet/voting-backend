@@ -1,6 +1,6 @@
 import casual from 'casual';
 
-const simple_mock = {
+const simpleMock = {
     User: () => ({
         id: () => casual.uuid,
         username: () => casual.username,

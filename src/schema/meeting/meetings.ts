@@ -1,7 +1,8 @@
 import { extendType, list, nonNull, objectType, stringArg } from 'nexus';
 import { Meeting as MeetingType } from '@prisma/client';
-import { Participant, User } from '../auth/user';
+import { User } from '../auth/user';
 import { Votation, Status } from '../votation/votation';
+import { Participant } from './participant';
 
 export const Meeting = objectType({
     name: 'Meeting',
@@ -14,8 +15,7 @@ export const Meeting = objectType({
             type: User,
             resolve: async (source, __, ctx) => {
                 const { ownerId } = source as MeetingType;
-                const user = await ctx.prisma.user.findUnique({ where: { id: ownerId } });
-                if (!user) throw new Error('User not found');
+                const user = await ctx.prisma.user.findUnique({ where: { id: ownerId }, rejectOnNotFound: true });
                 return user;
             },
         });
@@ -45,38 +45,28 @@ export const Meeting = objectType({
 export const MeetingQuery = extendType({
     type: 'Query',
     definition: (t) => {
-        t.nonNull.field('meetings_for_user', {
-            // Also possible to write `type: list(Meeting)` and remove it from the `t` part
+        t.nonNull.field('meetings', {
             type: list(Meeting),
+            description: 'Find meetings you are participating in',
             resolve: async (_, __, ctx) => {
-                const meetingForUser = await ctx.prisma.participant.findMany({
-                    select: {
-                        meeting: true,
-                    },
-                    where: {
-                        userId: ctx.userId,
-                    },
+                const meetings = await ctx.prisma.meeting.findMany({
+                    where: { participants: { some: { userId: ctx.userId } } },
                 });
-                return meetingForUser.map((meeting) => meeting.meeting);
+                return meetings;
             },
         });
-        t.nonNull.field('meetings_for_user_by_id', {
+        t.nonNull.field('meetingsById', {
             type: Meeting,
+            description: 'Find a meeting by id from YOUR meetings',
             args: {
-                id: nonNull(stringArg()),
+                meetingId: nonNull(stringArg()),
             },
-            resolve: async (_, { id }, ctx) => {
-                const meetingForUser = await ctx.prisma.participant.findFirst({
-                    select: {
-                        meeting: true,
-                    },
-                    where: {
-                        meetingId: id,
-                        userId: ctx.userId,
-                    },
+            resolve: async (_, { meetingId }, ctx) => {
+                const meeting = await ctx.prisma.meeting.findFirst({
+                    where: { id: meetingId, participants: { some: { userId: ctx.userId } } },
+                    rejectOnNotFound: true,
                 });
-                if (!meetingForUser) throw new Error('No meeting with this id for this user.');
-                return meetingForUser.meeting;
+                return meeting;
             },
         });
     },

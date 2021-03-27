@@ -1,58 +1,36 @@
+import { AuthenticationError } from 'apollo-server-express';
 import { rule } from 'graphql-shield';
 import { Context } from '../../context';
 
 export const isAuthenticated = rule({ cache: 'contextual' })(async (_, __, ctx: Context) => {
-    return ctx.userId !== null;
+    return ctx.userId ? true : new AuthenticationError('User must be logged in');
 });
 
-export const isParticipantOfMeeting = rule({ cache: 'contextual' })(async (_, { meetingId }, ctx: Context) => {
-    const participant = ctx.prisma.participant.findFirst({
-        where: {
-            userId: ctx.userId,
-            meetingId,
-        },
-    });
-    return participant !== null;
+/**
+ * The user has to be a participant of the meeting in @args
+ */
+export const isParticipantOfMeeting = rule({ cache: 'contextual' })(async (_, args, ctx: Context) => {
+    const meetingId = args.id;
+    const resultCount = await ctx.prisma.participant.count({ where: { userId: ctx.userId, meetingId } });
+    return resultCount > 0;
 });
 
+/**
+ * Rule: A user has to be an participant of the votation
+ */
 export const isParticipantOfVotation = rule({ cache: 'contextual' })(async (_, { votationId }, ctx: Context) => {
-    const votationWithParticipant = await ctx.prisma.votation.findFirst({
-        where: {
-            id: votationId,
-        },
-        include: {
-            meeting: {
-                include: {
-                    participants: {
-                        where: {
-                            userId: ctx.userId,
-                        },
-                    },
-                },
-            },
-        },
+    const resultCount = await ctx.prisma.votation.count({
+        where: { id: votationId, meeting: { participants: { some: { user: { id: ctx.userId } } } } },
     });
-    if (!votationWithParticipant) return false;
-    return votationWithParticipant.meeting.participants.length > 0;
+    return resultCount > 0;
 });
 
-export const isVotingEligible = rule({ cache: 'contextual' })(async (_, { votationId }, ctx: Context) => {
-    const votationWithParticipant = await ctx.prisma.votation.findFirst({
-        where: {
-            id: votationId,
-        },
-        include: {
-            meeting: {
-                include: {
-                    participants: {
-                        where: {
-                            userId: ctx.userId,
-                        },
-                    },
-                },
-            },
-        },
+/**
+ * Rule: A user can vote
+ */
+export const is_voting_eligible = rule({ cache: 'contextual' })(async (_, { votationId }, ctx: Context) => {
+    const particpant = await ctx.prisma.participant.findFirst({
+        where: { userId: ctx.userId, meeting: { votations: { some: { id: votationId } } } },
     });
-    if (!votationWithParticipant || votationWithParticipant.meeting.participants.length === 0) return false;
-    return votationWithParticipant.meeting.participants[0].isVotingEligible;
+    return particpant ? particpant.isVotingEligible : false;
 });

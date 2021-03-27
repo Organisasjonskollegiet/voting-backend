@@ -1,47 +1,13 @@
-import { extendType, list, nonNull, objectType, stringArg, enumType } from 'nexus';
-import { Participant as ParticipantType } from '@prisma/client';
-import { Meeting } from '../meeting/meetings';
+import { extendType, nonNull, objectType, stringArg, enumType, idArg } from 'nexus';
 
 export const Role = enumType({
     name: 'Role',
     members: ['ADMIN', 'PARTICIPANT', 'COUNTER'],
 });
 
-export const Participant = objectType({
-    name: 'Participant',
-    definition(t) {
-        t.nonNull.field('role', { type: Role });
-        t.nonNull.boolean('isVotingEligible');
-        t.nonNull.field('user', {
-            type: User,
-            resolve: async (source, __, ctx) => {
-                const { userId } = source as ParticipantType;
-                const user = await ctx.prisma.user.findUnique({ where: { id: userId } });
-                if (!user) throw new Error('User not found');
-                return user;
-            },
-        });
-        t.nonNull.field('meeting', {
-            type: Meeting,
-            resolve: async (source, __, ctx) => {
-                const { meetingId } = source as ParticipantType;
-                const meeting = await ctx.prisma.meeting.findUnique({ where: { id: meetingId } });
-                if (!meeting) throw new Error('No meeting with this id');
-                return meeting;
-            },
-        });
-    },
-});
-
 export const User = objectType({
     name: 'User',
     definition(t) {
-        // t.model = kommer fra nexus-prisma-plugin. Biblioteket har vært litt stale pga rewrite
-        // Pluginen lager mapper prisma
-        // t.model.id();
-        // t.model.username();
-        // t.model.email();
-        // Evt kan vi definere graphql typene manuelt
         t.nonNull.id('id');
         t.nonNull.string('username');
         t.nonNull.string('email');
@@ -51,26 +17,18 @@ export const User = objectType({
 export const UserQuery = extendType({
     type: 'Query',
     definition: (t) => {
-        t.nonNull.field('users', {
-            type: list(User),
-            resolve: async (_, __, ctx) => {
-                const users = await ctx.prisma.user.findMany();
-                return users;
-            },
-        });
         t.nonNull.field('user', {
             type: User,
             args: {
-                id: nonNull(stringArg()),
+                id: nonNull(idArg()),
             },
             resolve: async (_, { id }, ctx) => {
-                if (!id) throw new Error('You have to provide a userid');
                 const user = await ctx.prisma.user.findUnique({
                     where: {
                         id,
                     },
+                    rejectOnNotFound: true,
                 });
-                if (!user) throw new Error('No user with this id');
                 return user;
             },
         });
@@ -83,20 +41,14 @@ export const UserMutation = extendType({
         t.field('addUser', {
             type: User,
             args: {
-                id: stringArg(),
+                id: idArg(),
                 username: nonNull(stringArg()),
                 email: nonNull(stringArg()),
             },
-            // args typen i resolver er mappa til args typen definnert over
             resolve: async (_, args, ctx) => {
-                const user =
-                    args.id !== null && args.id !== undefined
-                        ? await ctx.prisma.user.create({
-                              data: { id: args.id, username: args.username, email: args.email },
-                          })
-                        : await ctx.prisma.user.create({
-                              data: { username: args.username, email: args.email },
-                          });
+                const user = await ctx.prisma.user.create({
+                    data: { id: args.id || undefined, username: args.username, email: args.email },
+                });
                 return user;
             },
         });

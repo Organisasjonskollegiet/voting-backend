@@ -48,8 +48,10 @@ export const Vote = objectType({
             type: Alternative,
             resolve: async (source, __, ctx) => {
                 const { alternativeId } = source as VoteType;
-                const alternative = ctx.prisma.alternative.findUnique({ where: { id: alternativeId } });
-                if (!alternative) throw new Error('The vote has no alternative');
+                const alternative = ctx.prisma.alternative.findUnique({
+                    where: { id: alternativeId },
+                    rejectOnNotFound: true,
+                });
                 return alternative;
             },
         });
@@ -89,8 +91,10 @@ export const Votation = objectType({
             type: Meeting,
             resolve: async (source, __, ctx) => {
                 const { meetingId } = source as VotationType;
-                const meeting = await ctx.prisma.meeting.findUnique({ where: { id: meetingId } });
-                if (!meeting) throw new Error('No meeting with this id');
+                const meeting = await ctx.prisma.meeting.findUnique({
+                    where: { id: meetingId },
+                    rejectOnNotFound: true,
+                });
                 return meeting;
             },
         });
@@ -109,7 +113,7 @@ export const Votation = objectType({
 export const VotationQuery = extendType({
     type: 'Query',
     definition: (t) => {
-        t.field('votations_by_meeting', {
+        t.field('votationsByMeeting', {
             type: list(Votation),
             args: {
                 meetingId: nonNull(stringArg()),
@@ -118,7 +122,7 @@ export const VotationQuery = extendType({
                 return ctx.prisma.votation.findMany({ where: { meetingId } });
             },
         });
-        t.field('alternatives_by_votation', {
+        t.field('alternativesByVotation', {
             type: list(Alternative),
             args: {
                 votationId: nonNull(stringArg()),
@@ -146,7 +150,7 @@ const checkAlternativeExists = async (ctx: Context, alternativeId: string) => {
 export const VotationMutation = extendType({
     type: 'Mutation',
     definition: (t) => {
-        t.field('cast_vote', {
+        t.field('castVote', {
             type: Vote,
             args: {
                 alternativeId: nonNull(stringArg()),

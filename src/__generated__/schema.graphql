@@ -27,24 +27,26 @@ type Meeting {
 }
 
 type Mutation {
-  addUser(email: String!, id: String, username: String!): User
-  cast_vote(alternativeId: String!, votationId: String!): Vote
+  addUser(email: String!, id: ID, username: String!): User
+  castVote(alternativeId: String!, votationId: String!): Vote
 }
 
 type Participant {
   isVotingEligible: Boolean!
-  meeting: Meeting!
   role: Role!
   user: User!
 }
 
 type Query {
-  alternatives_by_votation(votationId: String!): [Alternative]
-  meetings_for_user: [Meeting]!
-  meetings_for_user_by_id(id: String!): Meeting!
-  user(id: String!): User!
-  users: [User]!
-  votations_by_meeting(meetingId: String!): [Votation]
+  alternativesByVotation(votationId: String!): [Alternative]
+
+  """Find meetings you are participating in"""
+  meetings: [Meeting]!
+
+  """Find a meeting by id from YOUR meetings"""
+  meetingsById(meetingId: String!): Meeting!
+  user(id: ID!): User!
+  votationsByMeeting(meetingId: String!): [Votation]
 }
 
 enum Role {

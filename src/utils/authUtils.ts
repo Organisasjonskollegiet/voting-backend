@@ -23,10 +23,10 @@ const getJwksClientKey: GetPublicKeyOrSecret = (header, callback) => {
     });
 };
 
-export const verifyToken = async (bearer_token: string) => {
+export const verifyToken = async (bearerToken: string) => {
     return new Promise<DecodedToken | undefined>((resolve, reject) => {
         jwt.verify(
-            bearer_token,
+            bearerToken,
             getJwksClientKey,
             {
                 audience: process.env.AUDIENCE,
