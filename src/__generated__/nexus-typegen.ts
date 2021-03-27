@@ -23,6 +23,7 @@ export interface NexusGenInputs {
 
 export interface NexusGenEnums {
   MajorityType: "QUALIFIED" | "SIMPLE"
+  Role: "ADMIN" | "COUNTER" | "PARTICIPANT"
   Status: "ENDED" | "ONGOING" | "UPCOMING"
 }
 
@@ -38,7 +39,7 @@ export interface NexusGenObjects {
   Alternative: { // root type
     id: string; // ID!
     text: string; // String!
-    votation?: NexusGenRootTypes['Votation'] | null; // Votation
+    votationId: string; // String!
   }
   Meeting: { // root type
     description?: string | null; // String
@@ -46,9 +47,12 @@ export interface NexusGenObjects {
     startTime: string; // String!
     status: NexusGenEnums['Status']; // Status!
     title: string; // String!
-    votations?: Array<NexusGenRootTypes['Votation'] | null> | null; // [Votation]
   }
   Mutation: {};
+  Participant: { // root type
+    isVotingEligible: boolean; // Boolean!
+    role: NexusGenEnums['Role']; // Role!
+  }
   Query: {};
   User: { // root type
     email: string; // String!
@@ -56,17 +60,21 @@ export interface NexusGenObjects {
     username: string; // String!
   }
   Votation: { // root type
-    alternatives?: Array<NexusGenRootTypes['Alternative'] | null> | null; // [Alternative]
     blankVotes?: boolean | null; // Boolean
     description: string; // String!
     hasVoted?: Array<NexusGenRootTypes['User'] | null> | null; // [User]
     id: string; // ID!
     majorityThreshold: number; // Int!
     majorityType: NexusGenEnums['MajorityType']; // MajorityType!
-    meeting: NexusGenRootTypes['Meeting']; // Meeting!
+    meetingId: string; // String!
     order?: number | null; // Int
     status: NexusGenEnums['Status']; // Status!
     title: string; // String!
+  }
+  Vote: { // root type
+    alternativeId: string; // String!
+    id: string; // ID!
+    nextVoteId?: string | null; // String
   }
 }
 
@@ -85,11 +93,14 @@ export interface NexusGenFieldTypes {
     id: string; // ID!
     text: string; // String!
     votation: NexusGenRootTypes['Votation'] | null; // Votation
+    votationId: string; // String!
+    votes: Array<NexusGenRootTypes['Vote'] | null> | null; // [Vote]
   }
   Meeting: { // field return type
     description: string | null; // String
     id: string; // ID!
     owner: NexusGenRootTypes['User']; // User!
+    participants: Array<NexusGenRootTypes['Participant'] | null>; // [Participant]!
     startTime: string; // String!
     status: NexusGenEnums['Status']; // Status!
     title: string; // String!
@@ -97,11 +108,19 @@ export interface NexusGenFieldTypes {
   }
   Mutation: { // field return type
     addUser: NexusGenRootTypes['User'] | null; // User
+    castVote: NexusGenRootTypes['Vote'] | null; // Vote
+  }
+  Participant: { // field return type
+    isVotingEligible: boolean; // Boolean!
+    role: NexusGenEnums['Role']; // Role!
+    user: NexusGenRootTypes['User']; // User!
   }
   Query: { // field return type
-    hello: Array<NexusGenRootTypes['Alternative'] | null> | null; // [Alternative]
+    alternativesByVotation: Array<NexusGenRootTypes['Alternative'] | null> | null; // [Alternative]
     meetings: Array<NexusGenRootTypes['Meeting'] | null>; // [Meeting]!
-    users: Array<NexusGenRootTypes['User'] | null>; // [User]!
+    meetingsById: NexusGenRootTypes['Meeting']; // Meeting!
+    user: NexusGenRootTypes['User']; // User!
+    votationsByMeeting: Array<NexusGenRootTypes['Votation'] | null> | null; // [Votation]
   }
   User: { // field return type
     email: string; // String!
@@ -117,9 +136,18 @@ export interface NexusGenFieldTypes {
     majorityThreshold: number; // Int!
     majorityType: NexusGenEnums['MajorityType']; // MajorityType!
     meeting: NexusGenRootTypes['Meeting']; // Meeting!
+    meetingId: string; // String!
     order: number | null; // Int
     status: NexusGenEnums['Status']; // Status!
     title: string; // String!
+  }
+  Vote: { // field return type
+    alternative: NexusGenRootTypes['Alternative'] | null; // Alternative
+    alternativeId: string; // String!
+    id: string; // ID!
+    nextVote: NexusGenRootTypes['Vote'] | null; // Vote
+    nextVoteId: string | null; // String
+    prevVote: NexusGenRootTypes['Vote'] | null; // Vote
   }
 }
 
@@ -128,11 +156,14 @@ export interface NexusGenFieldTypeNames {
     id: 'ID'
     text: 'String'
     votation: 'Votation'
+    votationId: 'String'
+    votes: 'Vote'
   }
   Meeting: { // field return type name
     description: 'String'
     id: 'ID'
     owner: 'User'
+    participants: 'Participant'
     startTime: 'String'
     status: 'Status'
     title: 'String'
@@ -140,11 +171,19 @@ export interface NexusGenFieldTypeNames {
   }
   Mutation: { // field return type name
     addUser: 'User'
+    castVote: 'Vote'
+  }
+  Participant: { // field return type name
+    isVotingEligible: 'Boolean'
+    role: 'Role'
+    user: 'User'
   }
   Query: { // field return type name
-    hello: 'Alternative'
+    alternativesByVotation: 'Alternative'
     meetings: 'Meeting'
-    users: 'User'
+    meetingsById: 'Meeting'
+    user: 'User'
+    votationsByMeeting: 'Votation'
   }
   User: { // field return type name
     email: 'String'
@@ -160,9 +199,18 @@ export interface NexusGenFieldTypeNames {
     majorityThreshold: 'Int'
     majorityType: 'MajorityType'
     meeting: 'Meeting'
+    meetingId: 'String'
     order: 'Int'
     status: 'Status'
     title: 'String'
+  }
+  Vote: { // field return type name
+    alternative: 'Alternative'
+    alternativeId: 'String'
+    id: 'ID'
+    nextVote: 'Vote'
+    nextVoteId: 'String'
+    prevVote: 'Vote'
   }
 }
 
@@ -170,8 +218,26 @@ export interface NexusGenArgTypes {
   Mutation: {
     addUser: { // args
       email: string; // String!
-      id: string; // String!
+      id?: string | null; // ID
       username: string; // String!
+    }
+    castVote: { // args
+      alternativeId: string; // String!
+      votationId: string; // String!
+    }
+  }
+  Query: {
+    alternativesByVotation: { // args
+      votationId: string; // String!
+    }
+    meetingsById: { // args
+      meetingId: string; // String!
+    }
+    user: { // args
+      id: string; // ID!
+    }
+    votationsByMeeting: { // args
+      meetingId: string; // String!
     }
   }
 }

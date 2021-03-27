@@ -6,6 +6,8 @@ type Alternative {
   id: ID!
   text: String!
   votation: Votation
+  votationId: String!
+  votes: [Vote]
 }
 
 enum MajorityType {
@@ -17,6 +19,7 @@ type Meeting {
   description: String
   id: ID!
   owner: User!
+  participants: [Participant]!
   startTime: String!
   status: Status!
   title: String!
@@ -24,13 +27,32 @@ type Meeting {
 }
 
 type Mutation {
-  addUser(email: String!, id: String!, username: String!): User
+  addUser(email: String!, id: ID, username: String!): User
+  castVote(alternativeId: String!, votationId: String!): Vote
+}
+
+type Participant {
+  isVotingEligible: Boolean!
+  role: Role!
+  user: User!
 }
 
 type Query {
-  hello: [Alternative]
+  alternativesByVotation(votationId: String!): [Alternative]
+
+  """Find meetings you are participating in"""
   meetings: [Meeting]!
-  users: [User]!
+
+  """Find a meeting by id from YOUR meetings"""
+  meetingsById(meetingId: String!): Meeting!
+  user(id: ID!): User!
+  votationsByMeeting(meetingId: String!): [Votation]
+}
+
+enum Role {
+  ADMIN
+  COUNTER
+  PARTICIPANT
 }
 
 enum Status {
@@ -54,7 +76,17 @@ type Votation {
   majorityThreshold: Int!
   majorityType: MajorityType!
   meeting: Meeting!
+  meetingId: String!
   order: Int
   status: Status!
   title: String!
+}
+
+type Vote {
+  alternative: Alternative
+  alternativeId: String!
+  id: ID!
+  nextVote: Vote
+  nextVoteId: String
+  prevVote: Vote
 }

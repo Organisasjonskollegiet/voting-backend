@@ -5,7 +5,7 @@ import { ApolloServer } from 'apollo-server-express';
 import { applyMiddleware } from 'graphql-middleware';
 import express from 'express';
 import { userFromRequest } from './utils/authUtils';
-import simple_mock from './lib/mocks/mock';
+import simpleMock from './lib/mocks/mock';
 import permissions from './lib/permissions';
 import { schema } from './schema';
 
@@ -13,7 +13,7 @@ const PORT = parseInt(process.env.PORT || '') || 4000;
 
 const isMocking = process.env.MOCKING == 'true';
 
-const init_server = async () => {
+const initServer = async () => {
     const app = express();
     // Connect to database
     const prisma = new PrismaClient({ log: ['query'] });
@@ -26,7 +26,7 @@ const init_server = async () => {
             return { userId, prisma };
         },
         schema: protectedSchema,
-        mocks: isMocking && simple_mock,
+        mocks: isMocking && simpleMock,
         tracing: process.env.NODE_ENV == 'development',
     });
 
@@ -36,4 +36,4 @@ const init_server = async () => {
         console.log(`🚀 Server ready at port: ${PORT}`);
     });
 };
-init_server();
+initServer();

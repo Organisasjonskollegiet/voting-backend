@@ -28,7 +28,7 @@ enum Status {
 }
 
 model User {
-  id            String        @id @default(uuid()) @db.Uuid
+  id            String        @id @default(uuid())
   username      String        @db.VarChar(255)
   email         String        @unique @db.VarChar(255)
   meetings      Meeting[]
@@ -42,24 +42,25 @@ model Meeting {
   startTime    String
   description  String
   owner        User          @relation(fields: [ownerId], references: [id])
-  ownerId      String        @db.Uuid
+  ownerId      String
   votations    Votation[]
   status       Status        @db.default(UPCOMING)
   participants Participant[]
 }
 
 model Participant {
-  role      Role
-  userId    String  @db.Uuid
-  meetingId String  @db.Uuid
-  user      User    @relation(fields: [userId], references: [id])
-  meeting   Meeting @relation(fields: [meetingId], references: [id])
+  role             Role
+  userId           String
+  meetingId        String  @db.Uuid
+  isVotingEligible Boolean @default(true)
+  user             User    @relation(fields: [userId], references: [id])
+  meeting          Meeting @relation(fields: [meetingId], references: [id])
 
   @@id([userId, meetingId])
 }
 
 model HasVoted {
-  userId     String   @db.Uuid
+  userId     String
   votationId String   @db.Uuid
   createdAt  DateTime @default(now())
   user       User     @relation(fields: [userId], references: [id])

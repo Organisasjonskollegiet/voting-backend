@@ -23,10 +23,10 @@ const getJwksClientKey: GetPublicKeyOrSecret = (header, callback) => {
     });
 };
 
-export const verifyToken = async (bearer_token: string) => {
+export const verifyToken = async (bearerToken: string) => {
     return new Promise<DecodedToken | undefined>((resolve, reject) => {
         jwt.verify(
-            bearer_token,
+            bearerToken,
             getJwksClientKey,
             {
                 audience: process.env.AUDIENCE,
@@ -47,7 +47,8 @@ export const userFromRequest = async (req: Request) => {
     if (authHeader) {
         const token = authHeader.split(' ')[1];
         const decoded = await verifyToken(token);
-        return decoded ? decoded.sub : null;
+        if (!decoded) throw new Error('Could not find a valid token.');
+        return decoded.sub;
     }
-    return null;
+    throw new Error('There is no authentication header.');
 };

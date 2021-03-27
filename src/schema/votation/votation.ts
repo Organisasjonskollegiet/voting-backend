@@ -1,6 +1,8 @@
-import { enumType, extendType, list, objectType } from 'nexus';
+import { enumType, extendType, list, nonNull, objectType, stringArg } from 'nexus';
 import { User } from '../auth/user';
+import { Votation as VotationType, Vote as VoteType, Alternative as AlternativeType } from '@prisma/client';
 import { Meeting } from '../meeting/meetings';
+import { Context } from '../../context';
 
 export const MajorityType = enumType({
     name: 'MajorityType',
@@ -16,7 +18,60 @@ export const Alternative = objectType({
     definition: (t) => {
         t.nonNull.id('id');
         t.nonNull.string('text');
-        t.field('votation', { type: Votation });
+        t.nonNull.string('votationId');
+        t.field('votation', {
+            type: Votation,
+            resolve: async (source, __, ctx) => {
+                const { votationId } = source as AlternativeType;
+                const votation = ctx.prisma.votation.findUnique({ where: { id: votationId } });
+                return votation;
+            },
+        });
+        t.field('votes', {
+            type: list(Vote),
+            resolve: async (source, __, ctx) => {
+                const { id } = source as AlternativeType;
+                const votes = ctx.prisma.vote.findMany({ where: { alternativeId: id } });
+                return votes;
+            },
+        });
+    },
+});
+
+export const Vote = objectType({
+    name: 'Vote',
+    definition: (t) => {
+        t.nonNull.id('id');
+        t.nonNull.string('alternativeId');
+        t.string('nextVoteId');
+        t.field('alternative', {
+            type: Alternative,
+            resolve: async (source, __, ctx) => {
+                const { alternativeId } = source as VoteType;
+                const alternative = ctx.prisma.alternative.findUnique({
+                    where: { id: alternativeId },
+                    rejectOnNotFound: true,
+                });
+                return alternative;
+            },
+        });
+        t.field('nextVote', {
+            type: Vote,
+            resolve: async (source, __, ctx) => {
+                const { nextVoteId } = source as VoteType;
+                if (!nextVoteId) return null;
+                const nextVote = ctx.prisma.vote.findUnique({ where: { id: nextVoteId } });
+                return nextVote;
+            },
+        });
+        t.field('prevVote', {
+            type: Vote,
+            resolve: async (source, __, ctx) => {
+                const { id } = source as VoteType;
+                const prevVote = ctx.prisma.vote.findFirst({ where: { nextVoteId: id } });
+                return prevVote;
+            },
+        });
     },
 });
 
@@ -31,19 +86,89 @@ export const Votation = objectType({
         t.boolean('blankVotes');
         t.nonNull.field('majorityType', { type: MajorityType });
         t.nonNull.int('majorityThreshold');
-        t.nonNull.field('meeting', { type: Meeting });
+        t.nonNull.string('meetingId');
+        t.nonNull.field('meeting', {
+            type: Meeting,
+            resolve: async (source, __, ctx) => {
+                const { meetingId } = source as VotationType;
+                const meeting = await ctx.prisma.meeting.findUnique({
+                    where: { id: meetingId },
+                    rejectOnNotFound: true,
+                });
+                return meeting;
+            },
+        });
         t.list.field('hasVoted', { type: User });
-        t.list.field('alternatives', { type: Alternative });
+        t.list.field('alternatives', {
+            type: Alternative,
+            resolve: async (source, __, ctx) => {
+                const { id } = source as VotationType;
+                const alternatives = ctx.prisma.alternative.findMany({ where: { votationId: id } });
+                return alternatives;
+            },
+        });
     },
 });
 
-export const AlternativeQuery = extendType({
+export const VotationQuery = extendType({
     type: 'Query',
     definition: (t) => {
-        t.field('hello', {
+        t.field('votationsByMeeting', {
+            type: list(Votation),
+            args: {
+                meetingId: nonNull(stringArg()),
+            },
+            resolve: (_, { meetingId }, ctx) => {
+                return ctx.prisma.votation.findMany({ where: { meetingId } });
+            },
+        });
+        t.field('alternativesByVotation', {
             type: list(Alternative),
-            resolve: (_, __, ctx) => {
-                return ctx.prisma.alternative.findMany();
+            args: {
+                votationId: nonNull(stringArg()),
+            },
+            resolve: async (_, { votationId }, ctx) => {
+                const alternatives = await ctx.prisma.alternative.findMany({ where: { votationId } });
+                if (!alternatives)
+                    throw new Error('There is no alternatives for this votation, or the votation does not exist.');
+                return alternatives;
+            },
+        });
+    },
+});
+
+const userHasVoted = async (ctx: Context, votationId: string) => {
+    const hasVoted = await ctx.prisma.hasVoted.findFirst({ where: { votationId, userId: ctx.userId } });
+    return hasVoted !== null;
+};
+
+const checkAlternativeExists = async (ctx: Context, alternativeId: string) => {
+    const alternative = await ctx.prisma.alternative.findUnique({ where: { id: alternativeId } });
+    return alternative !== null;
+};
+
+export const VotationMutation = extendType({
+    type: 'Mutation',
+    definition: (t) => {
+        t.field('castVote', {
+            type: Vote,
+            args: {
+                alternativeId: nonNull(stringArg()),
+                votationId: nonNull(stringArg()),
+            },
+            resolve: async (_, { alternativeId, votationId }, ctx) => {
+                const hasVoted = await userHasVoted(ctx, votationId);
+                if (hasVoted) throw new Error('This user has already cast vote for this votation.');
+                const alternativeExists = checkAlternativeExists(ctx, alternativeId);
+                if (!alternativeExists) throw new Error('Alternative does not exist.');
+                await ctx.prisma.hasVoted.create({
+                    data: {
+                        userId: ctx.userId,
+                        votationId,
+                    },
+                });
+                const vote = await ctx.prisma.vote.create({ data: { alternativeId } });
+                return vote;
             },
         });
     },
