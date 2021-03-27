@@ -64,7 +64,6 @@ export const UserQuery = extendType({
                 id: nonNull(stringArg()),
             },
             resolve: async (_, { id }, ctx) => {
-                if (!id) throw new Error('You have to provide a userid');
                 const user = await ctx.prisma.user.findUnique({
                     where: {
                         id,
