@@ -8,6 +8,7 @@ import { userFromRequest } from './utils/authUtils';
 import simpleMock from './lib/mocks/mock';
 import permissions from './lib/permissions';
 import { schema } from './schema';
+import 'dotenv/config';
 
 const PORT = parseInt(process.env.PORT || '') || 4000;
 
