@@ -21,4 +21,4 @@ const simpleMock = {
     }),
 };
 
-export default simple_mock;
+export default simpleMock;
