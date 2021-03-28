@@ -2,6 +2,12 @@
 ### Do not make changes to this file directly
 
 
+input AddUserInput {
+  email: String!
+  id: ID
+  username: String!
+}
+
 type Alternative {
   id: ID!
   text: String!
@@ -9,6 +15,8 @@ type Alternative {
   votationId: String!
   votes: [Vote]
 }
+
+scalar DateTime
 
 enum MajorityType {
   QUALIFIED
@@ -20,14 +28,14 @@ type Meeting {
   id: ID!
   owner: User!
   participants: [Participant]!
-  startTime: String!
+  startTime: DateTime!
   status: Status!
   title: String!
   votations: [Votation]
 }
 
 type Mutation {
-  addUser(email: String!, id: ID, username: String!): User
+  addUser(user: AddUserInput!): User
   castVote(alternativeId: String!, votationId: String!): Vote
 }
 
@@ -45,7 +53,8 @@ type Query {
 
   """Find a meeting by id from YOUR meetings"""
   meetingsById(meetingId: String!): Meeting!
-  user(id: ID!): User!
+  participants: [Participant]
+  user(id: ID!): User
   votationsByMeeting(meetingId: String!): [Votation]
 }
 
