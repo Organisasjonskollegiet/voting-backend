@@ -10,10 +10,6 @@ test('developer sanity test', () => {
 it('should return something 🤣', async () => {
     const email = casual.email;
     const username = casual.username;
-    // const createUser = await ctx.client.mutate({
-
-    //     variables: { email, username },
-    // });
     const createUser = await ctx.client.request(
         gql`
             mutation AddUserTest($username: String!, $email: String!) {
