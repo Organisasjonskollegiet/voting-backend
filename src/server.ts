@@ -9,13 +9,9 @@ import simpleMock from './lib/mocks/mock';
 import permissions from './lib/permissions';
 import { schema } from './schema';
 import 'dotenv/config';
+import { createServer } from 'http';
 
-const PORT = parseInt(process.env.PORT || '') || 4000;
-
-const isMocking = process.env.MOCKING == 'true';
-const isDev = process.env.NODE_ENV == 'development';
-
-const initServer = async () => {
+export const createGraphqlServer = async (isMocking: boolean, isDev: boolean) => {
     const app = express();
     // Connect to database
     const prisma = new PrismaClient({ log: isDev ? ['query'] : undefined });
@@ -30,12 +26,14 @@ const initServer = async () => {
         schema: protectedSchema,
         mocks: isMocking && simpleMock,
         tracing: isDev,
+        subscriptions: {
+            path: '/subscriptions',
+        },
     });
+    // We need to turn the express app into an httpserver to use websockets
+    const ws = createServer(app);
 
-    server.applyMiddleware({ app, path: '/' });
-
-    app.listen(PORT, () => {
-        console.log(`🚀 Server ready at port: ${PORT}`);
-    });
+    server.applyMiddleware({ app, path: '/graphql' });
+    server.installSubscriptionHandlers(ws);
+    return ws;
 };
-initServer();
