@@ -13,11 +13,12 @@ import 'dotenv/config';
 const PORT = parseInt(process.env.PORT || '') || 4000;
 
 const isMocking = process.env.MOCKING == 'true';
+const isDev = process.env.NODE_ENV == 'development';
 
 const initServer = async () => {
     const app = express();
     // Connect to database
-    const prisma = new PrismaClient({ log: ['query'] });
+    const prisma = new PrismaClient({ log: isDev ? ['query'] : undefined });
     if (!isMocking) await prisma.$connect();
 
     const protectedSchema = applyMiddleware(schema, permissions);
@@ -28,7 +29,7 @@ const initServer = async () => {
         },
         schema: protectedSchema,
         mocks: isMocking && simpleMock,
-        tracing: process.env.NODE_ENV == 'development',
+        tracing: isDev,
     });
 
     server.applyMiddleware({ app, path: '/' });
