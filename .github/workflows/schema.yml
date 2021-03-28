@@ -20,3 +20,4 @@ jobs:
               with:
                   schema: 'master:src/__generated__/schema.graphql'
                   github-token: ${{ secrets.GITHUB_TOKEN }}
+                  fail-on-breaking: false
