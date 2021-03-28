@@ -1,4 +1,3 @@
-import { PrismaClientUnknownRequestError } from '@prisma/client/runtime';
 import { nonNull, mutationField } from 'nexus';
 import { AddUserInputType, User } from './';
 
