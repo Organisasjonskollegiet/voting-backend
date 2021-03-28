@@ -1,10 +1,11 @@
-import { createGraphqlServer } from './server';
+import { PrismaClient } from '@prisma/client';
+import { createApollo, createGraphqlServer } from './server';
 
 const PORT = parseInt(process.env.PORT || '') || 4000;
-const isMocking = process.env.MOCKING == 'true';
-const isDev = process.env.NODE_ENV == 'development';
 
-const app = createGraphqlServer(isMocking, isDev);
+const prisma = new PrismaClient();
+const apollo = createApollo(prisma);
+const app = createGraphqlServer(apollo, prisma);
 
 app.then((server) =>
     server.listen(PORT, () => {

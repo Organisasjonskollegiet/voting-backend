@@ -43,12 +43,12 @@ export const verifyToken = async (bearerToken: string) => {
 };
 
 export const userFromRequest = async (req: Request) => {
-    const authHeader = req.headers.authorization;
+    const authHeader = req?.headers.authorization || '';
     if (authHeader) {
         const token = authHeader.split(' ')[1];
         const decoded = await verifyToken(token);
         if (!decoded) throw new Error('Could not find a valid token.');
         return decoded.sub;
     }
-    throw new Error('There is no authentication header.');
+    return null;
 };

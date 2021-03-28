@@ -1,41 +1,79 @@
-import { GraphQLClient } from 'graphql-request';
 import getPort, { makeRange } from 'get-port';
-import { createGraphqlServer } from '../../server';
+import { createApollo, createGraphqlServer } from '../../server';
 import { Server } from 'http';
+import { PrismaClient } from '@prisma/client';
+import { join } from 'path';
+import { execSync } from 'child_process';
+import 'dotenv/config';
+import { GraphQLClient } from 'graphql-request';
+
+const prisma = new PrismaClient();
 
 type TestContext = {
     client: GraphQLClient;
+    prisma: PrismaClient;
 };
 
-export function createTestContext(): TestContext {
+export const createTestContext = (): TestContext => {
     let ctx = {} as TestContext;
     const graphqlCtx = graphqlTestContext();
+    const prismaCtx = prismaTestContext();
+
     beforeEach(async () => {
         const client = await graphqlCtx.before();
+        const prisma = await prismaCtx.before();
         Object.assign(ctx, {
             client,
+            prisma,
         });
     });
 
     afterEach(async () => {
         await graphqlCtx.after();
+        await prismaCtx.after();
     });
     return ctx;
-}
+};
 
-function graphqlTestContext() {
+const graphqlTestContext = () => {
     let serverInstance: Server | null = null;
 
     return {
         async before() {
-            const port = await getPort({ port: makeRange(4000, 6000) }); // 4
-            const server = await createGraphqlServer(false, false);
+            const port = await getPort({ port: makeRange(4001, 6000) }); // 4
+            const apollo = createApollo(prisma);
+            const server = await createGraphqlServer(apollo, prisma);
             serverInstance = server.listen({ port }); // 5
-            return new GraphQLClient(`http://localhost:${port}`); // 6
+            serverInstance.on('close', async () => {
+                prisma.$disconnect();
+            });
+            return new GraphQLClient(`http://localhost:${port}/graphql`);
+        },
+        async after() {
+            serverInstance?.close();
+        },
+    };
+};
+
+function prismaTestContext() {
+    const prismaBinary = join(__dirname, '../../../', 'node_modules', '.bin', 'prisma');
+    let prismaClient: null | PrismaClient = null;
+
+    return {
+        async before() {
+            // Run the migrations to ensure our schema has the required structure
+            execSync(`${prismaBinary} db push --preview-feature`);
+            // Construct a new Prisma Client connected to the generated schema
+            prismaClient = prisma;
+            return prismaClient;
         },
 
         async after() {
-            serverInstance?.close();
+            // Drop the schema after the tests have completed
+            // execSync(`${prismaBinary} migrate reset --force`);
+            await prisma.user.deleteMany();
+            // Release the Prisma Client connection
+            await prismaClient?.$disconnect();
         },
     };
 }

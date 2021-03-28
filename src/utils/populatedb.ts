@@ -2,7 +2,7 @@ import { PrismaClient } from '@prisma/client';
 import 'dotenv/config';
 import casual from 'casual';
 
-const populatedb = async () => {
+export const populatedb = async () => {
     const prisma = new PrismaClient();
     await prisma.$connect();
 

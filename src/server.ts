@@ -11,12 +11,7 @@ import { schema } from './schema';
 import 'dotenv/config';
 import { createServer } from 'http';
 
-export const createGraphqlServer = async (isMocking: boolean, isDev: boolean) => {
-    const app = express();
-    // Connect to database
-    const prisma = new PrismaClient({ log: isDev ? ['query'] : undefined });
-    if (!isMocking) await prisma.$connect();
-
+export const createApollo = (prisma: PrismaClient) => {
     const protectedSchema = applyMiddleware(schema, permissions);
     const server = new ApolloServer({
         context: async ({ req }) => {
@@ -24,15 +19,22 @@ export const createGraphqlServer = async (isMocking: boolean, isDev: boolean) =>
             return { userId, prisma };
         },
         schema: protectedSchema,
-        mocks: isMocking && simpleMock,
-        tracing: isDev,
+        mocks: process.env.MOCKING == 'true' && simpleMock,
+        tracing: process.env.NODE_ENV == 'development',
         subscriptions: {
             path: '/subscriptions',
         },
     });
+    return server;
+};
+
+export const createGraphqlServer = async (server: ApolloServer, prisma: PrismaClient) => {
+    const app = express();
+    if (process.env.MOCKING != 'true') await prisma.$connect();
+    // Connect to database
+    if (process.env.NODE_ENV != 'development') await prisma.$connect();
     // We need to turn the express app into an httpserver to use websockets
     const ws = createServer(app);
-
     server.applyMiddleware({ app, path: '/graphql' });
     server.installSubscriptionHandlers(ws);
     return ws;
