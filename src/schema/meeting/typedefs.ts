@@ -1,7 +1,7 @@
 import { objectType, list } from 'nexus';
-import { Meeting as MeetingType } from '@prisma/client';
+import { Meeting as MeetingModel } from '@prisma/client';
 import { Role, Status } from '../enums';
-import { Votation } from '../votation/votation';
+import { Votation } from '../votation';
 
 export const Meeting = objectType({
     name: 'Meeting',
@@ -14,7 +14,7 @@ export const Meeting = objectType({
         t.field('votations', {
             type: list(Votation),
             resolve: async (source, __, ctx) => {
-                const { id } = source as MeetingType;
+                const { id } = source as MeetingModel;
                 const votation = await ctx.prisma.votation.findMany({ where: { meetingId: id } });
                 return votation;
             },
@@ -23,7 +23,7 @@ export const Meeting = objectType({
         t.nonNull.field('participants', {
             type: list(Participant),
             resolve: async (source, __, ctx) => {
-                const { id } = source as MeetingType;
+                const { id } = source as MeetingModel;
                 const participants = await ctx.prisma.participant.findMany({
                     where: {
                         meetingId: id,

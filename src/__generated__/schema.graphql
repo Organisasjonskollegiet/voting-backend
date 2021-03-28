@@ -52,8 +52,7 @@ type Query {
   meetings: [Meeting]!
 
   """Find a meeting by id from YOUR meetings"""
-  meetingsById(meetingId: String!): Meeting!
-  participants: [Participant]
+  meetingsById(meetingId: String!): Meeting
   user(id: ID!): User
   votationsByMeeting(meetingId: String!): [Votation]
 }

@@ -124,8 +124,7 @@ export interface NexusGenFieldTypes {
   Query: { // field return type
     alternativesByVotation: Array<NexusGenRootTypes['Alternative'] | null> | null; // [Alternative]
     meetings: Array<NexusGenRootTypes['Meeting'] | null>; // [Meeting]!
-    meetingsById: NexusGenRootTypes['Meeting']; // Meeting!
-    participants: Array<NexusGenRootTypes['Participant'] | null> | null; // [Participant]
+    meetingsById: NexusGenRootTypes['Meeting'] | null; // Meeting
     user: NexusGenRootTypes['User'] | null; // User
     votationsByMeeting: Array<NexusGenRootTypes['Votation'] | null> | null; // [Votation]
   }
@@ -189,7 +188,6 @@ export interface NexusGenFieldTypeNames {
     alternativesByVotation: 'Alternative'
     meetings: 'Meeting'
     meetingsById: 'Meeting'
-    participants: 'Participant'
     user: 'User'
     votationsByMeeting: 'Votation'
   }

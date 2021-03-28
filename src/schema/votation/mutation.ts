@@ -1,5 +1,5 @@
 import { mutationField, nonNull, stringArg } from 'nexus';
-import { Vote } from './typedefs';
+import { Vote } from './';
 import { userHasVoted, checkAlternativeExists } from './utils';
 
 export const CastVoteMutation = mutationField('castVote', {
