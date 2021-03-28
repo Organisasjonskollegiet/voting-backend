@@ -9,7 +9,7 @@ export const populatedb = async () => {
     // Create 5 random users
     const users = await Promise.all(
         [...new Array(5)].map(
-            async (x) => await prisma.user.create({ data: { username: casual.name, email: casual.email } })
+            async () => await prisma.user.create({ data: { username: casual.name, email: casual.email } })
         )
     );
     const meeting = await prisma.meeting.create({
