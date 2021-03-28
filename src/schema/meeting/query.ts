@@ -1,5 +1,5 @@
 import { list, nonNull, queryField, stringArg } from 'nexus';
-import { Meeting } from './typedefs';
+import { Meeting } from './';
 
 export const MeetingsQuery = queryField('meetings', {
     type: nonNull(list(Meeting)),

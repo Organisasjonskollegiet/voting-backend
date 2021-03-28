@@ -1,5 +1,5 @@
 import { nonNull, mutationField } from 'nexus';
-import { AddUserInputType, User } from './typedefs';
+import { AddUserInputType, User } from './';
 
 export const AddUserMutation = mutationField('addUser', {
     type: User,

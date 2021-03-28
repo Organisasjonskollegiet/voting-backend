@@ -1,5 +1,5 @@
 import { objectType, list } from 'nexus';
-import { Alternative as AlternativeType, Vote as VoteType, Votation as VotationType } from '@prisma/client';
+import { Alternative as AlternativeModel, Vote as VoteModel, Votation as VotationModel } from '@prisma/client';
 import { MajorityType, Status } from '../enums';
 import { Meeting } from '../meeting';
 import { User } from '../auth';
@@ -13,7 +13,7 @@ export const Vote = objectType({
         t.field('alternative', {
             type: Alternative,
             resolve: async (source, __, ctx) => {
-                const { alternativeId } = source as VoteType;
+                const { alternativeId } = source as VoteModel;
                 const alternative = ctx.prisma.alternative.findUnique({
                     where: { id: alternativeId },
                     rejectOnNotFound: true,
@@ -24,7 +24,7 @@ export const Vote = objectType({
         t.field('nextVote', {
             type: Vote,
             resolve: async (source, __, ctx) => {
-                const { nextVoteId } = source as VoteType;
+                const { nextVoteId } = source as VoteModel;
                 if (!nextVoteId) return null;
                 const nextVote = ctx.prisma.vote.findUnique({ where: { id: nextVoteId } });
                 return nextVote;
@@ -33,7 +33,7 @@ export const Vote = objectType({
         t.field('prevVote', {
             type: Vote,
             resolve: async (source, __, ctx) => {
-                const { id } = source as VoteType;
+                const { id } = source as VoteModel;
                 const prevVote = ctx.prisma.vote.findFirst({ where: { nextVoteId: id } });
                 return prevVote;
             },
@@ -56,7 +56,7 @@ export const Votation = objectType({
         t.nonNull.field('meeting', {
             type: Meeting,
             resolve: async (source, __, ctx) => {
-                const { meetingId } = source as VotationType;
+                const { meetingId } = source as VotationModel;
                 const meeting = await ctx.prisma.meeting.findUnique({
                     where: { id: meetingId },
                     rejectOnNotFound: true,
@@ -68,7 +68,7 @@ export const Votation = objectType({
         t.list.field('alternatives', {
             type: Alternative,
             resolve: async (source, __, ctx) => {
-                const { id } = source as VotationType;
+                const { id } = source as VotationModel;
                 const alternatives = ctx.prisma.alternative.findMany({ where: { votationId: id } });
                 return alternatives;
             },
@@ -85,7 +85,7 @@ export const Alternative = objectType({
         t.field('votation', {
             type: Votation,
             resolve: async (source, __, ctx) => {
-                const { votationId } = source as AlternativeType;
+                const { votationId } = source as AlternativeModel;
                 const votation = ctx.prisma.votation.findUnique({ where: { id: votationId } });
                 return votation;
             },
@@ -93,7 +93,7 @@ export const Alternative = objectType({
         t.field('votes', {
             type: list(Vote),
             resolve: async (source, __, ctx) => {
-                const { id } = source as AlternativeType;
+                const { id } = source as AlternativeModel;
                 const votes = ctx.prisma.vote.findMany({ where: { alternativeId: id } });
                 return votes;
             },
