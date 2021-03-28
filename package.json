@@ -13,7 +13,8 @@
     "lint": "eslint src/",
     "format": "prettier --write src/*",
     "start": "node dist/src/server.js",
-    "generate": "prisma generate"
+    "generate": "prisma generate",
+    "populatedb":"ts-node-dev --transpile-only --no-notify src/utils/populatedb"
   },
   "dependencies": {
     "@prisma/client": "^2.19.0",
