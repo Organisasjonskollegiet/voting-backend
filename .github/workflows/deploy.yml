@@ -58,4 +58,4 @@ jobs:
               uses: azure/webapps-deploy@v2
               with:
                   app-name: ecclesia-backend
-                  images: 'ghcr.io/organisasjonskollegiet/voting-backend:${{ github.sha }}''
+                  images: 'ghcr.io/organisasjonskollegiet/voting-backend:${{ github.sha }}'
