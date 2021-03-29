@@ -15,5 +15,6 @@ export const AddUserInputType = inputObjectType({
         t.id('id');
         t.nonNull.string('username');
         t.nonNull.string('email');
+        t.nonNull.string('password');
     },
 });
