@@ -179,7 +179,7 @@ interface NexusPrismaOutputs {
   Meeting: {
     id: 'String'
     title: 'String'
-    startTime: 'String'
+    startTime: 'DateTime'
     description: 'String'
     owner: 'User'
     ownerId: 'String'

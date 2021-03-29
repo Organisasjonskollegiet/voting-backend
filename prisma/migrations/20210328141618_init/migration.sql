@@ -20,7 +20,7 @@ CREATE TABLE "User" (
 CREATE TABLE "Meeting" (
     "id" UUID NOT NULL,
     "title" VARCHAR(255) NOT NULL,
-    "startTime" TEXT NOT NULL,
+    "startTime" TIMESTAMP(3) NOT NULL,
     "description" TEXT NOT NULL,
     "ownerId" TEXT NOT NULL,
     "status" "Status" NOT NULL,

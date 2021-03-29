@@ -19,6 +19,11 @@ declare global {
 }
 
 export interface NexusGenInputs {
+  AddUserInput: { // input type
+    email: string; // String!
+    id?: string | null; // ID
+    username: string; // String!
+  }
 }
 
 export interface NexusGenEnums {
@@ -33,6 +38,7 @@ export interface NexusGenScalars {
   Float: number
   Boolean: boolean
   ID: string
+  DateTime: any
 }
 
 export interface NexusGenObjects {
@@ -44,7 +50,7 @@ export interface NexusGenObjects {
   Meeting: { // root type
     description?: string | null; // String
     id: string; // ID!
-    startTime: string; // String!
+    startTime: NexusGenScalars['DateTime']; // DateTime!
     status: NexusGenEnums['Status']; // Status!
     title: string; // String!
   }
@@ -101,7 +107,7 @@ export interface NexusGenFieldTypes {
     id: string; // ID!
     owner: NexusGenRootTypes['User']; // User!
     participants: Array<NexusGenRootTypes['Participant'] | null>; // [Participant]!
-    startTime: string; // String!
+    startTime: NexusGenScalars['DateTime']; // DateTime!
     status: NexusGenEnums['Status']; // Status!
     title: string; // String!
     votations: Array<NexusGenRootTypes['Votation'] | null> | null; // [Votation]
@@ -118,8 +124,8 @@ export interface NexusGenFieldTypes {
   Query: { // field return type
     alternativesByVotation: Array<NexusGenRootTypes['Alternative'] | null> | null; // [Alternative]
     meetings: Array<NexusGenRootTypes['Meeting'] | null>; // [Meeting]!
-    meetingsById: NexusGenRootTypes['Meeting']; // Meeting!
-    user: NexusGenRootTypes['User']; // User!
+    meetingsById: NexusGenRootTypes['Meeting'] | null; // Meeting
+    user: NexusGenRootTypes['User'] | null; // User
     votationsByMeeting: Array<NexusGenRootTypes['Votation'] | null> | null; // [Votation]
   }
   User: { // field return type
@@ -164,7 +170,7 @@ export interface NexusGenFieldTypeNames {
     id: 'ID'
     owner: 'User'
     participants: 'Participant'
-    startTime: 'String'
+    startTime: 'DateTime'
     status: 'Status'
     title: 'String'
     votations: 'Votation'
@@ -217,9 +223,7 @@ export interface NexusGenFieldTypeNames {
 export interface NexusGenArgTypes {
   Mutation: {
     addUser: { // args
-      email: string; // String!
-      id?: string | null; // ID
-      username: string; // String!
+      user: NexusGenInputs['AddUserInput']; // AddUserInput!
     }
     castVote: { // args
       alternativeId: string; // String!
@@ -250,7 +254,7 @@ export interface NexusGenTypeInterfaces {
 
 export type NexusGenObjectNames = keyof NexusGenObjects;
 
-export type NexusGenInputNames = never;
+export type NexusGenInputNames = keyof NexusGenInputs;
 
 export type NexusGenEnumNames = keyof NexusGenEnums;
 
