@@ -1,4 +1,4 @@
-export const USER_SELECT_FIELDS = {
+export const EXPOSED_USER_FIELDS = {
     id: true,
     username: true,
     email: true,

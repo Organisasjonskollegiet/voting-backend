@@ -3,7 +3,7 @@ import { Meeting as MeetingModel, Participant as ParticipantModel } from '@prism
 import { Role, Status } from '../enums';
 import { Votation } from '../votation';
 import { User } from '../auth';
-import { USER_SELECT_FIELDS } from '../auth/utils';
+import { EXPOSED_USER_FIELDS } from '../auth/utils';
 
 export const Meeting = objectType({
     name: 'Meeting',
@@ -48,7 +48,7 @@ export const Participant = objectType({
                 const { userId } = source as ParticipantModel;
                 const user = await ctx.prisma.user.findUnique({
                     where: { id: userId },
-                    select: USER_SELECT_FIELDS,
+                    select: EXPOSED_USER_FIELDS,
                     rejectOnNotFound: true,
                 });
                 return user;

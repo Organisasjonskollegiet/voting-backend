@@ -1,6 +1,6 @@
 import { queryField, nonNull, idArg } from 'nexus';
 import { User } from '.';
-import { USER_SELECT_FIELDS } from './utils';
+import { EXPOSED_USER_FIELDS } from './utils';
 
 export const UserByIdQuery = queryField('user', {
     type: User,
@@ -13,7 +13,7 @@ export const UserByIdQuery = queryField('user', {
                 id,
             },
             rejectOnNotFound: true,
-            select: USER_SELECT_FIELDS,
+            select: EXPOSED_USER_FIELDS,
         });
         return user;
     },
