@@ -22,6 +22,7 @@ export interface NexusGenInputs {
   AddUserInput: { // input type
     email: string; // String!
     id?: string | null; // ID
+    password: string; // String!
     username: string; // String!
   }
 }
@@ -113,8 +114,8 @@ export interface NexusGenFieldTypes {
     votations: Array<NexusGenRootTypes['Votation'] | null> | null; // [Votation]
   }
   Mutation: { // field return type
-    addUser: NexusGenRootTypes['User'] | null; // User
     castVote: NexusGenRootTypes['Vote'] | null; // Vote
+    createUser: NexusGenRootTypes['User'] | null; // User
   }
   Participant: { // field return type
     isVotingEligible: boolean; // Boolean!
@@ -176,8 +177,8 @@ export interface NexusGenFieldTypeNames {
     votations: 'Votation'
   }
   Mutation: { // field return type name
-    addUser: 'User'
     castVote: 'Vote'
+    createUser: 'User'
   }
   Participant: { // field return type name
     isVotingEligible: 'Boolean'
@@ -222,12 +223,12 @@ export interface NexusGenFieldTypeNames {
 
 export interface NexusGenArgTypes {
   Mutation: {
-    addUser: { // args
-      user: NexusGenInputs['AddUserInput']; // AddUserInput!
-    }
     castVote: { // args
       alternativeId: string; // String!
       votationId: string; // String!
+    }
+    createUser: { // args
+      user: NexusGenInputs['AddUserInput']; // AddUserInput!
     }
   }
   Query: {

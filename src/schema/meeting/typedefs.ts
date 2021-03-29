@@ -1,7 +1,9 @@
 import { objectType, list } from 'nexus';
-import { Meeting as MeetingModel } from '@prisma/client';
+import { Meeting as MeetingModel, Participant as ParticipantModel } from '@prisma/client';
 import { Role, Status } from '../enums';
 import { Votation } from '../votation';
+import { User } from '../auth';
+import { USER_SELECT_FIELDS } from '../auth/utils';
 
 export const Meeting = objectType({
     name: 'Meeting',
@@ -40,6 +42,17 @@ export const Participant = objectType({
     definition(t) {
         t.nonNull.field('role', { type: Role });
         t.nonNull.boolean('isVotingEligible');
-        t.model.user();
+        t.field('user', {
+            type: User,
+            resolve: async (source, __, ctx) => {
+                const { userId } = source as ParticipantModel;
+                const user = await ctx.prisma.user.findUnique({
+                    where: { id: userId },
+                    select: USER_SELECT_FIELDS,
+                    rejectOnNotFound: true,
+                });
+                return user;
+            },
+        });
     },
 });

@@ -27,8 +27,8 @@ interface PrismaModels {
 interface NexusPrismaInputs {
   Query: {
     users: {
-      filtering: 'AND' | 'OR' | 'NOT' | 'id' | 'username' | 'email' | 'meetings' | 'votedAt' | 'participantAt'
-      ordering: 'id' | 'username' | 'email'
+      filtering: 'AND' | 'OR' | 'NOT' | 'id' | 'username' | 'email' | 'password' | 'meetings' | 'votedAt' | 'participantAt'
+      ordering: 'id' | 'username' | 'email' | 'password'
     }
     meetings: {
       filtering: 'AND' | 'OR' | 'NOT' | 'id' | 'title' | 'startTime' | 'description' | 'owner' | 'ownerId' | 'votations' | 'status' | 'participants'
@@ -172,6 +172,7 @@ interface NexusPrismaOutputs {
     id: 'String'
     username: 'String'
     email: 'String'
+    password: 'String'
     meetings: 'Meeting'
     votedAt: 'HasVoted'
     participantAt: 'Participant'

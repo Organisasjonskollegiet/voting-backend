@@ -5,6 +5,7 @@
 input AddUserInput {
   email: String!
   id: ID
+  password: String!
   username: String!
 }
 
@@ -35,8 +36,8 @@ type Meeting {
 }
 
 type Mutation {
-  addUser(user: AddUserInput!): User
   castVote(alternativeId: String!, votationId: String!): Vote
+  createUser(user: AddUserInput!): User
 }
 
 type Participant {
