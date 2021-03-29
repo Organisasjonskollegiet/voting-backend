@@ -33,7 +33,7 @@ jobs:
             - name: Login to Docker registry
               uses: docker/login-action@v1
               with:
-                  registry: ghcr.io
+                  registry: ${{ secrets.CONTAINER_REGISTRY }}
                   username: ${{ secrets.REGISTRY_USERNAME }}
                   password: ${{ secrets.REGISTRY_PASSWORD }}
             # Build and push docker container
@@ -44,7 +44,7 @@ jobs:
                   context: .
                   file: ./Dockerfile
                   push: true
-                  tags: 'ghcr.io/organisasjonskollegiet/voting-backend:${{ github.sha }}'
+                  tags: '${{ secrets.CONTAINER_REGISTRY }}/voting-backend:${{ github.sha }}'
                   cache-from: type=local,src=/tmp/.buildx-cache
                   cache-to: type=local,dest=/tmp/.buildx-cache
                   build-args: |
@@ -58,4 +58,4 @@ jobs:
               uses: azure/webapps-deploy@v2
               with:
                   app-name: ecclesia-backend
-                  images: 'ghcr.io/organisasjonskollegiet/voting-backend:${{ github.sha }}'
+                  images: '${{ secrets.CONTAINER_REGISTRY }}/voting-backend:${{ github.sha }}'
