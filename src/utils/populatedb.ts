@@ -2,14 +2,14 @@ import { PrismaClient } from '@prisma/client';
 import 'dotenv/config';
 import casual from 'casual';
 
-const populatedb = async () => {
+export const populatedb = async () => {
     const prisma = new PrismaClient();
     await prisma.$connect();
 
     // Create 5 random users
     const users = await Promise.all(
         [...new Array(5)].map(
-            async (x) => await prisma.user.create({ data: { username: casual.name, email: casual.email } })
+            async () => await prisma.user.create({ data: { username: casual.name, email: casual.email } })
         )
     );
     const meeting = await prisma.meeting.create({
