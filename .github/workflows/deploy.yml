@@ -32,14 +32,15 @@ jobs:
             - name: Login to DockerHub
               uses: docker/login-action@v1
               with:
+                  registry: ghcr.io
                   username: ${{ secrets.DEPLOYER }}
                   password: ${{ secrets.CR_PAT }}
             - name: Build and Push to GitHub Packages
               uses: docker/build-push-action@v2
               with:
-                  registry: docker.pkg.github.com
-                  repository: organisasjonskollegiet/voting-backend/backend
-                  tags: organisasjonskollegiet/backend:${{ github.sha }}
+                  push: true
+                  tags: ghcr.io/organisasjonskollegiet/voting-backend:${{ github.sha }}
+                  context: .
             # Deploy to Azure
             - name: 'Login via Azure CLI'
               uses: azure/login@v1
@@ -49,4 +50,4 @@ jobs:
               uses: azure/webapps-deploy@v2
               with:
                   app-name: ecclesia-backend
-                  images: docker.pkg.github.com/organisasjonskollegiet/voting-backend/backend:{{ github.sha }}
+                  images: docker.pkg.github.com/organisasjonskollegiet/voting-backend:{{ github.sha }}
