@@ -5,6 +5,7 @@
 
 
 import { Context } from "./../context"
+import { core } from "nexus"
 
 
 declare global {
@@ -66,6 +67,9 @@ export interface NexusGenObjects {
     id: string; // ID!
     username: string; // String!
   }
+  UserNotFoundError: { // root type
+    message: string; // String!
+  }
   Votation: { // root type
     blankVotes?: boolean | null; // Boolean
     description: string; // String!
@@ -89,9 +93,10 @@ export interface NexusGenInterfaces {
 }
 
 export interface NexusGenUnions {
+  UserQueryResult: core.Discriminate<'User', 'required'> | core.Discriminate<'UserNotFoundError', 'required'>;
 }
 
-export type NexusGenRootTypes = NexusGenObjects
+export type NexusGenRootTypes = NexusGenObjects & NexusGenUnions
 
 export type NexusGenAllTypes = NexusGenRootTypes & NexusGenScalars & NexusGenEnums
 
@@ -120,19 +125,23 @@ export interface NexusGenFieldTypes {
   Participant: { // field return type
     isVotingEligible: boolean; // Boolean!
     role: NexusGenEnums['Role']; // Role!
-    user: NexusGenRootTypes['User']; // User!
+    user: NexusGenRootTypes['User'] | null; // User
   }
   Query: { // field return type
     alternativesByVotation: Array<NexusGenRootTypes['Alternative'] | null> | null; // [Alternative]
     meetings: Array<NexusGenRootTypes['Meeting'] | null>; // [Meeting]!
     meetingsById: NexusGenRootTypes['Meeting'] | null; // Meeting
-    user: NexusGenRootTypes['User'] | null; // User
+    user: NexusGenRootTypes['UserQueryResult'] | null; // UserQueryResult
+    userByEmail: NexusGenRootTypes['UserQueryResult'] | null; // UserQueryResult
     votationsByMeeting: Array<NexusGenRootTypes['Votation'] | null> | null; // [Votation]
   }
   User: { // field return type
     email: string; // String!
     id: string; // ID!
     username: string; // String!
+  }
+  UserNotFoundError: { // field return type
+    message: string; // String!
   }
   Votation: { // field return type
     alternatives: Array<NexusGenRootTypes['Alternative'] | null> | null; // [Alternative]
@@ -189,13 +198,17 @@ export interface NexusGenFieldTypeNames {
     alternativesByVotation: 'Alternative'
     meetings: 'Meeting'
     meetingsById: 'Meeting'
-    user: 'User'
+    user: 'UserQueryResult'
+    userByEmail: 'UserQueryResult'
     votationsByMeeting: 'Votation'
   }
   User: { // field return type name
     email: 'String'
     id: 'ID'
     username: 'String'
+  }
+  UserNotFoundError: { // field return type name
+    message: 'String'
   }
   Votation: { // field return type name
     alternatives: 'Alternative'
@@ -241,6 +254,9 @@ export interface NexusGenArgTypes {
     user: { // args
       id: string; // ID!
     }
+    userByEmail: { // args
+      email: string; // String!
+    }
     votationsByMeeting: { // args
       meetingId: string; // String!
     }
@@ -248,6 +264,7 @@ export interface NexusGenArgTypes {
 }
 
 export interface NexusGenAbstractTypeMembers {
+  UserQueryResult: "User" | "UserNotFoundError"
 }
 
 export interface NexusGenTypeInterfaces {
@@ -263,7 +280,7 @@ export type NexusGenInterfaceNames = never;
 
 export type NexusGenScalarNames = keyof NexusGenScalars;
 
-export type NexusGenUnionNames = never;
+export type NexusGenUnionNames = keyof NexusGenUnions;
 
 export type NexusGenObjectsUsingAbstractStrategyIsTypeOf = never;
 
@@ -271,9 +288,9 @@ export type NexusGenAbstractsUsingStrategyResolveType = never;
 
 export type NexusGenFeaturesConfig = {
   abstractTypeStrategies: {
+    __typename: true
     isTypeOf: false
-    resolveType: true
-    __typename: false
+    resolveType: false
   }
 }
 

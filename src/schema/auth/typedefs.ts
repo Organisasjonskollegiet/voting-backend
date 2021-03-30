@@ -1,4 +1,4 @@
-import { inputObjectType, objectType } from 'nexus';
+import { inputObjectType, objectType, unionType } from 'nexus';
 
 export const User = objectType({
     name: 'User',
@@ -16,5 +16,19 @@ export const AddUserInputType = inputObjectType({
         t.nonNull.string('username');
         t.nonNull.string('email');
         t.nonNull.string('password');
+    },
+});
+
+export const UserNotFoundError = objectType({
+    name: 'UserNotFoundError',
+    definition(t) {
+        t.nonNull.string('message');
+    },
+});
+
+export const UserQueryResult = unionType({
+    name: 'UserQueryResult',
+    definition(t) {
+        t.members('User', 'UserNotFoundError');
     },
 });

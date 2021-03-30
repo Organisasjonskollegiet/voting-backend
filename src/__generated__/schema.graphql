@@ -43,7 +43,7 @@ type Mutation {
 type Participant {
   isVotingEligible: Boolean!
   role: Role!
-  user: User!
+  user: User
 }
 
 type Query {
@@ -54,7 +54,8 @@ type Query {
 
   """Find a meeting by id from YOUR meetings"""
   meetingsById(meetingId: String!): Meeting
-  user(id: ID!): User
+  user(id: ID!): UserQueryResult
+  userByEmail(email: String!): UserQueryResult
   votationsByMeeting(meetingId: String!): [Votation]
 }
 
@@ -75,6 +76,12 @@ type User {
   id: ID!
   username: String!
 }
+
+type UserNotFoundError {
+  message: String!
+}
+
+union UserQueryResult = User | UserNotFoundError
 
 type Votation {
   alternatives: [Alternative]
