@@ -12,14 +12,14 @@ it('should return something 🤣', async () => {
     const username = casual.username;
     const createUser = await ctx.client.request(
         gql`
-            mutation AddUserTest($username: String!, $email: String!) {
-                addUser(user: { username: $username, email: $email }) {
+            mutation AddUserTest($username: String!, $email: String!, $password: String!) {
+                addUser(user: { username: $username, email: $email, password: $password }) {
                     username
                     email
                 }
             }
         `,
-        { email, username }
+        { email, username, password: casual.password }
     );
     console.log(createUser);
     expect(createUser).toMatchInlineSnapshot(`
