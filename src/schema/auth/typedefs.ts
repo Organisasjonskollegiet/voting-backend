@@ -30,3 +30,17 @@ export const UserQueryResult = unionType({
         t.members('User', 'UserNotFoundError');
     },
 });
+
+export const InvalidPasswordError = objectType({
+    name: 'InvalidPasswordError',
+    definition(t) {
+        t.nonNull.string('message');
+    },
+});
+
+export const LoginMutationResult = unionType({
+    name: 'LoginMutationResult',
+    definition(t) {
+        t.members('User', 'UserNotFoundError', 'InvalidPasswordError');
+    },
+});

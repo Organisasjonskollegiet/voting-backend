@@ -1,7 +1,8 @@
-import { nonNull, mutationField } from 'nexus';
+import { nonNull, mutationField, stringArg } from 'nexus';
 import { AddUserInputType, User } from './';
 import bcrypt from 'bcrypt';
 import { EXPOSED_USER_FIELDS } from './utils';
+import { LoginMutationResult } from './typedefs';
 
 export const CreateUserMutation = mutationField('createUser', {
     type: User,
@@ -14,5 +15,19 @@ export const CreateUserMutation = mutationField('createUser', {
             select: EXPOSED_USER_FIELDS,
         });
         return user;
+    },
+});
+
+export const LoginMutation = mutationField('login', {
+    type: LoginMutationResult,
+    args: { email: nonNull(stringArg()), password: nonNull(stringArg()) },
+    resolve: async (_, args, ctx) => {
+        const { email, password } = args;
+        const user = await ctx.prisma.user.findUnique({ where: { email } });
+        if (!user) return { __typename: 'UserNotFoundError', message: 'No such user found with this email' };
+        const isValidPassword = bcrypt.compareSync(password, user.password);
+        return isValidPassword
+            ? { __typename: 'User', ...user }
+            : { __typename: 'InvalidPasswordError', message: 'The provided password did not match' };
     },
 });
