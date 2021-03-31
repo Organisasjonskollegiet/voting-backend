@@ -13,7 +13,7 @@ export const populatedb = async () => {
             // Replicates a hashed password
             const password = await bcrypt.hash(casual.password, 3);
             const user = await prisma.user.create({
-                data: { username: casual.name, email: casual.email, password: password },
+                data: { email: casual.email, password: password },
             });
             return user;
         })

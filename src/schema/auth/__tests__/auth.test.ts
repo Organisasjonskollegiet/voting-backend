@@ -9,24 +9,21 @@ test('developer sanity test', () => {
 
 it('should return something 🤣', async () => {
     const email = casual.email;
-    const username = casual.username;
     const createUser = await ctx.client.request(
         gql`
-            mutation AddUserTest($username: String!, $email: String!, $password: String!) {
-                addUser(user: { username: $username, email: $email, password: $password }) {
-                    username
+            mutation AddUserTest($email: String!, $password: String!) {
+                addUser(user: { email: $email, password: $password }) {
                     email
                 }
             }
         `,
-        { email, username, password: casual.password }
+        { email, password: casual.password }
     );
     console.log(createUser);
     expect(createUser).toMatchInlineSnapshot(`
         Object {
           "addUser": Object {
             "email": "${email}",
-            "username": "${username}",
           },
         }
     `);

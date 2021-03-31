@@ -24,7 +24,6 @@ export interface NexusGenInputs {
     email: string; // String!
     id?: string | null; // ID
     password: string; // String!
-    username: string; // String!
   }
 }
 
@@ -65,7 +64,6 @@ export interface NexusGenObjects {
   User: { // root type
     email: string; // String!
     id: string; // ID!
-    username: string; // String!
   }
   UserNotFoundError: { // root type
     message: string; // String!
@@ -138,7 +136,6 @@ export interface NexusGenFieldTypes {
   User: { // field return type
     email: string; // String!
     id: string; // ID!
-    username: string; // String!
   }
   UserNotFoundError: { // field return type
     message: string; // String!
@@ -205,7 +202,6 @@ export interface NexusGenFieldTypeNames {
   User: { // field return type name
     email: 'String'
     id: 'ID'
-    username: 'String'
   }
   UserNotFoundError: { // field return type name
     message: 'String'

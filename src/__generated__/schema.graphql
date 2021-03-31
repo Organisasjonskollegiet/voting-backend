@@ -6,7 +6,6 @@ input AddUserInput {
   email: String!
   id: ID
   password: String!
-  username: String!
 }
 
 type Alternative {
@@ -74,7 +73,6 @@ enum Status {
 type User {
   email: String!
   id: ID!
-  username: String!
 }
 
 type UserNotFoundError {
