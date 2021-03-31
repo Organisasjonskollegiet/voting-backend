@@ -3,7 +3,7 @@ import { createApollo, createGraphqlServer } from './server';
 
 const PORT = parseInt(process.env.PORT || '') || 4000;
 
-const prisma = new PrismaClient({ log: ['query'] });
+const prisma = new PrismaClient();
 const apollo = createApollo(prisma);
 const app = createGraphqlServer(apollo, prisma);
 
