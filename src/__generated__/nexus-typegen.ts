@@ -48,9 +48,6 @@ export interface NexusGenObjects {
     text: string; // String!
     votationId: string; // String!
   }
-  InvalidPasswordError: { // root type
-    message: string; // String!
-  }
   Meeting: { // root type
     description?: string | null; // String
     id: string; // ID!
@@ -96,7 +93,6 @@ export interface NexusGenInterfaces {
 
 export interface NexusGenUnions {
   GetUserResult: core.Discriminate<'User', 'required'> | core.Discriminate<'UserNotFoundError', 'required'>;
-  LoginResult: core.Discriminate<'InvalidPasswordError', 'required'> | core.Discriminate<'User', 'required'> | core.Discriminate<'UserNotFoundError', 'required'>;
 }
 
 export type NexusGenRootTypes = NexusGenObjects & NexusGenUnions
@@ -111,9 +107,6 @@ export interface NexusGenFieldTypes {
     votationId: string; // String!
     votes: Array<NexusGenRootTypes['Vote'] | null> | null; // [Vote]
   }
-  InvalidPasswordError: { // field return type
-    message: string; // String!
-  }
   Meeting: { // field return type
     description: string | null; // String
     id: string; // ID!
@@ -126,9 +119,6 @@ export interface NexusGenFieldTypes {
   }
   Mutation: { // field return type
     castVote: NexusGenRootTypes['Vote'] | null; // Vote
-    createUser: NexusGenRootTypes['User'] | null; // User
-    login: NexusGenRootTypes['LoginResult'] | null; // LoginResult
-    verifyUserEmail: boolean | null; // Boolean
   }
   Participant: { // field return type
     isVotingEligible: boolean; // Boolean!
@@ -183,9 +173,6 @@ export interface NexusGenFieldTypeNames {
     votationId: 'String'
     votes: 'Vote'
   }
-  InvalidPasswordError: { // field return type name
-    message: 'String'
-  }
   Meeting: { // field return type name
     description: 'String'
     id: 'ID'
@@ -198,9 +185,6 @@ export interface NexusGenFieldTypeNames {
   }
   Mutation: { // field return type name
     castVote: 'Vote'
-    createUser: 'User'
-    login: 'LoginResult'
-    verifyUserEmail: 'Boolean'
   }
   Participant: { // field return type name
     isVotingEligible: 'Boolean'
@@ -253,16 +237,6 @@ export interface NexusGenArgTypes {
       alternativeId: string; // String!
       votationId: string; // String!
     }
-    createUser: { // args
-      user: NexusGenInputs['AddUserInput']; // AddUserInput!
-    }
-    login: { // args
-      email: string; // String!
-      password: string; // String!
-    }
-    verifyUserEmail: { // args
-      email: string; // String!
-    }
   }
   Query: {
     alternativesByVotation: { // args
@@ -285,7 +259,6 @@ export interface NexusGenArgTypes {
 
 export interface NexusGenAbstractTypeMembers {
   GetUserResult: "User" | "UserNotFoundError"
-  LoginResult: "InvalidPasswordError" | "User" | "UserNotFoundError"
 }
 
 export interface NexusGenTypeInterfaces {

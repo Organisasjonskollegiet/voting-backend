@@ -20,12 +20,6 @@ scalar DateTime
 
 union GetUserResult = User | UserNotFoundError
 
-type InvalidPasswordError {
-  message: String!
-}
-
-union LoginResult = InvalidPasswordError | User | UserNotFoundError
-
 enum MajorityType {
   QUALIFIED
   SIMPLE
@@ -44,9 +38,6 @@ type Meeting {
 
 type Mutation {
   castVote(alternativeId: String!, votationId: String!): Vote
-  createUser(user: AddUserInput!): User
-  login(email: String!, password: String!): LoginResult
-  verifyUserEmail(email: String!): Boolean
 }
 
 type Participant {
