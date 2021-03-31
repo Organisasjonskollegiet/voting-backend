@@ -1,0 +1,76 @@
+{
+    // Place your voting-backend workspace snippets here. Each snippet is defined under a snippet name and has a scope, prefix, body and
+    // description. Add comma separated ids of the languages where the snippet is applicable in the scope field. If scope
+    // is left empty or omitted, the snippet gets applied to all languages. The prefix is what is
+    // used to trigger the snippet and the body will be expanded and inserted. Possible variables are:
+    // $1, $2 for tab stops, $0 for the final cursor position, and ${1:label}, ${2:another} for placeholders.
+    // Placeholders with the same ids are connected.
+    // Example:
+    "Nexus-Resolve": {
+        "prefix": ["resolve"],
+        "body": ["resolve: async (_, __, ctx) => {", "\treturn null", "}"],
+        "description": "Nexus graphql resolve"
+    },
+    "NexusMutation": {
+        "prefix": ["mutation"],
+        "body": [
+            "export const $1 = mutationField('$2', {",
+            "\ttype: $3,",
+            "\tdescription: '',",
+            "\targs: { ${4:arg_name} : ${5:arg_type}},",
+            "\tresolve: async (_, {$4}, ctx) => {",
+            "\t\t${0:return null}",
+            "\t}",
+            "})"
+        ]
+    },
+    "NexusMutationWithoutArgs": {
+        "prefix": ["mutation-no-args"],
+        "body": [
+            "export const $1 = mutationField('$2', {",
+            "\ttype: $3,",
+            "\tdescription: '',",
+            "\tresolve: async (_, __, ctx) => {",
+            "\t\t${0:return null}",
+            "\t}",
+            "})"
+        ]
+    },
+    "NexusQuery": {
+        "prefix": ["query"],
+        "body": [
+            "export const $1 = queryField('$2', {",
+            "\ttype: $3,",
+            "\tdescription: '',",
+            "\targs: { ${4:arg_name} : ${5:arg_type}},",
+            "\tresolve: async (_, {$4}, ctx) => {",
+            "\t\t${0:return null}",
+            "\t}",
+            "})"
+        ]
+    },
+    "NexusQueryWithoutArgs": {
+        "prefix": ["query-no-args"],
+        "body": [
+            "export const $1 = queryField('$2', {",
+            "\ttype: $3,",
+            "\tdescription: '',",
+            "\tresolve: async (_, __, ctx) => {",
+            "\t\t${0:return null}",
+            "\t}",
+            "})"
+        ]
+    },
+    "NexusObjectTypes": {
+        "prefix": ["objectType"],
+        "body": [
+            "export const $1 = objectType({",
+            "\tname: '$2',",
+            "\tdescription: 'Another object',",
+            "\tdefinition(t) {",
+            "\t\t $0",
+            "\t}",
+            "})"
+        ]
+    }
+}
