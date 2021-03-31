@@ -66,6 +66,7 @@ export interface NexusGenObjects {
   Query: {};
   User: { // root type
     email: string; // String!
+    emailVerified: boolean; // Boolean!
     id: string; // ID!
   }
   UserNotFoundError: { // root type
@@ -95,7 +96,7 @@ export interface NexusGenInterfaces {
 
 export interface NexusGenUnions {
   GetUserResult: core.Discriminate<'User', 'required'> | core.Discriminate<'UserNotFoundError', 'required'>;
-  LoginMutationResult: core.Discriminate<'InvalidPasswordError', 'required'> | core.Discriminate<'User', 'required'> | core.Discriminate<'UserNotFoundError', 'required'>;
+  LoginResult: core.Discriminate<'InvalidPasswordError', 'required'> | core.Discriminate<'User', 'required'> | core.Discriminate<'UserNotFoundError', 'required'>;
 }
 
 export type NexusGenRootTypes = NexusGenObjects & NexusGenUnions
@@ -126,7 +127,8 @@ export interface NexusGenFieldTypes {
   Mutation: { // field return type
     castVote: NexusGenRootTypes['Vote'] | null; // Vote
     createUser: NexusGenRootTypes['User'] | null; // User
-    login: NexusGenRootTypes['LoginMutationResult'] | null; // LoginMutationResult
+    login: NexusGenRootTypes['LoginResult'] | null; // LoginResult
+    verifyUserEmail: boolean | null; // Boolean
   }
   Participant: { // field return type
     isVotingEligible: boolean; // Boolean!
@@ -143,6 +145,7 @@ export interface NexusGenFieldTypes {
   }
   User: { // field return type
     email: string; // String!
+    emailVerified: boolean; // Boolean!
     id: string; // ID!
   }
   UserNotFoundError: { // field return type
@@ -196,7 +199,8 @@ export interface NexusGenFieldTypeNames {
   Mutation: { // field return type name
     castVote: 'Vote'
     createUser: 'User'
-    login: 'LoginMutationResult'
+    login: 'LoginResult'
+    verifyUserEmail: 'Boolean'
   }
   Participant: { // field return type name
     isVotingEligible: 'Boolean'
@@ -213,6 +217,7 @@ export interface NexusGenFieldTypeNames {
   }
   User: { // field return type name
     email: 'String'
+    emailVerified: 'Boolean'
     id: 'ID'
   }
   UserNotFoundError: { // field return type name
@@ -255,6 +260,9 @@ export interface NexusGenArgTypes {
       email: string; // String!
       password: string; // String!
     }
+    verifyUserEmail: { // args
+      email: string; // String!
+    }
   }
   Query: {
     alternativesByVotation: { // args
@@ -277,7 +285,7 @@ export interface NexusGenArgTypes {
 
 export interface NexusGenAbstractTypeMembers {
   GetUserResult: "User" | "UserNotFoundError"
-  LoginMutationResult: "InvalidPasswordError" | "User" | "UserNotFoundError"
+  LoginResult: "InvalidPasswordError" | "User" | "UserNotFoundError"
 }
 
 export interface NexusGenTypeInterfaces {

@@ -22,7 +22,7 @@ export const GetUserResult = unionType({
 });
 
 export const LoginResult = unionType({
-    name: 'LoginMutationResult',
+    name: 'LoginResult',
     definition(t) {
         t.members('User', 'UserNotFoundError', 'InvalidPasswordError');
     },

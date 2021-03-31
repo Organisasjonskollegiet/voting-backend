@@ -11,6 +11,7 @@ CREATE TYPE "Status" AS ENUM ('UPCOMING', 'ONGOING', 'ENDED');
 CREATE TABLE "User" (
     "id" TEXT NOT NULL,
     "email" VARCHAR(255) NOT NULL,
+    "emailVerified" BOOLEAN NOT NULL DEFAULT false,
     "password" TEXT NOT NULL,
 
     PRIMARY KEY ("id")
