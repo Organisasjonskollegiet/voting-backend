@@ -4,14 +4,14 @@ import { isAuthenticated, isParticipantOfMeeting, isParticipantOfVotation } from
 const permissions = shield(
     {
         Query: {
-            user: isAuthenticated,
-            meetings: isAuthenticated,
-            meetingsById: and(isAuthenticated, isParticipantOfMeeting),
-            votationsByMeeting: and(isAuthenticated, isParticipantOfMeeting),
-            alternativesByVotation: and(isAuthenticated, isParticipantOfVotation),
+            '*': isAuthenticated,
+            meetingsById: and(isParticipantOfMeeting),
+            votationsByMeeting: and(isParticipantOfMeeting),
+            alternativesByVotation: and(isParticipantOfVotation),
         },
         Mutation: {
-            castVote: and(isAuthenticated, isParticipantOfVotation),
+            '*': isAuthenticated,
+            castVote: and(isParticipantOfVotation),
         },
     },
     { allowExternalErrors: true }
