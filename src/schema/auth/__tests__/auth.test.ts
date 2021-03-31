@@ -7,27 +7,25 @@ test('developer sanity test', () => {
     expect(2 + 2).toEqual(4);
 });
 
-it('should return something 🤣', async () => {
-    const email = casual.email;
-    const username = casual.username;
-    const createUser = await ctx.client.request(
-        gql`
-            mutation AddUserTest($username: String!, $email: String!) {
-                addUser(user: { username: $username, email: $email }) {
-                    username
-                    email
-                }
-            }
-        `,
-        { email, username }
-    );
-    console.log(createUser);
-    expect(createUser).toMatchInlineSnapshot(`
-        Object {
-          "addUser": Object {
-            "email": "${email}",
-            "username": "${username}",
-          },
-        }
-    `);
-});
+// it('should return something 🤣', async () => {
+//     const email = casual.email;
+//     const createUser = await ctx.client.request(
+//         gql`
+//             mutation CreateUserTest($email: String!, $password: String!) {
+//                 createUser(user: { email: $email, password: $password }) {
+//                     email
+//                     emailVerified
+//                 }
+//             }
+//         `,
+//         { email, password: casual.password }
+//     );
+//     expect(createUser).toMatchInlineSnapshot(`
+//         Object {
+//           "createUser": Object {
+//             "email": "${email}",
+//             "emailVerified": false,
+//           },
+//         }
+//     `);
+// });

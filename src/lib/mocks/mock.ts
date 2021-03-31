@@ -3,8 +3,8 @@ import casual from 'casual';
 const simpleMock = {
     User: () => ({
         id: () => casual.uuid,
-        username: () => casual.username,
         email: () => casual.email,
+        password: () => '',
     }),
     Meeting: () => ({
         id: () => casual.uuid,

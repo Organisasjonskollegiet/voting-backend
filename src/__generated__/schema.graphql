@@ -5,7 +5,7 @@
 input AddUserInput {
   email: String!
   id: ID
-  username: String!
+  password: String!
 }
 
 type Alternative {
@@ -17,6 +17,8 @@ type Alternative {
 }
 
 scalar DateTime
+
+union GetUserResult = User | UserNotFoundError
 
 enum MajorityType {
   QUALIFIED
@@ -35,14 +37,13 @@ type Meeting {
 }
 
 type Mutation {
-  addUser(user: AddUserInput!): User
   castVote(alternativeId: String!, votationId: String!): Vote
 }
 
 type Participant {
   isVotingEligible: Boolean!
   role: Role!
-  user: User!
+  user: User
 }
 
 type Query {
@@ -53,7 +54,8 @@ type Query {
 
   """Find a meeting by id from YOUR meetings"""
   meetingsById(meetingId: String!): Meeting
-  user(id: ID!): User
+  user(id: ID!): GetUserResult
+  userByEmail(email: String!): GetUserResult
   votationsByMeeting(meetingId: String!): [Votation]
 }
 
@@ -71,8 +73,12 @@ enum Status {
 
 type User {
   email: String!
+  emailVerified: Boolean!
   id: ID!
-  username: String!
+}
+
+type UserNotFoundError {
+  message: String!
 }
 
 type Votation {

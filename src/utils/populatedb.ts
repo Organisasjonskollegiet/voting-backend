@@ -1,6 +1,7 @@
 import { PrismaClient } from '@prisma/client';
 import 'dotenv/config';
 import casual from 'casual';
+import bcrypt from 'bcrypt';
 
 export const populatedb = async () => {
     const prisma = new PrismaClient();
@@ -8,9 +9,14 @@ export const populatedb = async () => {
 
     // Create 5 random users
     const users = await Promise.all(
-        [...new Array(5)].map(
-            async () => await prisma.user.create({ data: { username: casual.name, email: casual.email } })
-        )
+        [...new Array(5)].map(async () => {
+            // Replicates a hashed password
+            const password = await bcrypt.hash(casual.password, 3);
+            const user = await prisma.user.create({
+                data: { email: casual.email, password: password },
+            });
+            return user;
+        })
     );
     const meeting = await prisma.meeting.create({
         data: {

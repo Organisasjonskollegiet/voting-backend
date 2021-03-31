@@ -21,4 +21,9 @@ export const schema = makeSchema({
         module: require.resolve('../context'),
         export: 'Context',
     },
+    features: {
+        abstractTypeStrategies: {
+            __typename: true,
+        },
+    },
 });
