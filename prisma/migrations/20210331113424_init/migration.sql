@@ -10,8 +10,8 @@ CREATE TYPE "Status" AS ENUM ('UPCOMING', 'ONGOING', 'ENDED');
 -- CreateTable
 CREATE TABLE "User" (
     "id" TEXT NOT NULL,
-    "username" VARCHAR(255) NOT NULL,
     "email" VARCHAR(255) NOT NULL,
+    "password" TEXT NOT NULL,
 
     PRIMARY KEY ("id")
 );
