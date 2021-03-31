@@ -1,10 +1,9 @@
 import { queryField, nonNull, idArg, stringArg } from 'nexus';
-import { User } from '.';
-import { UserQueryResult } from './typedefs';
+import { GetUserResult } from './typedefs/results';
 import { EXPOSED_USER_FIELDS } from './utils';
 
 export const UserByIdQuery = queryField('user', {
-    type: UserQueryResult,
+    type: GetUserResult,
     args: {
         id: nonNull(idArg()),
     },
@@ -19,7 +18,7 @@ export const UserByIdQuery = queryField('user', {
 });
 
 export const UserByEmailQuery = queryField('userByEmail', {
-    type: UserQueryResult,
+    type: GetUserResult,
     args: {
         email: nonNull(stringArg()),
     },

@@ -18,6 +18,8 @@ type Alternative {
 
 scalar DateTime
 
+union GetUserResult = User | UserNotFoundError
+
 type InvalidPasswordError {
   message: String!
 }
@@ -60,8 +62,8 @@ type Query {
 
   """Find a meeting by id from YOUR meetings"""
   meetingsById(meetingId: String!): Meeting
-  user(id: ID!): UserQueryResult
-  userByEmail(email: String!): UserQueryResult
+  user(id: ID!): GetUserResult
+  userByEmail(email: String!): GetUserResult
   votationsByMeeting(meetingId: String!): [Votation]
 }
 
@@ -85,8 +87,6 @@ type User {
 type UserNotFoundError {
   message: String!
 }
-
-union UserQueryResult = User | UserNotFoundError
 
 type Votation {
   alternatives: [Alternative]

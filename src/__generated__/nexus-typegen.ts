@@ -94,8 +94,8 @@ export interface NexusGenInterfaces {
 }
 
 export interface NexusGenUnions {
+  GetUserResult: core.Discriminate<'User', 'required'> | core.Discriminate<'UserNotFoundError', 'required'>;
   LoginMutationResult: core.Discriminate<'InvalidPasswordError', 'required'> | core.Discriminate<'User', 'required'> | core.Discriminate<'UserNotFoundError', 'required'>;
-  UserQueryResult: core.Discriminate<'User', 'required'> | core.Discriminate<'UserNotFoundError', 'required'>;
 }
 
 export type NexusGenRootTypes = NexusGenObjects & NexusGenUnions
@@ -137,8 +137,8 @@ export interface NexusGenFieldTypes {
     alternativesByVotation: Array<NexusGenRootTypes['Alternative'] | null> | null; // [Alternative]
     meetings: Array<NexusGenRootTypes['Meeting'] | null>; // [Meeting]!
     meetingsById: NexusGenRootTypes['Meeting'] | null; // Meeting
-    user: NexusGenRootTypes['UserQueryResult'] | null; // UserQueryResult
-    userByEmail: NexusGenRootTypes['UserQueryResult'] | null; // UserQueryResult
+    user: NexusGenRootTypes['GetUserResult'] | null; // GetUserResult
+    userByEmail: NexusGenRootTypes['GetUserResult'] | null; // GetUserResult
     votationsByMeeting: Array<NexusGenRootTypes['Votation'] | null> | null; // [Votation]
   }
   User: { // field return type
@@ -207,8 +207,8 @@ export interface NexusGenFieldTypeNames {
     alternativesByVotation: 'Alternative'
     meetings: 'Meeting'
     meetingsById: 'Meeting'
-    user: 'UserQueryResult'
-    userByEmail: 'UserQueryResult'
+    user: 'GetUserResult'
+    userByEmail: 'GetUserResult'
     votationsByMeeting: 'Votation'
   }
   User: { // field return type name
@@ -276,8 +276,8 @@ export interface NexusGenArgTypes {
 }
 
 export interface NexusGenAbstractTypeMembers {
+  GetUserResult: "User" | "UserNotFoundError"
   LoginMutationResult: "InvalidPasswordError" | "User" | "UserNotFoundError"
-  UserQueryResult: "User" | "UserNotFoundError"
 }
 
 export interface NexusGenTypeInterfaces {

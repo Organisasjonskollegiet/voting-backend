@@ -1,17 +1,18 @@
 import { nonNull, mutationField, stringArg } from 'nexus';
-import { AddUserInputType, User } from './';
+import { User } from './';
 import bcrypt from 'bcrypt';
 import { EXPOSED_USER_FIELDS } from './utils';
-import { LoginMutationResult } from './typedefs';
+import { AddUserInputType } from './typedefs';
+import { LoginResult } from './typedefs/results';
 
 export const CreateUserMutation = mutationField('createUser', {
     type: User,
     args: { user: nonNull(AddUserInputType) },
     resolve: async (_, args, ctx) => {
-        const { email, id, password } = args.user;
+        const { email, password } = args.user;
         const hashedPassword = await bcrypt.hash(password, 10);
         const user = await ctx.prisma.user.create({
-            data: { id: id || undefined, email, password: hashedPassword },
+            data: { id: undefined, email, password: hashedPassword },
             select: EXPOSED_USER_FIELDS,
         });
         return user;
@@ -19,7 +20,7 @@ export const CreateUserMutation = mutationField('createUser', {
 });
 
 export const LoginMutation = mutationField('login', {
-    type: LoginMutationResult,
+    type: LoginResult,
     args: { email: nonNull(stringArg()), password: nonNull(stringArg()) },
     resolve: async (_, args, ctx) => {
         const { email, password } = args;
