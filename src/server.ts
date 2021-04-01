@@ -35,7 +35,7 @@ export const createGraphqlServer = async (server: ApolloServer, prisma: PrismaCl
     if (process.env.NODE_ENV != 'development') await prisma.$connect();
     // We need to turn the express app into an httpserver to use websockets
     const ws = createServer(app);
-    server.applyMiddleware({ app, path: '/graphql' });
+    server.applyMiddleware({ app, path: '/' });
     server.installSubscriptionHandlers(ws);
     return ws;
 };
