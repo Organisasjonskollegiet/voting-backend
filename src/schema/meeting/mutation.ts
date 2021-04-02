@@ -6,7 +6,7 @@ export const CreateMeetingInput = inputObjectType({
     definition(t) {
         t.nonNull.string('title');
         t.nonNull.datetime('startTime');
-        t.string('description');
+        t.nonNull.string('description', { default: 'Ingen beskrivelse satt.' });
     },
 });
 
@@ -20,7 +20,6 @@ export const CreateMeetingMutation = mutationField('createMeeting', {
         const createdMeeting = await ctx.prisma.meeting.create({
             data: {
                 ...meeting,
-                description: meeting.description || 'Ingen beskrivelse satt.',
                 ownerId: ctx.userId,
                 status: 'UPCOMING',
                 participants: {

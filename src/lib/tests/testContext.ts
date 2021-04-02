@@ -70,8 +70,7 @@ function prismaTestContext() {
 
         async after() {
             // Drop the schema after the tests have completed
-            // execSync(`${prismaBinary} migrate reset --force`);
-            await prisma.user.deleteMany();
+            execSync(`${prismaBinary} migrate reset --force`);
             // Release the Prisma Client connection
             await prismaClient?.$disconnect();
         },

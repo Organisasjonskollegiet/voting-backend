@@ -17,7 +17,7 @@ type Alternative {
 }
 
 input CreateMeetingInput {
-  description: String
+  description: String! = "Ingen beskrivelse satt."
   startTime: DateTime!
   title: String!
 }

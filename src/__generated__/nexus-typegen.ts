@@ -40,7 +40,7 @@ export interface NexusGenInputs {
     password: string; // String!
   }
   CreateMeetingInput: { // input type
-    description?: string | null; // String
+    description: string; // String!
     startTime: NexusGenScalars['DateTime']; // DateTime!
     title: string; // String!
   }
