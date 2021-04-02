@@ -1,16 +1,15 @@
 import { objectType, list } from 'nexus';
 import { Meeting as MeetingModel, Participant as ParticipantModel } from '@prisma/client';
-import { Role, Status } from '../enums';
-import { Votation } from '../votation';
-import { User } from '../auth';
-import { EXPOSED_USER_FIELDS } from '../auth/utils';
+import { User } from '../../auth';
+import { EXPOSED_USER_FIELDS } from '../../auth/utils';
+import { Votation } from '../../votation';
 
 export const Meeting = objectType({
     name: 'Meeting',
     definition: (t) => {
         t.nonNull.id('id');
         t.nonNull.string('title');
-        t.model.startTime();
+        t.nonNull.datetime('startTime');
         t.string('description');
         t.nonNull.model.owner();
         t.field('votations', {
@@ -21,7 +20,7 @@ export const Meeting = objectType({
                 return votation;
             },
         });
-        t.nonNull.field('status', { type: Status });
+        t.nonNull.field('status', { type: 'Status' });
         t.nonNull.field('participants', {
             type: list(Participant),
             resolve: async (source, __, ctx) => {
@@ -40,7 +39,7 @@ export const Meeting = objectType({
 export const Participant = objectType({
     name: 'Participant',
     definition(t) {
-        t.nonNull.field('role', { type: Role });
+        t.nonNull.field('role', { type: 'Role' });
         t.nonNull.boolean('isVotingEligible');
         t.field('user', {
             type: User,

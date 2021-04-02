@@ -4,10 +4,13 @@ import * as UserSchema from './auth/';
 import * as VotationSchema from './votation/';
 import * as MeetingSchema from './meeting';
 import * as Enums from './enums';
+import { GQLDateTime } from './scalars';
 import { nexusPrisma } from 'nexus-plugin-prisma';
+import { applyMiddleware } from 'graphql-middleware';
+import permissions from '../lib/permissions';
 
-export const schema = makeSchema({
-    types: [Enums, UserSchema, VotationSchema, MeetingSchema], // 1
+const baseSchema = makeSchema({
+    types: [GQLDateTime, Enums, UserSchema, VotationSchema, MeetingSchema], // 1
     outputs: {
         typegen: join(__dirname, '../__generated__', 'nexus-typegen.ts'), // 2
         schema: join(__dirname, '../__generated__', 'schema.graphql'), // 3
@@ -27,3 +30,5 @@ export const schema = makeSchema({
         },
     },
 });
+
+export const protectedSchema = applyMiddleware(baseSchema, permissions);
