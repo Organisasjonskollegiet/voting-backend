@@ -2,7 +2,6 @@ import { Request } from 'express';
 import { verifyToken } from './verifyToken';
 
 export const userFromRequest = async (req: Request) => {
-    console.log(req.cookies);
     const token = req.cookies['jwt'] || '';
     if (token) {
         const decoded = await verifyToken(token);
