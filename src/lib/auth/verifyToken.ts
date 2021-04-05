@@ -1,7 +1,6 @@
 import { RsaSigningKey } from 'jwks-rsa';
 import jwt, { GetPublicKeyOrSecret } from 'jsonwebtoken';
 import jwksClient from 'jwks-rsa';
-import { Request } from 'express';
 
 interface DecodedToken {
     iss: string;
@@ -40,15 +39,4 @@ export const verifyToken = async (bearerToken: string) => {
             }
         );
     });
-};
-
-export const userFromRequest = async (req: Request) => {
-    const authHeader = req?.headers.authorization || '';
-    if (authHeader) {
-        const token = authHeader.split(' ')[1];
-        const decoded = await verifyToken(token);
-        if (!decoded) throw new Error('Could not find a valid token.');
-        return decoded.sub;
-    }
-    return null;
 };
