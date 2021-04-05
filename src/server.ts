@@ -7,7 +7,6 @@ import { userFromRequest } from './lib/auth/getUser';
 import simpleMock from './lib/mocks/mock';
 import { protectedSchema } from './schema';
 import cors from 'cors';
-import cookieParser from 'cookie-parser';
 import 'dotenv/config';
 
 export const createApollo = (prisma: PrismaClient) => {
@@ -36,16 +35,16 @@ export const createGraphqlServer = async (server: ApolloServer, prisma: PrismaCl
                 // allow requests with no origin
                 // (like mobile apps or curl requests)
                 if (!origin) return callback(null, true);
-                if (!(allowedOrigins.includes(origin) || origin.match(/https:\/\/([\w-]+)--ecclesia.netlify.app/g))) {
+                if (allowedOrigins.includes(origin) || origin.match(/https:\/\/([\w-]+)--ecclesia.netlify.app/g)) {
+                    callback(null, true);
+                } else {
                     const msg = 'The CORS policy for this site does not ' + 'allow access from the specified Origin.';
                     return callback(new Error(msg), false);
                 }
-                callback(null, true);
             },
-            credentials: true,
         })
     );
-    app.use(cookieParser());
+
     if (process.env.MOCKING != 'true') await prisma.$connect();
     // Connect to database
     if (process.env.NODE_ENV != 'development') await prisma.$connect();
