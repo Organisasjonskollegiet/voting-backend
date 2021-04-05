@@ -3,9 +3,11 @@
 import { PrismaClient } from '@prisma/client';
 import { ApolloServer } from 'apollo-server-express';
 import express from 'express';
-import { userFromRequest } from './utils/authUtils';
+import { userFromRequest } from './lib/auth/getUser';
 import simpleMock from './lib/mocks/mock';
 import { protectedSchema } from './schema';
+import cors from 'cors';
+import cookieParser from 'cookie-parser';
 import 'dotenv/config';
 
 export const createApollo = (prisma: PrismaClient) => {
@@ -24,12 +26,31 @@ export const createApollo = (prisma: PrismaClient) => {
     return server;
 };
 
+const allowedOrigins = ['http://localhost:3000', 'https://ecclesia.netlify.app'];
+
 export const createGraphqlServer = async (server: ApolloServer, prisma: PrismaClient) => {
     const app = express();
+    app.use(
+        cors({
+            origin: (origin, callback) => {
+                // allow requests with no origin
+                // (like mobile apps or curl requests)
+                if (!origin) return callback(null, true);
+                if (!allowedOrigins.includes(origin) || origin.match(/https:\/\/([\w-]+)--ecclesia.netlify.app/g)) {
+                    const msg = 'The CORS policy for this site does not ' + 'allow access from the specified Origin.';
+                    return callback(new Error(msg), false);
+                }
+                callback(null, true);
+            },
+            credentials: true,
+        })
+    );
+    app.use(cookieParser());
     if (process.env.MOCKING != 'true') await prisma.$connect();
     // Connect to database
     if (process.env.NODE_ENV != 'development') await prisma.$connect();
-    // We need to turn the express app into an httpserver to use websockets
-    server.applyMiddleware({ app, path: '/graphql' });
+    // We need to turn the express app into an httpserver to use websockets.
+    // We also overwrite  Apollo Server's inbult cors
+    server.applyMiddleware({ app, path: '/graphql', cors: false });
     return app;
 };
