@@ -36,7 +36,7 @@ export const createGraphqlServer = async (server: ApolloServer, prisma: PrismaCl
                 // allow requests with no origin
                 // (like mobile apps or curl requests)
                 if (!origin) return callback(null, true);
-                if (!allowedOrigins.includes(origin) || origin.match(/https:\/\/([\w-]+)--ecclesia.netlify.app/g)) {
+                if (!allowedOrigins.includes(origin) || !origin.match(/https:\/\/([\w-]+)--ecclesia.netlify.app/g)) {
                     const msg = 'The CORS policy for this site does not ' + 'allow access from the specified Origin.';
                     return callback(new Error(msg), false);
                 }
