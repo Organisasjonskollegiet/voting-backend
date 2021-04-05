@@ -26,11 +26,22 @@ export const createApollo = (prisma: PrismaClient) => {
     return server;
 };
 
+const allowedOrigins = ['http://localhost:3000', 'https://ecclesia.netlify.app'];
+
 export const createGraphqlServer = async (server: ApolloServer, prisma: PrismaClient) => {
     const app = express();
     app.use(
         cors({
-            origin: 'http://localhost:3000',
+            origin: (origin, callback) => {
+                // allow requests with no origin
+                // (like mobile apps or curl requests)
+                if (!origin) return callback(null, true);
+                if (!allowedOrigins.includes(origin) || origin.match(/https:\/\/([\w-]+)--ecclesia.netlify.app/g)) {
+                    const msg = 'The CORS policy for this site does not ' + 'allow access from the specified Origin.';
+                    return callback(new Error(msg), false);
+                }
+                callback(null, true);
+            },
             credentials: true,
         })
     );
