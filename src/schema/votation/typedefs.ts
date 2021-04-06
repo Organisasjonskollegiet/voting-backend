@@ -1,4 +1,4 @@
-import { objectType, list } from 'nexus';
+import { objectType, list, nonNull } from 'nexus';
 import { Alternative as AlternativeModel, Vote as VoteModel, Votation as VotationModel } from '@prisma/client';
 import { MajorityType, Status } from '../enums';
 import { Meeting } from '../meeting';
@@ -82,19 +82,12 @@ export const Alternative = objectType({
         t.nonNull.id('id');
         t.nonNull.string('text');
         t.nonNull.string('votationId');
-        t.field('votation', {
-            type: Votation,
-            resolve: async (source, __, ctx) => {
-                const { votationId } = source as AlternativeModel;
-                const votation = ctx.prisma.votation.findUnique({ where: { id: votationId } });
-                return votation;
-            },
-        });
+        // TODO: Restrict access to vote field to counters and admins only
         t.field('votes', {
-            type: list(Vote),
+            type: 'Int',
             resolve: async (source, __, ctx) => {
                 const { id } = source as AlternativeModel;
-                const votes = ctx.prisma.vote.findMany({ where: { alternativeId: id } });
+                const votes = await ctx.prisma.vote.count({ where: { alternativeId: id } });
                 return votes;
             },
         });

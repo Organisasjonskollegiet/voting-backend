@@ -11,9 +11,8 @@ input AddUserInput {
 type Alternative {
   id: ID!
   text: String!
-  votation: Votation
   votationId: String!
-  votes: [Vote]
+  votes: Int
 }
 
 input CreateMeetingInput {
@@ -78,7 +77,6 @@ type Query {
   """Find a meeting by id from YOUR meetings"""
   meetingsById(meetingId: String!): Meeting
   user: GetUserResult
-  userByEmail(email: String!): GetUserResult
   votationsByMeeting(meetingId: String!): [Votation]
 }
 
