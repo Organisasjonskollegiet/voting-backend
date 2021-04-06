@@ -1,17 +1,20 @@
 import getPort, { makeRange } from 'get-port';
 import { createApollo, createGraphqlServer } from '../../server';
 import { Server } from 'http';
-import { PrismaClient } from '@prisma/client';
+import { PrismaClient, User } from '@prisma/client';
 import { join } from 'path';
 import { execSync } from 'child_process';
 import 'dotenv/config';
 import { GraphQLClient } from 'graphql-request';
+import { ApolloServer } from 'apollo-server-express';
+import { protectedSchema } from '../../schema';
 
 const prisma = new PrismaClient();
 
 type TestContext = {
     client: GraphQLClient;
     prisma: PrismaClient;
+    user: User;
 };
 
 export const createTestContext = (): TestContext => {
@@ -20,11 +23,13 @@ export const createTestContext = (): TestContext => {
     const prismaCtx = prismaTestContext();
 
     beforeEach(async () => {
-        const client = await graphqlCtx.before();
         const prisma = await prismaCtx.before();
+        const user = await prisma.user.create({ data: { email: 'test@test.com', password: 'hunter2' } });
+        const client = await graphqlCtx.before(user.id);
         Object.assign(ctx, {
             client,
             prisma,
+            user,
         });
     });
 
@@ -39,9 +44,15 @@ const graphqlTestContext = () => {
     let serverInstance: Server | null = null;
 
     return {
-        async before() {
+        async before(id: string) {
             const port = await getPort({ port: makeRange(4001, 6000) }); // 4
-            const apollo = createApollo(prisma);
+            const apollo = new ApolloServer({
+                context: { userId: id, prisma },
+                schema: protectedSchema,
+                subscriptions: {
+                    path: '/subscriptions',
+                },
+            });
             const server = await createGraphqlServer(apollo, prisma);
             serverInstance = server.listen({ port }); // 5
             serverInstance.on('close', async () => {
