@@ -3,6 +3,7 @@ on: push
 
 jobs:
     lint:
+        runs-on: ubuntu-latest
         name: Run linters
         steps:
             - name: Check out Git repository
@@ -56,4 +57,4 @@ jobs:
             - name: Run tests
               run: yarn test
               env:
-                  DATABASE_URL: 'postgresql://postgres:votingsecret@${{ postgres }}:5432/votingdb'
+                  DATABASE_URL: 'postgresql://postgres:votingsecret@localhost:5432/votingdb'
