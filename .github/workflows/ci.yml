@@ -29,7 +29,6 @@ jobs:
                   github_token: ${{ secrets.GITHUB_TOKEN }}
     test:
         runs-on: ubuntu-latest
-        container: node:14-alpine
         services:
             # Label used to access the service container
             postgres:
