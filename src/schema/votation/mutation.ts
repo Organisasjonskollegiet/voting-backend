@@ -1,6 +1,21 @@
-import { mutationField, nonNull, stringArg } from 'nexus';
+import { inputObjectType, mutationField, nonNull, stringArg } from 'nexus';
 import { Vote } from './';
+import { Votation } from './typedefs';
 import { userHasVoted, checkAlternativeExists } from './utils';
+import { MajorityType } from '../enums';
+
+export const CreateVotationInput = inputObjectType({
+    name: 'CreateVotationInput',
+    definition(t) {
+        t.nonNull.string('title');
+        t.nonNull.string('description');
+        t.nonNull.int('order');
+        t.nonNull.boolean('blankVotes');
+        t.nonNull.field('majorityType', { type: MajorityType });
+        t.nonNull.int('majorityThreshold');
+        t.nonNull.string('meetingId');
+    },
+});
 
 export const CastVoteMutation = mutationField('castVote', {
     type: Vote,
@@ -21,5 +36,20 @@ export const CastVoteMutation = mutationField('castVote', {
         });
         const vote = await ctx.prisma.vote.create({ data: { alternativeId } });
         return vote;
+    },
+});
+
+export const CreateVotationMutation = mutationField('createVotation', {
+    type: Votation,
+    args: {
+        votation: nonNull(CreateVotationInput),
+    },
+    resolve: async (_, { votation }, ctx) => {
+        const createdVotation = await ctx.prisma.votation.create({
+            data: {
+                ...votation,
+            },
+        });
+        return createdVotation;
     },
 });

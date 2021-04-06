@@ -44,6 +44,15 @@ export interface NexusGenInputs {
     startTime: NexusGenScalars['DateTime']; // DateTime!
     title: string; // String!
   }
+  CreateVotationInput: { // input type
+    blankVotes: boolean; // Boolean!
+    description: string; // String!
+    majorityThreshold: number; // Int!
+    majorityType: NexusGenEnums['MajorityType']; // MajorityType!
+    meetingId: string; // String!
+    order: number; // Int!
+    title: string; // String!
+  }
 }
 
 export interface NexusGenEnums {
@@ -139,6 +148,7 @@ export interface NexusGenFieldTypes {
   Mutation: { // field return type
     castVote: NexusGenRootTypes['Vote'] | null; // Vote
     createMeeting: NexusGenRootTypes['Meeting'] | null; // Meeting
+    createVotation: NexusGenRootTypes['Votation'] | null; // Votation
   }
   Participant: { // field return type
     isVotingEligible: boolean; // Boolean!
@@ -206,6 +216,7 @@ export interface NexusGenFieldTypeNames {
   Mutation: { // field return type name
     castVote: 'Vote'
     createMeeting: 'Meeting'
+    createVotation: 'Votation'
   }
   Participant: { // field return type name
     isVotingEligible: 'Boolean'
@@ -260,6 +271,9 @@ export interface NexusGenArgTypes {
     }
     createMeeting: { // args
       meeting: NexusGenInputs['CreateMeetingInput']; // CreateMeetingInput!
+    }
+    createVotation: { // args
+      votation: NexusGenInputs['CreateVotationInput']; // CreateVotationInput!
     }
   }
   Query: {
