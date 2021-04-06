@@ -9,13 +9,4 @@ export const User = objectType({
     },
 });
 
-export const AddUserInputType = inputObjectType({
-    name: 'AddUserInput',
-    definition(t) {
-        t.id('id');
-        t.nonNull.string('email');
-        t.nonNull.string('password');
-    },
-});
-
 export * from './results';
