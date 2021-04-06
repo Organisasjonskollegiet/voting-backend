@@ -147,6 +147,7 @@ export interface NexusGenFieldTypes {
   }
   Mutation: { // field return type
     castVote: NexusGenRootTypes['Vote'] | null; // Vote
+    createAlternative: NexusGenRootTypes['Alternative'] | null; // Alternative
     createMeeting: NexusGenRootTypes['Meeting'] | null; // Meeting
     createVotation: NexusGenRootTypes['Votation'] | null; // Votation
   }
@@ -215,6 +216,7 @@ export interface NexusGenFieldTypeNames {
   }
   Mutation: { // field return type name
     castVote: 'Vote'
+    createAlternative: 'Alternative'
     createMeeting: 'Meeting'
     createVotation: 'Votation'
   }
@@ -267,6 +269,10 @@ export interface NexusGenArgTypes {
   Mutation: {
     castVote: { // args
       alternativeId: string; // String!
+      votationId: string; // String!
+    }
+    createAlternative: { // args
+      text: string; // String!
       votationId: string; // String!
     }
     createMeeting: { // args

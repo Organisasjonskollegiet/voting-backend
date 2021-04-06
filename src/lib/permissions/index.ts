@@ -1,5 +1,11 @@
 import { shield, and } from 'graphql-shield';
-import { isAuthenticated, isParticipantOfMeeting, isParticipantOfVotation, isAdmin } from './rules';
+import {
+    isAuthenticated,
+    isParticipantOfMeeting,
+    isParticipantOfVotation,
+    isAdminOfMeeting,
+    isAdminOfVotation,
+} from './rules';
 
 const permissions = shield(
     {
@@ -12,7 +18,8 @@ const permissions = shield(
         Mutation: {
             '*': isAuthenticated,
             castVote: and(isParticipantOfVotation),
-            createVotation: and(isAdmin),
+            createVotation: and(isAdminOfMeeting),
+            createAlternative: and(isAdminOfVotation),
         },
     },
     { allowExternalErrors: true }
