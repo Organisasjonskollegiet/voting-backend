@@ -46,9 +46,7 @@ export const CreateVotationMutation = mutationField('createVotation', {
     },
     resolve: async (_, { votation }, ctx) => {
         const createdVotation = await ctx.prisma.votation.create({
-            data: {
-                ...votation,
-            },
+            data: votation,
         });
         return createdVotation;
     },

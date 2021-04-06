@@ -39,7 +39,6 @@ export const is_voting_eligible = rule({ cache: 'contextual' })(async (_, { vota
  * Rule: A is participant of type ADMIN of the meeting in @args
  */
 export const isAdmin = rule({ cache: 'contextual' })(async (_, { votation }, ctx: Context) => {
-    console.log(votation.meetingId);
     const particpant = await ctx.prisma.participant.findFirst({
         where: { userId: ctx.userId, meetingId: votation.meetingId },
     });
