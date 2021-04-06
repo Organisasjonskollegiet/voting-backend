@@ -76,9 +76,9 @@ model Votation {
   description       String
   order             Int
   status            Status        @default(UPCOMING)
-  blankVotes        Boolean       @default(false)
-  majorityType      MajorityType  @default(SIMPLE)
-  majorityThreshold Int           @default(50)
+  blankVotes        Boolean
+  majorityType      MajorityType
+  majorityThreshold Int
   meetingId         String        @db.Uuid
   meeting           Meeting       @relation(fields: [meetingId], references: [id])
   hasVoted          HasVoted[]
