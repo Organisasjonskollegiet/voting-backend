@@ -38,9 +38,16 @@ export const is_voting_eligible = rule({ cache: 'contextual' })(async (_, { vota
 /**
  * Rule: A is participant of type ADMIN of the meeting in @args
  */
-export const isAdmin = rule({ cache: 'contextual' })(async (_, { votation }, ctx: Context) => {
+export const isAdminOfMeeting = rule({ cache: 'contextual' })(async (_, { votation }, ctx: Context) => {
     const particpant = await ctx.prisma.participant.findFirst({
         where: { userId: ctx.userId, meetingId: votation.meetingId },
+    });
+    return particpant ? particpant.role === 'ADMIN' : false;
+});
+
+export const isAdminOfVotation = rule({ cache: 'contextual' })(async (_, { votationId }, ctx: Context) => {
+    const particpant = await ctx.prisma.participant.findFirst({
+        where: { userId: ctx.userId, meeting: { votations: { some: { id: votationId } } } },
     });
     return particpant ? particpant.role === 'ADMIN' : false;
 });
