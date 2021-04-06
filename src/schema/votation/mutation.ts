@@ -30,7 +30,7 @@ export const CastVoteMutation = mutationField('castVote', {
         if (!alternativeExists) throw new Error('Alternative does not exist.');
         await ctx.prisma.hasVoted.create({
             data: {
-                userId: ctx.userId,
+                userId: ctx.user.id,
                 votationId,
             },
         });

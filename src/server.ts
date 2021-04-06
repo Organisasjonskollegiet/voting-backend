@@ -1,19 +1,22 @@
 // api/server.ts
 
 import { PrismaClient } from '@prisma/client';
-import { ApolloServer } from 'apollo-server-express';
+import { ApolloServer, AuthenticationError } from 'apollo-server-express';
 import express from 'express';
 import { userFromRequest } from './lib/auth/getUser';
 import simpleMock from './lib/mocks/mock';
 import { protectedSchema } from './schema';
 import cors from 'cors';
 import 'dotenv/config';
+import { Context } from './context';
 
 export const createApollo = (prisma: PrismaClient) => {
     const server = new ApolloServer({
-        context: async ({ req }) => {
+        context: async ({ req }): Promise<Context> => {
             const userId = await userFromRequest(req);
-            return { userId, prisma };
+            const user = await prisma.user.findUnique({ where: { id: userId } });
+            if (!user) throw new Error('Request is missing authorization headers');
+            return { user, prisma };
         },
         schema: protectedSchema,
         mocks: process.env.MOCKING == 'true' && simpleMock,

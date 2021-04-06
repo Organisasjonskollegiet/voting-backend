@@ -2,12 +2,6 @@
 ### Do not make changes to this file directly
 
 
-input AddUserInput {
-  email: String!
-  id: ID
-  password: String!
-}
-
 type Alternative {
   id: ID!
   text: String!
@@ -74,7 +68,7 @@ type Query {
   """Find meetings you are participating in"""
   meetings: [Meeting]!
 
-  """Find a meeting by id from YOUR meetings"""
+  """Find a meeting by id from meetings youre participating in"""
   meetingsById(meetingId: String!): Meeting
   user: GetUserResult
   votationsByMeeting(meetingId: String!): [Votation]

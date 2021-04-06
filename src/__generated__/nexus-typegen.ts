@@ -34,11 +34,6 @@ declare global {
 }
 
 export interface NexusGenInputs {
-  AddUserInput: { // input type
-    email: string; // String!
-    id?: string | null; // ID
-    password: string; // String!
-  }
   CreateMeetingInput: { // input type
     description: string; // String!
     startTime: NexusGenScalars['DateTime']; // DateTime!
