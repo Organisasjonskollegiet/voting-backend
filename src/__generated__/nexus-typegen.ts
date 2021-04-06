@@ -283,9 +283,6 @@ export interface NexusGenArgTypes {
     meetingsById: { // args
       meetingId: string; // String!
     }
-    user: { // args
-      id: string; // ID!
-    }
     userByEmail: { // args
       email: string; // String!
     }

@@ -77,7 +77,7 @@ type Query {
 
   """Find a meeting by id from YOUR meetings"""
   meetingsById(meetingId: String!): Meeting
-  user(id: ID!): GetUserResult
+  user: GetUserResult
   userByEmail(email: String!): GetUserResult
   votationsByMeeting(meetingId: String!): [Votation]
 }
