@@ -25,7 +25,7 @@ export const createApollo = (prisma: PrismaClient) => {
     return server;
 };
 
-const allowedOrigins = ['http://localhost:3000', 'https://ecclesia.netlify.app'];
+const allowedOrigins = ['http://localhost:3000', 'http://localhost:4000', 'https://ecclesia.netlify.app'];
 
 export const createGraphqlServer = async (server: ApolloServer, prisma: PrismaClient) => {
     const app = express();
@@ -35,6 +35,7 @@ export const createGraphqlServer = async (server: ApolloServer, prisma: PrismaCl
                 // allow requests with no origin
                 // (like mobile apps or curl requests)
                 if (!origin) return callback(null, true);
+                // Either in the list of allowed origins, a preview deployment from netlify or on localhost
                 if (allowedOrigins.includes(origin) || origin.match(/https:\/\/([\w-]+)--ecclesia.netlify.app/g)) {
                     callback(null, true);
                 } else {
