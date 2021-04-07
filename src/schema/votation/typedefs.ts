@@ -53,17 +53,6 @@ export const Votation = objectType({
         t.nonNull.field('majorityType', { type: MajorityType });
         t.nonNull.int('majorityThreshold');
         t.nonNull.string('meetingId');
-        t.nonNull.field('meeting', {
-            type: Meeting,
-            resolve: async (source, __, ctx) => {
-                const { meetingId } = source as VotationModel;
-                const meeting = await ctx.prisma.meeting.findUnique({
-                    where: { id: meetingId },
-                    rejectOnNotFound: true,
-                });
-                return meeting;
-            },
-        });
         t.list.field('hasVoted', { type: User });
         t.list.field('alternatives', {
             type: Alternative,
