@@ -1,15 +1,5 @@
 import { list, nonNull, queryField, stringArg } from 'nexus';
-import { Votation, Alternative } from './typedefs';
-
-export const VotationsByMeetingQuery = queryField('votationsByMeeting', {
-    type: list(Votation),
-    args: {
-        meetingId: nonNull(stringArg()),
-    },
-    resolve: (_, { meetingId }, ctx) => {
-        return ctx.prisma.votation.findMany({ where: { meetingId } });
-    },
-});
+import { Alternative } from './typedefs';
 
 export const AlternativesByVotation = queryField('alternativesByVotation', {
     type: list(Alternative),

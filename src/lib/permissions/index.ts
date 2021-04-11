@@ -1,28 +1,28 @@
-import { shield, and } from 'graphql-shield';
+import { shield, and, or } from 'graphql-shield';
 import {
     isAuthenticated,
     isParticipantOfMeeting,
     isParticipantOfVotation,
     isAdminOfMeeting,
-    isAdminOfVotation,
+    isCounterOfMeeting,
 } from './rules';
 
 const permissions = shield(
     {
         Query: {
-            '*': isAuthenticated,
             meetingsById: and(isParticipantOfMeeting),
-            votationsByMeeting: and(isParticipantOfMeeting),
             alternativesByVotation: and(isParticipantOfVotation),
         },
         Mutation: {
-            '*': isAuthenticated,
             castVote: and(isParticipantOfVotation),
             createVotation: and(isAdminOfMeeting),
-            createAlternative: and(isAdminOfVotation),
+        },
+        Alternative: {
+            votes: or(isAdminOfMeeting, isCounterOfMeeting),
         },
     },
-    { allowExternalErrors: true }
+    // If rule is not defined, use isAuthenticated rule
+    { allowExternalErrors: true, fallbackRule: isAuthenticated }
 );
 
 export default permissions;

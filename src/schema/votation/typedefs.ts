@@ -1,7 +1,6 @@
-import { objectType, list } from 'nexus';
+import { objectType } from 'nexus';
 import { Alternative as AlternativeModel, Vote as VoteModel, Votation as VotationModel } from '@prisma/client';
 import { MajorityType, Status } from '../enums';
-import { Meeting } from '../meeting';
 import { User } from '../auth';
 
 export const Vote = objectType({
@@ -53,17 +52,6 @@ export const Votation = objectType({
         t.nonNull.field('majorityType', { type: MajorityType });
         t.nonNull.int('majorityThreshold');
         t.nonNull.string('meetingId');
-        t.nonNull.field('meeting', {
-            type: Meeting,
-            resolve: async (source, __, ctx) => {
-                const { meetingId } = source as VotationModel;
-                const meeting = await ctx.prisma.meeting.findUnique({
-                    where: { id: meetingId },
-                    rejectOnNotFound: true,
-                });
-                return meeting;
-            },
-        });
         t.list.field('hasVoted', { type: User });
         t.list.field('alternatives', {
             type: Alternative,
@@ -82,19 +70,11 @@ export const Alternative = objectType({
         t.nonNull.id('id');
         t.nonNull.string('text');
         t.nonNull.string('votationId');
-        t.field('votation', {
-            type: Votation,
-            resolve: async (source, __, ctx) => {
-                const { votationId } = source as AlternativeModel;
-                const votation = ctx.prisma.votation.findUnique({ where: { id: votationId } });
-                return votation;
-            },
-        });
         t.field('votes', {
-            type: list(Vote),
+            type: 'Int',
             resolve: async (source, __, ctx) => {
                 const { id } = source as AlternativeModel;
-                const votes = ctx.prisma.vote.findMany({ where: { alternativeId: id } });
+                const votes = await ctx.prisma.vote.count({ where: { alternativeId: id } });
                 return votes;
             },
         });

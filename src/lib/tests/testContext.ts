@@ -1,5 +1,5 @@
 import getPort, { makeRange } from 'get-port';
-import { createApollo, createGraphqlServer } from '../../server';
+import { createGraphqlServer } from '../../server';
 import { Server } from 'http';
 import { PrismaClient, User } from '@prisma/client';
 import { join } from 'path';
@@ -25,7 +25,7 @@ export const createTestContext = (): TestContext => {
     beforeEach(async () => {
         const prisma = await prismaCtx.before();
         const user = await prisma.user.create({ data: { email: 'test@test.com', password: 'hunter2' } });
-        const client = await graphqlCtx.before(user.id);
+        const client = await graphqlCtx.before(user);
         Object.assign(ctx, {
             client,
             prisma,
@@ -44,10 +44,10 @@ const graphqlTestContext = () => {
     let serverInstance: Server | null = null;
 
     return {
-        async before(id: string) {
+        async before(user: User) {
             const port = await getPort({ port: makeRange(4001, 6000) }); // 4
             const apollo = new ApolloServer({
-                context: { userId: id, prisma },
+                context: { user, prisma },
                 schema: protectedSchema,
                 subscriptions: {
                     path: '/subscriptions',
