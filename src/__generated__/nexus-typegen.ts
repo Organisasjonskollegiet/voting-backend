@@ -155,7 +155,6 @@ export interface NexusGenFieldTypes {
     meetings: Array<NexusGenRootTypes['Meeting'] | null>; // [Meeting]!
     meetingsById: NexusGenRootTypes['Meeting'] | null; // Meeting
     user: NexusGenRootTypes['GetUserResult'] | null; // GetUserResult
-    votationsByMeeting: Array<NexusGenRootTypes['Votation'] | null> | null; // [Votation]
   }
   User: { // field return type
     email: string; // String!
@@ -173,7 +172,6 @@ export interface NexusGenFieldTypes {
     id: string; // ID!
     majorityThreshold: number; // Int!
     majorityType: NexusGenEnums['MajorityType']; // MajorityType!
-    meeting: NexusGenRootTypes['Meeting']; // Meeting!
     meetingId: string; // String!
     order: number | null; // Int
     status: NexusGenEnums['Status']; // Status!
@@ -222,7 +220,6 @@ export interface NexusGenFieldTypeNames {
     meetings: 'Meeting'
     meetingsById: 'Meeting'
     user: 'GetUserResult'
-    votationsByMeeting: 'Votation'
   }
   User: { // field return type name
     email: 'String'
@@ -240,7 +237,6 @@ export interface NexusGenFieldTypeNames {
     id: 'ID'
     majorityThreshold: 'Int'
     majorityType: 'MajorityType'
-    meeting: 'Meeting'
     meetingId: 'String'
     order: 'Int'
     status: 'Status'
@@ -278,9 +274,6 @@ export interface NexusGenArgTypes {
       votationId: string; // String!
     }
     meetingsById: { // args
-      meetingId: string; // String!
-    }
-    votationsByMeeting: { // args
       meetingId: string; // String!
     }
   }
