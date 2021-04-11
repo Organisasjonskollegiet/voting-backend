@@ -1,8 +1,9 @@
 import { inputObjectType, mutationField, nonNull, stringArg } from 'nexus';
 import { Vote } from './';
-import { Votation } from './typedefs';
+import { Alternative, Votation } from './typedefs';
 import { userHasVoted, checkAlternativeExists } from './utils';
 import { MajorityType } from '../enums';
+import { stripIgnoredCharacters } from 'graphql';
 
 export const CreateVotationInput = inputObjectType({
     name: 'CreateVotationInput',
@@ -49,5 +50,19 @@ export const CreateVotationMutation = mutationField('createVotation', {
             data: votation,
         });
         return createdVotation;
+    },
+});
+
+export const CreateAlternativeMutation = mutationField('createAlternative', {
+    type: Alternative,
+    args: {
+        text: nonNull(stringArg()),
+        votationId: nonNull(stringArg()),
+    },
+    resolve: async (_, args, ctx) => {
+        const createdAlternative = await ctx.prisma.alternative.create({
+            data: args,
+        });
+        return createdAlternative;
     },
 });
