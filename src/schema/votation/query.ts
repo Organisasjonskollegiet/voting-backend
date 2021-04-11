@@ -1,5 +1,5 @@
 import { list, nonNull, queryField, stringArg } from 'nexus';
-import { Votation, Alternative } from './typedefs';
+import { Alternative } from './typedefs';
 
 export const AlternativesByVotation = queryField('alternativesByVotation', {
     type: list(Alternative),

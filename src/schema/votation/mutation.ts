@@ -3,7 +3,6 @@ import { Vote } from './';
 import { Alternative, Votation } from './typedefs';
 import { userHasVoted, checkAlternativeExists } from './utils';
 import { MajorityType } from '../enums';
-import { stripIgnoredCharacters } from 'graphql';
 
 export const CreateVotationInput = inputObjectType({
     name: 'CreateVotationInput',

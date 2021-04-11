@@ -1,5 +1,5 @@
 import getPort, { makeRange } from 'get-port';
-import { createApollo, createGraphqlServer } from '../../server';
+import { createGraphqlServer } from '../../server';
 import { Server } from 'http';
 import { PrismaClient, User } from '@prisma/client';
 import { join } from 'path';

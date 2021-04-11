@@ -1,7 +1,7 @@
 // api/server.ts
 
 import { PrismaClient } from '@prisma/client';
-import { ApolloServer, AuthenticationError } from 'apollo-server-express';
+import { ApolloServer } from 'apollo-server-express';
 import express from 'express';
 import { userFromRequest } from './lib/auth/getUser';
 import simpleMock from './lib/mocks/mock';
