@@ -71,7 +71,6 @@ export const Alternative = objectType({
         t.nonNull.id('id');
         t.nonNull.string('text');
         t.nonNull.string('votationId');
-        // TODO: Restrict access to vote field to counters and admins only
         t.field('votes', {
             type: 'Int',
             resolve: async (source, __, ctx) => {
