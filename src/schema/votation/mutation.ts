@@ -3,7 +3,6 @@ import { Vote } from './';
 import { Alternative, Votation } from './typedefs';
 import { userHasVoted, checkAlternativeExists } from './utils';
 import { MajorityType } from '../enums';
-import { stripIgnoredCharacters } from 'graphql';
 
 export const CreateVotationInput = inputObjectType({
     name: 'CreateVotationInput',
@@ -31,7 +30,7 @@ export const CastVoteMutation = mutationField('castVote', {
         if (!alternativeExists) throw new Error('Alternative does not exist.');
         await ctx.prisma.hasVoted.create({
             data: {
-                userId: ctx.userId,
+                userId: ctx.user.id,
                 votationId,
             },
         });

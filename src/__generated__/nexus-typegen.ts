@@ -34,11 +34,6 @@ declare global {
 }
 
 export interface NexusGenInputs {
-  AddUserInput: { // input type
-    email: string; // String!
-    id?: string | null; // ID
-    password: string; // String!
-  }
   CreateMeetingInput: { // input type
     description: string; // String!
     startTime: NexusGenScalars['DateTime']; // DateTime!
@@ -131,9 +126,8 @@ export interface NexusGenFieldTypes {
   Alternative: { // field return type
     id: string; // ID!
     text: string; // String!
-    votation: NexusGenRootTypes['Votation'] | null; // Votation
     votationId: string; // String!
-    votes: Array<NexusGenRootTypes['Vote'] | null> | null; // [Vote]
+    votes: number | null; // Int
   }
   Meeting: { // field return type
     description: string | null; // String
@@ -161,8 +155,6 @@ export interface NexusGenFieldTypes {
     meetings: Array<NexusGenRootTypes['Meeting'] | null>; // [Meeting]!
     meetingsById: NexusGenRootTypes['Meeting'] | null; // Meeting
     user: NexusGenRootTypes['GetUserResult'] | null; // GetUserResult
-    userByEmail: NexusGenRootTypes['GetUserResult'] | null; // GetUserResult
-    votationsByMeeting: Array<NexusGenRootTypes['Votation'] | null> | null; // [Votation]
   }
   User: { // field return type
     email: string; // String!
@@ -180,7 +172,6 @@ export interface NexusGenFieldTypes {
     id: string; // ID!
     majorityThreshold: number; // Int!
     majorityType: NexusGenEnums['MajorityType']; // MajorityType!
-    meeting: NexusGenRootTypes['Meeting']; // Meeting!
     meetingId: string; // String!
     order: number | null; // Int
     status: NexusGenEnums['Status']; // Status!
@@ -200,9 +191,8 @@ export interface NexusGenFieldTypeNames {
   Alternative: { // field return type name
     id: 'ID'
     text: 'String'
-    votation: 'Votation'
     votationId: 'String'
-    votes: 'Vote'
+    votes: 'Int'
   }
   Meeting: { // field return type name
     description: 'String'
@@ -230,8 +220,6 @@ export interface NexusGenFieldTypeNames {
     meetings: 'Meeting'
     meetingsById: 'Meeting'
     user: 'GetUserResult'
-    userByEmail: 'GetUserResult'
-    votationsByMeeting: 'Votation'
   }
   User: { // field return type name
     email: 'String'
@@ -249,7 +237,6 @@ export interface NexusGenFieldTypeNames {
     id: 'ID'
     majorityThreshold: 'Int'
     majorityType: 'MajorityType'
-    meeting: 'Meeting'
     meetingId: 'String'
     order: 'Int'
     status: 'Status'
@@ -287,12 +274,6 @@ export interface NexusGenArgTypes {
       votationId: string; // String!
     }
     meetingsById: { // args
-      meetingId: string; // String!
-    }
-    userByEmail: { // args
-      email: string; // String!
-    }
-    votationsByMeeting: { // args
       meetingId: string; // String!
     }
   }

@@ -1,4 +1,4 @@
-import { inputObjectType, objectType } from 'nexus';
+import { objectType } from 'nexus';
 
 export const User = objectType({
     name: 'User',
@@ -6,15 +6,6 @@ export const User = objectType({
         t.nonNull.id('id');
         t.nonNull.string('email');
         t.nonNull.boolean('emailVerified');
-    },
-});
-
-export const AddUserInputType = inputObjectType({
-    name: 'AddUserInput',
-    definition(t) {
-        t.id('id');
-        t.nonNull.string('email');
-        t.nonNull.string('password');
     },
 });
 

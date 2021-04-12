@@ -2,18 +2,11 @@
 ### Do not make changes to this file directly
 
 
-input AddUserInput {
-  email: String!
-  id: ID
-  password: String!
-}
-
 type Alternative {
   id: ID!
   text: String!
-  votation: Votation
   votationId: String!
-  votes: [Vote]
+  votes: Int
 }
 
 input CreateMeetingInput {
@@ -76,11 +69,9 @@ type Query {
   """Find meetings you are participating in"""
   meetings: [Meeting]!
 
-  """Find a meeting by id from YOUR meetings"""
+  """Find a meeting by id from meetings youre participating in"""
   meetingsById(meetingId: String!): Meeting
   user: GetUserResult
-  userByEmail(email: String!): GetUserResult
-  votationsByMeeting(meetingId: String!): [Votation]
 }
 
 enum Role {
@@ -113,7 +104,6 @@ type Votation {
   id: ID!
   majorityThreshold: Int!
   majorityType: MajorityType!
-  meeting: Meeting!
   meetingId: String!
   order: Int
   status: Status!
