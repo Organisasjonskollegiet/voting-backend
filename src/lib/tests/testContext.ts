@@ -17,14 +17,14 @@ type TestContext = {
     user: User;
 };
 
-export const createTestContext = (): TestContext => {
+export const createTestContext = (suite: string): TestContext => {
     const ctx = {} as TestContext;
     const graphqlCtx = graphqlTestContext();
     const prismaCtx = prismaTestContext();
-
+    const counter = 0;
     beforeEach(async () => {
         const prisma = await prismaCtx.before();
-        const user = await prisma.user.create({ data: { email: 'test@test.com', password: 'hunter2' } });
+        const user = await prisma.user.create({ data: { email: `${suite}${counter}@test.com`, password: 'hunter2' } });
         const client = await graphqlCtx.before(user);
         Object.assign(ctx, {
             client,
@@ -45,7 +45,6 @@ const graphqlTestContext = () => {
 
     return {
         async before(user: User) {
-            const port = await getPort({ port: makeRange(4001, 6000) }); // 4
             const apollo = new ApolloServer({
                 context: { user, prisma },
                 schema: protectedSchema,
@@ -54,11 +53,13 @@ const graphqlTestContext = () => {
                 },
             });
             const server = await createGraphqlServer(apollo, prisma);
-            serverInstance = server.listen({ port }); // 5
+            const randomStartPort = Math.floor(Math.random() * (6000 - 4000)) + 4000;
+            const randomPort = await getPort({ port: getPort.makeRange(randomStartPort, 6000) });
+            serverInstance = server.listen({ port: randomPort }); // 5
             serverInstance.on('close', async () => {
                 prisma.$disconnect();
             });
-            return new GraphQLClient(`http://localhost:${port}/graphql`);
+            return new GraphQLClient(`http://localhost:${randomPort}/graphql`);
         },
         async after() {
             serverInstance?.close();
