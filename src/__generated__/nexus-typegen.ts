@@ -45,7 +45,6 @@ export interface NexusGenInputs {
     majorityThreshold: number; // Int!
     majorityType: NexusGenEnums['MajorityType']; // MajorityType!
     meetingId: string; // String!
-    order: number; // Int!
     title: string; // String!
   }
 }
