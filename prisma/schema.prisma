@@ -49,20 +49,20 @@ model Meeting {
 }
 
 model Participant {
-  id               String  @id @default(uuid()) @db.Uuid
+  id               String     @id @default(uuid()) @db.Uuid
   role             Role
-  userId           String? @db.Uuid
-  meetingId        String  @db.Uuid
-  isVotingEligible Boolean @default(true)
-  user             User?   @relation(fields: [userId], references: [id])
-  meeting          Meeting @relation(fields: [meetingId], references: [id])
+  userId           String?    @db.Uuid
+  meetingId        String     @db.Uuid
+  isVotingEligible Boolean    @default(true)
+  user             User?      @relation(fields: [userId], references: [id])
+  meeting          Meeting    @relation(fields: [meetingId], references: [id])
+  HasVoted         HasVoted[]
 }
 
 model Votation {
   id                String        @id @default(uuid()) @db.Uuid
   title             String        @db.VarChar(255)
   description       String
-  order             Int
   status            Status        @default(UPCOMING)
   blankVotes        Boolean
   majorityType      MajorityType
@@ -70,6 +70,17 @@ model Votation {
   meetingId         String        @db.Uuid
   meeting           Meeting       @relation(fields: [meetingId], references: [id])
   alternatives      Alternative[]
+  HasVoted          HasVoted[]
+}
+
+model HasVoted {
+  votationId    String      @db.Uuid
+  participantId String      @db.Uuid
+  createdAt     DateTime    @default(now())
+  votation      Votation    @relation(fields: [votationId], references: [id])
+  participant   Participant @relation(fields: [participantId], references: [id])
+
+  @@id([participantId, votationId])
 }
 
 model Alternative {
