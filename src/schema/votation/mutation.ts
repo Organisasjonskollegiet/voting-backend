@@ -1,7 +1,7 @@
 import { inputObjectType, mutationField, nonNull, stringArg } from 'nexus';
 import { Vote } from './';
 import { Alternative, Votation } from './typedefs';
-import { userHasVoted, checkAlternativeExists } from './utils';
+import { userHasVoted } from './utils';
 import { MajorityType } from '../enums';
 
 export const CreateVotationInput = inputObjectType({
@@ -50,8 +50,9 @@ export const CastVoteMutation = mutationField('castVote', {
         votationId: nonNull(stringArg()),
     },
     // TODO: Refactor resolve function
-    resolve: async (_, { alternativeId, votationId }, ctx) => {
+    resolve: async (_, { votationId }, ctx) => {
         const hasVoted = await userHasVoted(ctx, votationId);
+        console.log(hasVoted);
         return null;
         // const participant = await ctx.prisma.participant.findFirst();
         // if (hasVoted) throw new Error('This user has already cast vote for this votation.');
