@@ -51,8 +51,8 @@ export const CastVoteMutation = mutationField('castVote', {
     },
     // TODO: Refactor resolve function
     resolve: async (_, { votationId }, ctx) => {
-        const hasVoted = await userHasVoted(ctx, votationId);
-        console.log(hasVoted);
+        //const hasVoted = await userHasVoted(ctx, votationId);
+        //console.log(hasVoted);
         return null;
         // const participant = await ctx.prisma.participant.findFirst();
         // if (hasVoted) throw new Error('This user has already cast vote for this votation.');
