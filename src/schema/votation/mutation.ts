@@ -1,7 +1,6 @@
 import { inputObjectType, mutationField, nonNull, stringArg } from 'nexus';
 import { Vote } from './';
 import { Alternative, Votation } from './typedefs';
-import { userHasVoted } from './utils';
 import { MajorityType } from '../enums';
 
 export const CreateVotationInput = inputObjectType({

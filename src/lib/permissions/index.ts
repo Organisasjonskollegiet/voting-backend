@@ -15,7 +15,7 @@ const permissions = shield(
         },
         Mutation: {
             castVote: and(isParticipantOfVotation),
-            createVotation: and(isAdminOfMeeting),
+            createVotation: and(isAuthenticated, isAdminOfMeeting),
         },
         Alternative: {
             votes: or(isAdminOfMeeting, isCounterOfMeeting),
