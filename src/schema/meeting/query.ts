@@ -19,8 +19,9 @@ export const MeetingByIdQuery = queryField('meetingsById', {
         meetingId: nonNull(stringArg()),
     },
     resolve: async (_, { meetingId }, ctx) => {
-        const meeting = await ctx.prisma.meeting.findUnique({ where: { id: meetingId } });
-        if (!meeting || meeting.ownerId != ctx.userId) return null;
+        const meeting = await ctx.prisma.meeting.findFirst({
+            where: { id: meetingId, participants: { some: { userId: ctx.userId } } },
+        });
         return meeting;
     },
 });
