@@ -1,7 +1,9 @@
 import { Context } from '../../context';
 
 export const userHasVoted = async (ctx: Context, votationId: string) => {
-    const hasVoted = await ctx.prisma.hasVoted.findFirst({ where: { votationId, userId: ctx.user.id } });
+    const hasVoted = await ctx.prisma.hasVoted.findUnique({
+        where: { userId_votationId: { userId: ctx.userId, votationId: votationId } },
+    });
     return hasVoted !== null;
 };
 

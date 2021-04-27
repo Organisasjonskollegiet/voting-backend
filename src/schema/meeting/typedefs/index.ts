@@ -45,6 +45,7 @@ export const Participant = objectType({
             type: User,
             resolve: async (source, __, ctx) => {
                 const { userId } = source as ParticipantModel;
+                if (!userId) return null;
                 const user = await ctx.prisma.user.findUnique({
                     where: { id: userId },
                     select: EXPOSED_USER_FIELDS,

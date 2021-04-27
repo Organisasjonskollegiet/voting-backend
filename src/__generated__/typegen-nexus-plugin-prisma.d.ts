@@ -17,8 +17,8 @@ interface PrismaModels {
   User: Prisma.User
   Meeting: Prisma.Meeting
   Participant: Prisma.Participant
-  HasVoted: Prisma.HasVoted
   Votation: Prisma.Votation
+  HasVoted: Prisma.HasVoted
   Alternative: Prisma.Alternative
   Vote: Prisma.Vote
 }
@@ -27,7 +27,7 @@ interface PrismaModels {
 interface NexusPrismaInputs {
   Query: {
     users: {
-      filtering: 'AND' | 'OR' | 'NOT' | 'id' | 'email' | 'emailVerified' | 'password' | 'meetings' | 'votedAt' | 'participantAt'
+      filtering: 'AND' | 'OR' | 'NOT' | 'id' | 'email' | 'emailVerified' | 'password' | 'meetings' | 'participantAt'
       ordering: 'id' | 'email' | 'emailVerified' | 'password'
     }
     meetings: {
@@ -35,16 +35,16 @@ interface NexusPrismaInputs {
       ordering: 'id' | 'title' | 'startTime' | 'description' | 'ownerId' | 'status'
     }
     participants: {
-      filtering: 'AND' | 'OR' | 'NOT' | 'role' | 'userId' | 'meetingId' | 'isVotingEligible' | 'user' | 'meeting'
-      ordering: 'role' | 'userId' | 'meetingId' | 'isVotingEligible'
-    }
-    hasVoteds: {
-      filtering: 'AND' | 'OR' | 'NOT' | 'userId' | 'votationId' | 'createdAt' | 'user' | 'votation'
-      ordering: 'userId' | 'votationId' | 'createdAt'
+      filtering: 'AND' | 'OR' | 'NOT' | 'id' | 'role' | 'userId' | 'meetingId' | 'isVotingEligible' | 'user' | 'meeting' | 'HasVoted'
+      ordering: 'id' | 'role' | 'userId' | 'meetingId' | 'isVotingEligible'
     }
     votations: {
-      filtering: 'AND' | 'OR' | 'NOT' | 'id' | 'title' | 'description' | 'order' | 'status' | 'blankVotes' | 'majorityType' | 'majorityThreshold' | 'meetingId' | 'meeting' | 'hasVoted' | 'alternatives'
-      ordering: 'id' | 'title' | 'description' | 'order' | 'status' | 'blankVotes' | 'majorityType' | 'majorityThreshold' | 'meetingId'
+      filtering: 'AND' | 'OR' | 'NOT' | 'id' | 'title' | 'description' | 'status' | 'blankVotes' | 'majorityType' | 'majorityThreshold' | 'meetingId' | 'meeting' | 'alternatives' | 'HasVoted'
+      ordering: 'id' | 'title' | 'description' | 'status' | 'blankVotes' | 'majorityType' | 'majorityThreshold' | 'meetingId'
+    }
+    hasVoteds: {
+      filtering: 'AND' | 'OR' | 'NOT' | 'votationId' | 'participantId' | 'createdAt' | 'votation' | 'participant'
+      ordering: 'votationId' | 'participantId' | 'createdAt'
     }
     alternatives: {
       filtering: 'AND' | 'OR' | 'NOT' | 'id' | 'text' | 'votationId' | 'votation' | 'votes'
@@ -60,40 +60,39 @@ interface NexusPrismaInputs {
       filtering: 'AND' | 'OR' | 'NOT' | 'id' | 'title' | 'startTime' | 'description' | 'owner' | 'ownerId' | 'votations' | 'status' | 'participants'
       ordering: 'id' | 'title' | 'startTime' | 'description' | 'ownerId' | 'status'
     }
-    votedAt: {
-      filtering: 'AND' | 'OR' | 'NOT' | 'userId' | 'votationId' | 'createdAt' | 'user' | 'votation'
-      ordering: 'userId' | 'votationId' | 'createdAt'
-    }
     participantAt: {
-      filtering: 'AND' | 'OR' | 'NOT' | 'role' | 'userId' | 'meetingId' | 'isVotingEligible' | 'user' | 'meeting'
-      ordering: 'role' | 'userId' | 'meetingId' | 'isVotingEligible'
+      filtering: 'AND' | 'OR' | 'NOT' | 'id' | 'role' | 'userId' | 'meetingId' | 'isVotingEligible' | 'user' | 'meeting' | 'HasVoted'
+      ordering: 'id' | 'role' | 'userId' | 'meetingId' | 'isVotingEligible'
     }
   }
   Meeting: {
     votations: {
-      filtering: 'AND' | 'OR' | 'NOT' | 'id' | 'title' | 'description' | 'order' | 'status' | 'blankVotes' | 'majorityType' | 'majorityThreshold' | 'meetingId' | 'meeting' | 'hasVoted' | 'alternatives'
-      ordering: 'id' | 'title' | 'description' | 'order' | 'status' | 'blankVotes' | 'majorityType' | 'majorityThreshold' | 'meetingId'
+      filtering: 'AND' | 'OR' | 'NOT' | 'id' | 'title' | 'description' | 'status' | 'blankVotes' | 'majorityType' | 'majorityThreshold' | 'meetingId' | 'meeting' | 'alternatives' | 'HasVoted'
+      ordering: 'id' | 'title' | 'description' | 'status' | 'blankVotes' | 'majorityType' | 'majorityThreshold' | 'meetingId'
     }
     participants: {
-      filtering: 'AND' | 'OR' | 'NOT' | 'role' | 'userId' | 'meetingId' | 'isVotingEligible' | 'user' | 'meeting'
-      ordering: 'role' | 'userId' | 'meetingId' | 'isVotingEligible'
+      filtering: 'AND' | 'OR' | 'NOT' | 'id' | 'role' | 'userId' | 'meetingId' | 'isVotingEligible' | 'user' | 'meeting' | 'HasVoted'
+      ordering: 'id' | 'role' | 'userId' | 'meetingId' | 'isVotingEligible'
     }
   }
   Participant: {
-
-  }
-  HasVoted: {
-
+    HasVoted: {
+      filtering: 'AND' | 'OR' | 'NOT' | 'votationId' | 'participantId' | 'createdAt' | 'votation' | 'participant'
+      ordering: 'votationId' | 'participantId' | 'createdAt'
+    }
   }
   Votation: {
-    hasVoted: {
-      filtering: 'AND' | 'OR' | 'NOT' | 'userId' | 'votationId' | 'createdAt' | 'user' | 'votation'
-      ordering: 'userId' | 'votationId' | 'createdAt'
-    }
     alternatives: {
       filtering: 'AND' | 'OR' | 'NOT' | 'id' | 'text' | 'votationId' | 'votation' | 'votes'
       ordering: 'id' | 'text' | 'votationId'
     }
+    HasVoted: {
+      filtering: 'AND' | 'OR' | 'NOT' | 'votationId' | 'participantId' | 'createdAt' | 'votation' | 'participant'
+      ordering: 'votationId' | 'participantId' | 'createdAt'
+    }
+  }
+  HasVoted: {
+
   }
   Alternative: {
     votes: {
@@ -115,10 +114,10 @@ interface NexusPrismaOutputs {
     meetings: 'Meeting'
     participant: 'Participant'
     participants: 'Participant'
-    hasVoted: 'HasVoted'
-    hasVoteds: 'HasVoted'
     votation: 'Votation'
     votations: 'Votation'
+    hasVoted: 'HasVoted'
+    hasVoteds: 'HasVoted'
     alternative: 'Alternative'
     alternatives: 'Alternative'
     vote: 'Vote'
@@ -143,18 +142,18 @@ interface NexusPrismaOutputs {
     deleteOneParticipant: 'Participant'
     deleteManyParticipant: 'AffectedRowsOutput'
     upsertOneParticipant: 'Participant'
-    createOneHasVoted: 'HasVoted'
-    updateOneHasVoted: 'HasVoted'
-    updateManyHasVoted: 'AffectedRowsOutput'
-    deleteOneHasVoted: 'HasVoted'
-    deleteManyHasVoted: 'AffectedRowsOutput'
-    upsertOneHasVoted: 'HasVoted'
     createOneVotation: 'Votation'
     updateOneVotation: 'Votation'
     updateManyVotation: 'AffectedRowsOutput'
     deleteOneVotation: 'Votation'
     deleteManyVotation: 'AffectedRowsOutput'
     upsertOneVotation: 'Votation'
+    createOneHasVoted: 'HasVoted'
+    updateOneHasVoted: 'HasVoted'
+    updateManyHasVoted: 'AffectedRowsOutput'
+    deleteOneHasVoted: 'HasVoted'
+    deleteManyHasVoted: 'AffectedRowsOutput'
+    upsertOneHasVoted: 'HasVoted'
     createOneAlternative: 'Alternative'
     updateOneAlternative: 'Alternative'
     updateManyAlternative: 'AffectedRowsOutput'
@@ -174,7 +173,6 @@ interface NexusPrismaOutputs {
     emailVerified: 'Boolean'
     password: 'String'
     meetings: 'Meeting'
-    votedAt: 'HasVoted'
     participantAt: 'Participant'
   }
   Meeting: {
@@ -189,33 +187,34 @@ interface NexusPrismaOutputs {
     participants: 'Participant'
   }
   Participant: {
+    id: 'String'
     role: 'Role'
     userId: 'String'
     meetingId: 'String'
     isVotingEligible: 'Boolean'
     user: 'User'
     meeting: 'Meeting'
-  }
-  HasVoted: {
-    userId: 'String'
-    votationId: 'String'
-    createdAt: 'DateTime'
-    user: 'User'
-    votation: 'Votation'
+    HasVoted: 'HasVoted'
   }
   Votation: {
     id: 'String'
     title: 'String'
     description: 'String'
-    order: 'Int'
     status: 'Status'
     blankVotes: 'Boolean'
     majorityType: 'MajorityType'
     majorityThreshold: 'Int'
     meetingId: 'String'
     meeting: 'Meeting'
-    hasVoted: 'HasVoted'
     alternatives: 'Alternative'
+    HasVoted: 'HasVoted'
+  }
+  HasVoted: {
+    votationId: 'String'
+    participantId: 'String'
+    createdAt: 'DateTime'
+    votation: 'Votation'
+    participant: 'Participant'
   }
   Alternative: {
     id: 'String'
@@ -239,8 +238,8 @@ interface NexusPrismaMethods {
   User: Typegen.NexusPrismaFields<'User'>
   Meeting: Typegen.NexusPrismaFields<'Meeting'>
   Participant: Typegen.NexusPrismaFields<'Participant'>
-  HasVoted: Typegen.NexusPrismaFields<'HasVoted'>
   Votation: Typegen.NexusPrismaFields<'Votation'>
+  HasVoted: Typegen.NexusPrismaFields<'HasVoted'>
   Alternative: Typegen.NexusPrismaFields<'Alternative'>
   Vote: Typegen.NexusPrismaFields<'Vote'>
   Query: Typegen.NexusPrismaFields<'Query'>
