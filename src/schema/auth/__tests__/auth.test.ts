@@ -7,7 +7,8 @@ test('developer sanity test', () => {
 });
 
 it('Should return my user🤠', async () => {
-    const { email, emailVerified } = ctx.user;
+    const user = await ctx.prisma.user.findUnique({ where: { id: ctx.userId } });
+    if (!user) fail('No such user');
     const getUser = await ctx.client.request(
         gql`
             query {
@@ -24,12 +25,13 @@ it('Should return my user🤠', async () => {
             }
         `
     );
+
     expect(getUser).toMatchInlineSnapshot(`
         Object {
           "user": Object {
             "__typename": "User",
-            "email": "${email}",
-            "emailVerified": ${emailVerified},
+            "email": "${user.email}",
+            "emailVerified": ${user.emailVerified},
           },
         }
     `);

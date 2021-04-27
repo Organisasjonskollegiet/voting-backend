@@ -14,7 +14,7 @@ const prisma = new PrismaClient();
 type TestContext = {
     client: GraphQLClient;
     prisma: PrismaClient;
-    user: User;
+    userId: string;
 };
 
 export const createTestContext = (): TestContext => {
@@ -25,11 +25,11 @@ export const createTestContext = (): TestContext => {
     beforeEach(async () => {
         const prisma = await prismaCtx.before();
         const user = await prisma.user.create({ data: { email: 'test@test.com', password: 'hunter2' } });
-        const client = await graphqlCtx.before(user);
+        const client = await graphqlCtx.before(user.id);
         Object.assign(ctx, {
             client,
             prisma,
-            user,
+            userId: user.id,
         });
     });
 
@@ -44,10 +44,10 @@ const graphqlTestContext = () => {
     let serverInstance: Server | null = null;
 
     return {
-        async before(user: User) {
+        async before(userId: string) {
             const port = await getPort({ port: makeRange(4001, 6000) }); // 4
             const apollo = new ApolloServer({
-                context: { user, prisma },
+                context: { userId, prisma },
                 schema: protectedSchema,
                 subscriptions: {
                     path: '/subscriptions',
