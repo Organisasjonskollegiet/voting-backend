@@ -1,9 +1,8 @@
-import { Participant } from '@prisma/client';
 import { Context } from '../../context';
 
-export const userHasVoted = async (ctx: Context, participant: Participant, votationId: string) => {
+export const userHasVoted = async (ctx: Context, votationId: string) => {
     const hasVoted = await ctx.prisma.hasVoted.findUnique({
-        where: { participantId_votationId: { participantId: participant.id, votationId: votationId } },
+        where: { userId_votationId: { userId: ctx.userId, votationId: votationId } },
     });
     return hasVoted !== null;
 };
