@@ -49,7 +49,7 @@ export const CastVoteMutation = mutationField('castVote', {
         votationId: nonNull(stringArg()),
     },
     // TODO: Refactor resolve function
-    resolve: async (_, { votationId }, ctx) => {
+    resolve: async (_, __, ___) => {
         //const hasVoted = await userHasVoted(ctx, votationId);
         //console.log(hasVoted);
         return null;
