@@ -85,6 +85,9 @@ CREATE TABLE "Vote" (
 CREATE UNIQUE INDEX "User.email_unique" ON "User"("email");
 
 -- CreateIndex
+CREATE UNIQUE INDEX "Participant.userId_meetingId_unique" ON "Participant"("userId", "meetingId");
+
+-- CreateIndex
 CREATE UNIQUE INDEX "Vote_nextVoteId_unique" ON "Vote"("nextVoteId");
 
 -- AddForeignKey
