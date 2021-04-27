@@ -39,7 +39,7 @@ enum MajorityType {
 type Meeting {
   description: String
   id: ID!
-  owner: User!
+  owner: User
   participants: [Participant]!
   startTime: DateTime!
   status: Status!

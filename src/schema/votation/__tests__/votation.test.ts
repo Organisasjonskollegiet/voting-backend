@@ -13,7 +13,6 @@ interface StaticMeetingDataType {
 interface StaticVotationDataType {
     title: string;
     description: string;
-    order: number;
     blankVotes: boolean;
     majorityType: MajorityType;
     majorityThreshold: number;
@@ -32,14 +31,12 @@ const staticMeetingData: StaticMeetingDataType = {
 
 const votationTitle = 'test votation title';
 const votationDescription = 'test votation description';
-const votationOrder = 1;
 const majorityType = 'SIMPLE';
 const blankVotes = true;
 const majorityThreshold = 50;
 const staticVotationData: StaticVotationDataType = {
     title: votationTitle,
     description: votationDescription,
-    order: votationOrder,
     blankVotes,
     majorityType,
     majorityThreshold,
@@ -197,7 +194,6 @@ it('should create votation successfully', async () => {
                 createVotation(votation: $votation) {
                     title
                     description
-                    order
                     blankVotes
                     majorityType
                     majorityThreshold
@@ -241,7 +237,6 @@ it('should not create votation successfully', async () => {
                         createVotation(votation: $votation) {
                             title
                             description
-                            order
                             blankVotes
                             majorityType
                             majorityThreshold

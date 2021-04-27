@@ -11,7 +11,14 @@ export const Meeting = objectType({
         t.nonNull.string('title');
         t.nonNull.datetime('startTime');
         t.string('description');
-        t.nonNull.model.owner();
+        t.field('owner', {
+            type: User,
+            resolve: async (source, __, ctx) => {
+                const { ownerId } = source as MeetingModel;
+                const user = await ctx.prisma.user.findUnique({ where: { id: ownerId }, rejectOnNotFound: true });
+                return user;
+            },
+        });
         t.field('votations', {
             type: list(Votation),
             resolve: async (source, __, ctx) => {
