@@ -6,7 +6,7 @@ export const MeetingsQuery = queryField('meetings', {
     description: 'Find meetings you are participating in',
     resolve: async (_, __, ctx) => {
         const meetings = await ctx.prisma.meeting.findMany({
-            where: { participants: { some: { userId: ctx.user.id } } },
+            where: { participants: { some: { userId: ctx.userId } } },
         });
         return meetings;
     },
@@ -20,7 +20,7 @@ export const MeetingByIdQuery = queryField('meetingsById', {
     },
     resolve: async (_, { meetingId }, ctx) => {
         const meeting = await ctx.prisma.meeting.findFirst({
-            where: { id: meetingId, participants: { some: { userId: ctx.user.id } } },
+            where: { id: meetingId, participants: { some: { userId: ctx.userId } } },
         });
         return meeting;
     },

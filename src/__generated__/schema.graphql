@@ -21,7 +21,6 @@ input CreateVotationInput {
   majorityThreshold: Int!
   majorityType: MajorityType!
   meetingId: String!
-  order: Int!
   title: String!
 }
 

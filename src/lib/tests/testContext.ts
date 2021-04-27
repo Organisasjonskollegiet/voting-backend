@@ -8,28 +8,28 @@ import 'dotenv/config';
 import { GraphQLClient } from 'graphql-request';
 import { ApolloServer } from 'apollo-server-express';
 import { protectedSchema } from '../../schema';
+import casual from 'casual';
 
 const prisma = new PrismaClient();
 
 type TestContext = {
     client: GraphQLClient;
     prisma: PrismaClient;
-    user: User;
+    userId: string;
 };
 
-export const createTestContext = (suite: string): TestContext => {
+export const createTestContext = (): TestContext => {
     const ctx = {} as TestContext;
     const graphqlCtx = graphqlTestContext();
     const prismaCtx = prismaTestContext();
-    const counter = 0;
     beforeEach(async () => {
         const prisma = await prismaCtx.before();
-        const user = await prisma.user.create({ data: { email: `${suite}${counter}@test.com`, password: 'hunter2' } });
-        const client = await graphqlCtx.before(user);
+        const user = await prisma.user.create({ data: { id: casual.uuid, email: casual.email, password: 'hunter2' } });
+        const client = await graphqlCtx.before(user.id);
         Object.assign(ctx, {
             client,
             prisma,
-            user,
+            userId: user.id,
         });
     });
 
@@ -44,9 +44,9 @@ const graphqlTestContext = () => {
     let serverInstance: Server | null = null;
 
     return {
-        async before(user: User) {
+        async before(userId: string) {
             const apollo = new ApolloServer({
-                context: { user, prisma },
+                context: { userId, prisma },
                 schema: protectedSchema,
                 subscriptions: {
                     path: '/subscriptions',

@@ -20,11 +20,11 @@ export const CreateMeetingMutation = mutationField('createMeeting', {
         const createdMeeting = await ctx.prisma.meeting.create({
             data: {
                 ...meeting,
-                ownerId: ctx.user.id,
+                ownerId: ctx.userId,
                 status: 'UPCOMING',
                 participants: {
                     create: {
-                        userId: ctx.user.id,
+                        userId: ctx.userId,
                         role: 'ADMIN',
                         isVotingEligible: true,
                     },

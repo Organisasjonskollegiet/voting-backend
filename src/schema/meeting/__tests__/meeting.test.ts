@@ -1,6 +1,6 @@
 import { createTestContext } from '../../../lib/tests/testContext';
 import { gql } from 'graphql-request';
-const ctx = createTestContext('meeting');
+const ctx = createTestContext();
 
 it('should create a meeting successfully', async () => {
     const title = 'test creation title';
@@ -39,14 +39,14 @@ it('should create a meeting successfully', async () => {
     expect(meeting).toEqual({
         ...variables.meeting,
         owner: {
-            id: ctx.user.id,
+            id: ctx.userId,
         },
         participants: [
             {
                 role: 'ADMIN',
                 isVotingEligible: true,
                 user: {
-                    id: ctx.user.id,
+                    id: ctx.userId,
                 },
             },
         ],
@@ -58,7 +58,7 @@ it('should return meetings where you are admin successfully', async () => {
     const startTime = '2021-04-13T11:29:58.000Z';
     const description = 'test get meeting description';
     const status = 'UPCOMING';
-    const ownerId = ctx.user.id;
+    const ownerId = ctx.userId;
     const meeting = await ctx.prisma.meeting.create({
         data: {
             title,
@@ -68,7 +68,7 @@ it('should return meetings where you are admin successfully', async () => {
             ownerId,
             participants: {
                 create: {
-                    userId: ctx.user.id,
+                    userId: ctx.userId,
                     role: 'ADMIN',
                     isVotingEligible: true,
                 },
@@ -109,7 +109,7 @@ it('should return meetings where you are counter successfully', async () => {
     const startTime = '2021-04-13T11:29:58.000Z';
     const description = 'test get meeting description';
     const status = 'UPCOMING';
-    const ownerId = ctx.user.id;
+    const ownerId = ctx.userId;
     const meeting = await ctx.prisma.meeting.create({
         data: {
             title,
@@ -119,7 +119,7 @@ it('should return meetings where you are counter successfully', async () => {
             ownerId,
             participants: {
                 create: {
-                    userId: ctx.user.id,
+                    userId: ctx.userId,
                     role: 'COUNTER',
                     isVotingEligible: true,
                 },
@@ -160,7 +160,7 @@ it('should return meetings where you are participant successfully', async () => 
     const startTime = '2021-04-13T11:29:58.000Z';
     const description = 'test get meeting description';
     const status = 'UPCOMING';
-    const ownerId = ctx.user.id;
+    const ownerId = ctx.userId;
     const meeting = await ctx.prisma.meeting.create({
         data: {
             title,
@@ -170,7 +170,7 @@ it('should return meetings where you are participant successfully', async () => 
             ownerId,
             participants: {
                 create: {
-                    userId: ctx.user.id,
+                    userId: ctx.userId,
                     role: 'PARTICIPANT',
                     isVotingEligible: true,
                 },
@@ -211,7 +211,7 @@ it('should not return meetings where you are not participating', async () => {
     const startTime = '2021-04-13T11:29:58.000Z';
     const description = 'test get meeting description';
     const status = 'UPCOMING';
-    const ownerId = ctx.user.id;
+    const ownerId = ctx.userId;
     const meeting = await ctx.prisma.meeting.create({
         data: {
             title,
@@ -246,7 +246,7 @@ it('should return a meeting by id successfully', async () => {
     const startTime = '2021-04-13T14:06:30.000Z';
     const description = 'test get meeting by id description';
     const status = 'UPCOMING';
-    const ownerId = ctx.user.id;
+    const ownerId = ctx.userId;
     const meeting = await ctx.prisma.meeting.create({
         data: {
             title,
@@ -256,7 +256,7 @@ it('should return a meeting by id successfully', async () => {
             ownerId,
             participants: {
                 create: {
-                    userId: ctx.user.id,
+                    userId: ctx.userId,
                     role: 'ADMIN',
                     isVotingEligible: true,
                 },
