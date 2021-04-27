@@ -48,9 +48,9 @@ export const isAdminOfMeeting = rule({ cache: 'strict' })(async (_, { meetingId 
 /**
  * Rule: The user is an Counter of the meeting
  */
-export const isCounterOfMeeting = rule({ cache: 'strict' })(async (_, { meetingId }, ctx: Context) => {
+export const isCounterOfMeeting = rule({ cache: 'strict' })(async (_, { participantId }, ctx: Context) => {
     const particpant = await ctx.prisma.participant.findUnique({
-        where: { userId_meetingId: { userId: ctx.userId, meetingId: meetingId } },
+        where: { id: participantId },
     });
     return particpant ? particpant.role === 'COUNTER' : false;
 });
