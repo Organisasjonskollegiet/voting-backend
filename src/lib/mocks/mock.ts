@@ -1,10 +1,11 @@
+import { Role, Status } from '@prisma/client';
 import casual from 'casual';
 
 const simpleMock = {
     User: () => ({
         id: () => casual.uuid,
         email: () => casual.email,
-        password: () => '',
+        emailVerified: () => casual.boolean,
     }),
     Meeting: () => ({
         id: () => casual.uuid,
@@ -12,12 +13,38 @@ const simpleMock = {
         startTime: () => casual.date('YYYY-MM-DD hh:mm:ss'),
         description: () => casual.text,
         owner: () => ({ __typename: 'User' }),
-        votations: () => [],
+        participants: () => new Array(casual.integer(2, 6)).fill({ __typename: 'Participant' }),
+        votations: () => new Array(casual.integer(2, 6)).fill({ __typename: 'Votation' }),
         status: () => 'UPCOMING',
     }),
+    Votation: () => ({
+        id: () => casual.uuid,
+        meetingId: () => casual.uuid,
+        title: () => casual.title,
+        blankVotes: () => casual.boolean,
+        description: () => casual.text,
+        hasVoted: () => new Array(casual.integer(2, 6)).fill({ __typename: 'User' }),
+        majorityThreshold: () => casual.integer(40, 80),
+        order: () => casual.integer,
+        status: () => [Status.ONGOING, Status.UPCOMING, Status.ENDED][casual.integer(0, 2)],
+        alternatives: () => new Array(casual.integer(2, 6)).fill({ __typename: 'Alternative' }),
+    }),
+    Alternative: () => ({
+        id: () => casual.uuid,
+        text: () => casual.text,
+        votationId: () => casual.uuid,
+        votes: () => casual.integer(0, 100),
+    }),
+    Participant: () => ({
+        isVotingEligible: () => casual.boolean,
+        role: () => [Role.PARTICIPANT, Role.COUNTER, Role.ADMIN][casual.integer(0, 2)],
+        user: () => ({ __typename: 'User' }),
+    }),
     Query: () => ({
-        users: () => new Array(casual.integer(2, 6)).fill({ __typename: 'User' }),
+        user: () => ({ __typename: 'User' }),
         meetings: () => new Array(casual.integer(2, 6)).fill({ __typename: 'Meeting' }),
+        meetingsById: () => ({ __typename: 'Meeting' }),
+        alternativesByVotation: () => new Array(casual.integer(2, 6)).fill({ __typename: 'Alternative' }),
     }),
 };
 
