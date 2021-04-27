@@ -3,7 +3,7 @@ import { rule } from 'graphql-shield';
 import { Context } from '../../context';
 
 export const isAuthenticated = rule({ cache: 'contextual' })(async (_, __, ctx: Context) => {
-    return ctx.user.id ? true : new AuthenticationError('User must be logged in');
+    return ctx.userId ? true : new AuthenticationError('User must be logged in');
 });
 
 /**
@@ -11,7 +11,7 @@ export const isAuthenticated = rule({ cache: 'contextual' })(async (_, __, ctx: 
  */
 export const isParticipantOfMeeting = rule({ cache: 'contextual' })(async (_, args, ctx: Context) => {
     const meetingId = args.id;
-    const resultCount = await ctx.prisma.participant.count({ where: { userId: ctx.user.id, meetingId } });
+    const resultCount = await ctx.prisma.participant.count({ where: { userId: ctx.userId, meetingId } });
     return resultCount > 0;
 });
 
@@ -20,7 +20,7 @@ export const isParticipantOfMeeting = rule({ cache: 'contextual' })(async (_, ar
  */
 export const isParticipantOfVotation = rule({ cache: 'contextual' })(async (_, { votationId }, ctx: Context) => {
     const resultCount = await ctx.prisma.votation.count({
-        where: { id: votationId, meeting: { participants: { some: { user: { id: ctx.user.id } } } } },
+        where: { id: votationId, meeting: { participants: { some: { user: { id: ctx.userId } } } } },
     });
     return resultCount > 0;
 });
@@ -30,7 +30,7 @@ export const isParticipantOfVotation = rule({ cache: 'contextual' })(async (_, {
  */
 export const is_voting_eligible = rule({ cache: 'contextual' })(async (_, { votationId }, ctx: Context) => {
     const particpant = await ctx.prisma.participant.findFirst({
-        where: { userId: ctx.user.id, meeting: { votations: { some: { id: votationId } } } },
+        where: { userId: ctx.userId, meeting: { votations: { some: { id: votationId } } } },
     });
     return particpant ? particpant.isVotingEligible : false;
 });
@@ -40,7 +40,7 @@ export const is_voting_eligible = rule({ cache: 'contextual' })(async (_, { vota
  */
 export const isAdminOfMeeting = rule({ cache: 'strict' })(async (_, { meetingId }, ctx: Context) => {
     const particpant = await ctx.prisma.participant.findFirst({
-        where: { meetingId, userId: ctx.user.id },
+        where: { meetingId, userId: ctx.userId },
     });
     return particpant ? particpant.role === 'ADMIN' : false;
 });
@@ -50,7 +50,7 @@ export const isAdminOfMeeting = rule({ cache: 'strict' })(async (_, { meetingId 
  */
 export const isCounterOfMeeting = rule({ cache: 'strict' })(async (_, { meetingId }, ctx: Context) => {
     const particpant = await ctx.prisma.participant.findUnique({
-        where: { userId_meetingId: { userId: ctx.user.id, meetingId: meetingId } },
+        where: { userId_meetingId: { userId: ctx.userId, meetingId: meetingId } },
     });
     return particpant ? particpant.role === 'COUNTER' : false;
 });
