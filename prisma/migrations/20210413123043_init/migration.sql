@@ -55,9 +55,9 @@ CREATE TABLE "Votation" (
     "description" TEXT NOT NULL,
     "order" INTEGER NOT NULL,
     "status" "Status" NOT NULL DEFAULT E'UPCOMING',
-    "blankVotes" BOOLEAN NOT NULL DEFAULT false,
-    "majorityType" "MajorityType" NOT NULL DEFAULT E'SIMPLE',
-    "majorityThreshold" INTEGER NOT NULL DEFAULT 50,
+    "blankVotes" BOOLEAN NOT NULL,
+    "majorityType" "MajorityType" NOT NULL,
+    "majorityThreshold" INTEGER NOT NULL,
     "meetingId" UUID NOT NULL,
 
     PRIMARY KEY ("id")

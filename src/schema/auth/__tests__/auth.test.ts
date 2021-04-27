@@ -1,6 +1,6 @@
 import { createTestContext } from '../../../lib/tests/testContext';
 import { gql } from 'graphql-request';
-const ctx = createTestContext();
+const ctx = createTestContext('auth');
 
 test('developer sanity test', () => {
     expect(2 + 2).toEqual(4);
