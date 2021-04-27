@@ -22,6 +22,7 @@ export const CastVoteMutation = mutationField('castVote', {
     args: {
         alternativeId: nonNull(stringArg()),
         votationId: nonNull(stringArg()),
+        meetingId: nonNull(stringArg()),
     },
     resolve: async (_, { alternativeId, votationId }, ctx) => {
         const hasVoted = await userHasVoted(ctx, votationId);
