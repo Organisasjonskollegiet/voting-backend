@@ -57,6 +57,8 @@ model Participant {
   user             User?      @relation(fields: [userId], references: [id])
   meeting          Meeting    @relation(fields: [meetingId], references: [id])
   HasVoted         HasVoted[]
+
+  @@unique([userId, meetingId])
 }
 
 model Votation {

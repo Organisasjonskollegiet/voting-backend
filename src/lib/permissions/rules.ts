@@ -28,9 +28,9 @@ export const isParticipantOfVotation = rule({ cache: 'contextual' })(async (_, {
 /**
  * Rule: A user can vote
  */
-export const is_voting_eligible = rule({ cache: 'contextual' })(async (_, { votationId }, ctx: Context) => {
-    const particpant = await ctx.prisma.participant.findFirst({
-        where: { userId: ctx.userId, meeting: { votations: { some: { id: votationId } } } },
+export const is_voting_eligible = rule({ cache: 'contextual' })(async (_, { meetingId }, ctx: Context) => {
+    const particpant = await ctx.prisma.participant.findUnique({
+        where: { userId_meetingId: { userId: ctx.userId, meetingId } },
     });
     return particpant ? particpant.isVotingEligible : false;
 });
@@ -39,8 +39,8 @@ export const is_voting_eligible = rule({ cache: 'contextual' })(async (_, { vota
  * Rule: The user is an Admin of the meeting
  */
 export const isAdminOfMeeting = rule({ cache: 'strict' })(async (_, { meetingId }, ctx: Context) => {
-    const particpant = await ctx.prisma.participant.findFirst({
-        where: { meetingId, userId: ctx.userId },
+    const particpant = await ctx.prisma.participant.findUnique({
+        where: { userId_meetingId: { userId: ctx.userId, meetingId } },
     });
     return particpant ? particpant.role === 'ADMIN' : false;
 });
@@ -48,9 +48,9 @@ export const isAdminOfMeeting = rule({ cache: 'strict' })(async (_, { meetingId 
 /**
  * Rule: The user is an Counter of the meeting
  */
-export const isCounterOfMeeting = rule({ cache: 'strict' })(async (_, { participantId }, ctx: Context) => {
+export const isCounterOfMeeting = rule({ cache: 'strict' })(async (_, { meetingId }, ctx: Context) => {
     const particpant = await ctx.prisma.participant.findUnique({
-        where: { id: participantId },
+        where: { userId_meetingId: { userId: ctx.userId, meetingId } },
     });
     return particpant ? particpant.role === 'COUNTER' : false;
 });
