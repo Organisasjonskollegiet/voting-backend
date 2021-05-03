@@ -294,3 +294,5 @@ it('should return a meeting by id successfully', async () => {
         },
     });
 });
+
+it('should update meeting successfully', async () => {});
