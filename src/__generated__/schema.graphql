@@ -54,6 +54,9 @@ type Mutation {
   """"""
   createMeeting(meeting: CreateMeetingInput!): Meeting
   createVotation(votation: CreateVotationInput!): Votation
+
+  """"""
+  updateMeeting(meeting: UpdateMeetingInput!): Meeting
 }
 
 type Participant {
@@ -84,6 +87,14 @@ enum Status {
   ENDED
   ONGOING
   UPCOMING
+}
+
+input UpdateMeetingInput {
+  description: String
+  id: String!
+  startTime: DateTime
+  status: Status
+  title: String
 }
 
 type User {
