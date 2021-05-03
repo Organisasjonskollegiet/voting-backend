@@ -1,5 +1,17 @@
-import { list, nonNull, queryField, stringArg } from 'nexus';
-import { Alternative } from './typedefs';
+import { idArg, list, nonNull, queryField, stringArg } from 'nexus';
+import { Alternative, Votation } from './typedefs';
+
+export const GetVotationById = queryField('votationById', {
+    type: Votation,
+    args: {
+        votationId: nonNull(idArg()),
+    },
+    resolve: async (_, { votationId }, ctx) => {
+        const votation = await ctx.prisma.votation.findUnique({ where: { id: votationId } });
+        if (!votation) throw new Error('Error fetching votation from database');
+        return votation;
+    },
+});
 
 export const AlternativesByVotation = queryField('alternativesByVotation', {
     type: list(Alternative),

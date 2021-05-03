@@ -71,6 +71,7 @@ type Query {
   """Find a meeting by id from meetings youre participating in"""
   meetingsById(meetingId: String!): Meeting
   user: GetUserResult
+  votationById(votationId: ID!): Votation
 }
 
 enum Role {

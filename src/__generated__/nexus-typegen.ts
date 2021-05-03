@@ -149,6 +149,7 @@ export interface NexusGenFieldTypes {
     meetings: Array<NexusGenRootTypes['Meeting'] | null>; // [Meeting]!
     meetingsById: NexusGenRootTypes['Meeting'] | null; // Meeting
     user: NexusGenRootTypes['GetUserResult'] | null; // GetUserResult
+    votationById: NexusGenRootTypes['Votation'] | null; // Votation
   }
   User: { // field return type
     email: string; // String!
@@ -214,6 +215,7 @@ export interface NexusGenFieldTypeNames {
     meetings: 'Meeting'
     meetingsById: 'Meeting'
     user: 'GetUserResult'
+    votationById: 'Votation'
   }
   User: { // field return type name
     email: 'String'
@@ -269,6 +271,9 @@ export interface NexusGenArgTypes {
     }
     meetingsById: { // args
       meetingId: string; // String!
+    }
+    votationById: { // args
+      votationId: string; // ID!
     }
   }
 }

@@ -46,6 +46,106 @@ const alternative1Text = 'alternative1 text';
 
 const alternative2Text = 'alternative2 text';
 
+it('should return votation by id', async () => {
+    const meetingOwnerId = ctx.userId;
+    const meeting = await ctx.prisma.meeting.create({
+        data: {
+            ...staticMeetingData,
+            ownerId: meetingOwnerId,
+            participants: {
+                create: {
+                    userId: ctx.userId,
+                    role: 'COUNTER',
+                    isVotingEligible: true,
+                },
+            },
+        },
+    });
+    const meetingId = meeting.id;
+    const votationStatus = 'UPCOMING';
+    const votation = await ctx.prisma.votation.create({
+        data: {
+            ...staticVotationData,
+            status: votationStatus,
+            meetingId,
+        },
+    });
+
+    const votationId = votation.id;
+
+    const getVotation = await ctx.client.request(
+        gql`
+            query GetVotationById($votationId: ID!) {
+                votationById(votationId: $votationId) {
+                    id
+                    title
+                    description
+                    blankVotes
+                    majorityType
+                    majorityThreshold
+                    meetingId
+                }
+            }
+        `,
+        {
+            votationId,
+        }
+    );
+    expect(getVotation.votationById).toEqual({
+        id: votationId,
+        ...staticVotationData,
+        meetingId,
+    });
+});
+
+it('should throw error from votation by id', async () => {
+    const meetingOwnerId = ctx.userId;
+    const meeting = await ctx.prisma.meeting.create({
+        data: {
+            ...staticMeetingData,
+            ownerId: meetingOwnerId,
+            participants: {
+                create: {
+                    userId: ctx.userId,
+                    role: 'COUNTER',
+                    isVotingEligible: true,
+                },
+            },
+        },
+    });
+    const meetingId = meeting.id;
+    const votationStatus = 'UPCOMING';
+    const votation = await ctx.prisma.votation.create({
+        data: {
+            ...staticVotationData,
+            status: votationStatus,
+            meetingId,
+        },
+    });
+
+    expect(
+        async () =>
+            await ctx.client.request(
+                gql`
+                    query GetVotationById($votationId: ID!) {
+                        votationById(votationId: $votationId) {
+                            id
+                            title
+                            description
+                            blankVotes
+                            majorityType
+                            majorityThreshold
+                            meetingId
+                        }
+                    }
+                `,
+                {
+                    votationId: '1',
+                }
+            )
+    ).rejects.toThrow();
+});
+
 it('should return alternatives by votation successfully', async () => {
     const meetingOwnerId = ctx.userId;
     const meeting = await ctx.prisma.meeting.create({

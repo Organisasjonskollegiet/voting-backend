@@ -12,6 +12,7 @@ const permissions = shield(
         Query: {
             meetingsById: and(isParticipantOfMeeting),
             alternativesByVotation: and(isParticipantOfVotation),
+            votationById: and(isParticipantOfVotation),
         },
         Mutation: {
             castVote: and(isParticipantOfVotation),
