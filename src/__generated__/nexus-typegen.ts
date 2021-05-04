@@ -49,6 +49,14 @@ export interface NexusGenInputs {
     status?: NexusGenEnums['Status'] | null; // Status
     title?: string | null; // String
   }
+  UpdateVotationInput: { // input type
+    blankVotes: boolean; // Boolean!
+    description: string; // String!
+    id: string; // String!
+    majorityThreshold: number; // Int!
+    majorityType: NexusGenEnums['MajorityType']; // MajorityType!
+    title: string; // String!
+  }
 }
 
 export interface NexusGenEnums {
@@ -145,7 +153,9 @@ export interface NexusGenFieldTypes {
     createAlternative: NexusGenRootTypes['Alternative'] | null; // Alternative
     createMeeting: NexusGenRootTypes['Meeting'] | null; // Meeting
     createVotation: NexusGenRootTypes['Votation'] | null; // Votation
+    updateAlternative: NexusGenRootTypes['Alternative'] | null; // Alternative
     updateMeeting: NexusGenRootTypes['Meeting'] | null; // Meeting
+    updateVotation: NexusGenRootTypes['Votation'] | null; // Votation
   }
   Participant: { // field return type
     isVotingEligible: boolean; // Boolean!
@@ -212,7 +222,9 @@ export interface NexusGenFieldTypeNames {
     createAlternative: 'Alternative'
     createMeeting: 'Meeting'
     createVotation: 'Votation'
+    updateAlternative: 'Alternative'
     updateMeeting: 'Meeting'
+    updateVotation: 'Votation'
   }
   Participant: { // field return type name
     isVotingEligible: 'Boolean'
@@ -273,8 +285,15 @@ export interface NexusGenArgTypes {
     createVotation: { // args
       votation: NexusGenInputs['CreateVotationInput']; // CreateVotationInput!
     }
+    updateAlternative: { // args
+      id: string; // String!
+      text: string; // String!
+    }
     updateMeeting: { // args
       meeting: NexusGenInputs['UpdateMeetingInput']; // UpdateMeetingInput!
+    }
+    updateVotation: { // args
+      votation: NexusGenInputs['UpdateVotationInput']; // UpdateVotationInput!
     }
   }
   Query: {

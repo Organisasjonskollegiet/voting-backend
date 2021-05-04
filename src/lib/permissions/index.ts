@@ -3,7 +3,10 @@ import {
     isAuthenticated,
     isParticipantOfMeeting,
     isParticipantOfVotation,
-    isAdminOfMeeting,
+    isAdminOfMeetingById,
+    isAdminOfMeetingByObject,
+    isAdminOfVotation,
+    isAdminOfAlternative,
     isCounterOfMeeting,
 } from './rules';
 
@@ -16,11 +19,13 @@ const permissions = shield(
         },
         Mutation: {
             castVote: and(isParticipantOfVotation),
-            createVotation: and(isAdminOfMeeting),
-            updateMeeting: and(isAdminOfMeeting),
+            createVotation: and(isAdminOfVotation),
+            updateMeeting: and(isAdminOfMeetingByObject),
+            updateVotation: and(isAdminOfVotation),
+            updateAlternative: and(isAdminOfAlternative),
         },
         Alternative: {
-            votes: or(isAdminOfMeeting, isCounterOfMeeting),
+            votes: or(isAdminOfMeetingById, isCounterOfMeeting),
         },
     },
     // If rule is not defined, use isAuthenticated rule

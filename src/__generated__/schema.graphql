@@ -56,7 +56,13 @@ type Mutation {
   createVotation(votation: CreateVotationInput!): Votation
 
   """"""
+  updateAlternative(id: String!, text: String!): Alternative
+
+  """"""
   updateMeeting(meeting: UpdateMeetingInput!): Meeting
+
+  """"""
+  updateVotation(votation: UpdateVotationInput!): Votation
 }
 
 type Participant {
@@ -95,6 +101,15 @@ input UpdateMeetingInput {
   startTime: DateTime
   status: Status
   title: String
+}
+
+input UpdateVotationInput {
+  blankVotes: Boolean!
+  description: String!
+  id: String!
+  majorityThreshold: Int!
+  majorityType: MajorityType!
+  title: String!
 }
 
 type User {

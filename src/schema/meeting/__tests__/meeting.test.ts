@@ -295,4 +295,115 @@ it('should return a meeting by id successfully', async () => {
     });
 });
 
-it('should update meeting successfully', async () => {});
+it('should update meeting successfully', async () => {
+    const title = 'test get meeting by id ';
+    const startTime = '2021-04-13T14:06:30.000Z';
+    const description = 'test get meeting by id description';
+    const status = 'UPCOMING';
+    const ownerId = ctx.userId;
+    const updatedTitle = 'new title';
+    const updatedStartTime = '2021-05-13T14:06:30.000Z';
+    const updatedDescription = 'New description';
+    const updatedStatus = 'ONGOING';
+    const updatedInfo = {
+        title: updatedTitle,
+        startTime: updatedStartTime,
+        description: updatedDescription,
+        status: updatedStatus,
+    };
+    const meeting = await ctx.prisma.meeting.create({
+        data: {
+            title,
+            startTime,
+            description,
+            status,
+            ownerId,
+            participants: {
+                create: {
+                    userId: ctx.userId,
+                    role: 'ADMIN',
+                    isVotingEligible: true,
+                },
+            },
+        },
+    });
+    const updatedMeeting = await ctx.client.request(
+        gql`
+            mutation UpdateMeeting($meeting: UpdateMeetingInput!) {
+                updateMeeting(meeting: $meeting) {
+                    id
+                    title
+                    description
+                    startTime
+                    status
+                }
+            }
+        `,
+        {
+            meeting: {
+                id: meeting.id,
+                ...updatedInfo,
+            },
+        }
+    );
+    expect(updatedMeeting.updateMeeting).toEqual({
+        id: meeting.id,
+        ...updatedInfo,
+    });
+});
+
+// Double check this
+it('should throw error for not authorized when trying to update meeting', async () => {
+    const title = 'test get meeting by id ';
+    const startTime = '2021-04-13T14:06:30.000Z';
+    const description = 'test get meeting by id description';
+    const status = 'UPCOMING';
+    const ownerId = ctx.userId;
+    const updatedTitle = 'new title';
+    const updatedStartTime = '2021-05-13T14:06:30.000Z';
+    const updatedDescription = 'New description';
+    const updatedStatus = 'ONGOING';
+    const updatedInfo = {
+        title: updatedTitle,
+        startTime: updatedStartTime,
+        description: updatedDescription,
+        status: updatedStatus,
+    };
+    const meeting = await ctx.prisma.meeting.create({
+        data: {
+            title,
+            startTime,
+            description,
+            status,
+            ownerId,
+            participants: {
+                create: {
+                    userId: ctx.userId,
+                    role: 'COUNTER',
+                    isVotingEligible: true,
+                },
+            },
+        },
+    });
+    expect(async () => {
+        await ctx.client.request(
+            gql`
+                mutation UpdateMeeting($meeting: UpdateMeetingInput!) {
+                    updateMeeting(meeting: $meeting) {
+                        id
+                        title
+                        description
+                        startTime
+                        status
+                    }
+                }
+            `,
+            {
+                meeting: {
+                    id: meeting.id,
+                    ...updatedInfo,
+                },
+            }
+        );
+    }).rejects.toThrow();
+});

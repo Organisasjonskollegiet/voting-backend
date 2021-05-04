@@ -36,14 +36,48 @@ export const is_voting_eligible = rule({ cache: 'contextual' })(async (_, { meet
 });
 
 /**
- * Rule: The user is an Admin of the meeting
+ * Rule: The user is an Admin of the meeting that the alternative with id belongs to
  */
-export const isAdminOfMeeting = rule({ cache: 'strict' })(async (_, { votation }, ctx: Context) => {
+export const isAdminOfAlternative = rule({ cache: 'strict' })(async (_, { id }, ctx: Context) => {
+    const votation = await ctx.prisma.votation.findFirst({
+        where: {
+            alternatives: { some: { id } },
+        },
+    });
+    if (!votation) return false;
+    return await checkIsAdminOfMeetingId(votation.meetingId, ctx);
+});
+
+/**
+ * Rule: The user is an Admin of the meeting that the votation belongs to
+ */
+export const isAdminOfVotation = rule({ cache: 'strict' })(async (_, { votation }, ctx: Context) => {
+    return await checkIsAdminOfMeetingId(votation.meetingId, ctx);
+});
+
+/**
+ * Rule: The user is an Admin of the meeting where meeting id is input parameter
+ */
+export const isAdminOfMeetingById = rule({ cache: 'strict' })(async (_, { meetingId }, ctx: Context) => {
+    return await checkIsAdminOfMeetingId(meetingId, ctx);
+});
+
+/**
+ * Rule: The user is an Admin of the meeting where meeting object is input parameter
+ */
+export const isAdminOfMeetingByObject = rule({ cache: 'strict' })(async (_, { meeting }, ctx: Context) => {
+    return await checkIsAdminOfMeetingId(meeting.id, ctx);
+});
+
+/**
+ * Helper function for checking if person is admin of meeting
+ */
+const checkIsAdminOfMeetingId = async (meetingId: string, ctx: Context) => {
     const particpant = await ctx.prisma.participant.findUnique({
-        where: { userId_meetingId: { userId: ctx.userId, meetingId: votation.meetingId } },
+        where: { userId_meetingId: { userId: ctx.userId, meetingId: meetingId } },
     });
     return particpant ? particpant.role === 'ADMIN' : false;
-});
+};
 
 /**
  * Rule: The user is an Counter of the meeting
