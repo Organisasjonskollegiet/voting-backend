@@ -6,6 +6,7 @@ import {
     isAdminOfMeetingById,
     isAdminOfMeetingByObject,
     isAdminOfVotation,
+    isAdminOfVotationByMeetingId,
     isAdminOfAlternative,
     isCounterOfMeeting,
 } from './rules';
@@ -19,7 +20,7 @@ const permissions = shield(
         },
         Mutation: {
             castVote: and(isParticipantOfVotation),
-            createVotation: and(isAdminOfVotation),
+            createVotation: and(isAdminOfVotationByMeetingId),
             updateMeeting: and(isAdminOfMeetingByObject),
             updateVotation: and(isAdminOfVotation),
             updateAlternative: and(isAdminOfAlternative),
