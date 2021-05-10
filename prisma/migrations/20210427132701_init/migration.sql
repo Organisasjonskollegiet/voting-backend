@@ -57,10 +57,10 @@ CREATE TABLE "Votation" (
 -- CreateTable
 CREATE TABLE "HasVoted" (
     "votationId" UUID NOT NULL,
-    "participantId" UUID NOT NULL,
+    "userId" UUID NOT NULL,
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
 
-    PRIMARY KEY ("participantId","votationId")
+    PRIMARY KEY ("userId","votationId")
 );
 
 -- CreateTable
@@ -106,7 +106,7 @@ ALTER TABLE "Votation" ADD FOREIGN KEY ("meetingId") REFERENCES "Meeting"("id") 
 ALTER TABLE "HasVoted" ADD FOREIGN KEY ("votationId") REFERENCES "Votation"("id") ON DELETE CASCADE ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "HasVoted" ADD FOREIGN KEY ("participantId") REFERENCES "Participant"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+ALTER TABLE "HasVoted" ADD FOREIGN KEY ("userId") REFERENCES "User"("id") ON DELETE CASCADE ON UPDATE CASCADE;
 
 -- AddForeignKey
 ALTER TABLE "Alternative" ADD FOREIGN KEY ("votationId") REFERENCES "Votation"("id") ON DELETE CASCADE ON UPDATE CASCADE;

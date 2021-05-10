@@ -38,9 +38,9 @@ export const is_voting_eligible = rule({ cache: 'contextual' })(async (_, { meet
 /**
  * Rule: The user is an Admin of the meeting
  */
-export const isAdminOfMeeting = rule({ cache: 'strict' })(async (_, { meetingId }, ctx: Context) => {
+export const isAdminOfMeeting = rule({ cache: 'strict' })(async (_, { votation }, ctx: Context) => {
     const particpant = await ctx.prisma.participant.findUnique({
-        where: { userId_meetingId: { userId: ctx.userId, meetingId } },
+        where: { userId_meetingId: { userId: ctx.userId, meetingId: votation.meetingId } },
     });
     return particpant ? particpant.role === 'ADMIN' : false;
 });

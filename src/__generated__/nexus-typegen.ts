@@ -22,12 +22,7 @@ declare global {
     datetime<FieldName extends string>(fieldName: FieldName, ...opts: core.ScalarOutSpread<TypeName, FieldName>): void // "DateTime";
   }
 }
-declare global {
-  interface NexusGenCustomOutputProperties<TypeName extends string> {
-    model: NexusPrisma<TypeName, 'model'>
-    crud: any
-  }
-}
+
 
 declare global {
   interface NexusGen extends NexusGenTypes {}
@@ -131,7 +126,7 @@ export interface NexusGenFieldTypes {
   Meeting: { // field return type
     description: string | null; // String
     id: string; // ID!
-    owner: NexusGenRootTypes['User']; // User!
+    owner: NexusGenRootTypes['User'] | null; // User
     participants: Array<NexusGenRootTypes['Participant'] | null>; // [Participant]!
     startTime: NexusGenScalars['DateTime']; // DateTime!
     status: NexusGenEnums['Status']; // Status!
