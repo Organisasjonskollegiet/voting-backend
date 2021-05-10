@@ -54,6 +54,15 @@ type Mutation {
   """"""
   createMeeting(meeting: CreateMeetingInput!): Meeting
   createVotation(votation: CreateVotationInput!): Votation
+
+  """"""
+  updateAlternative(id: String!, text: String!): Alternative
+
+  """"""
+  updateMeeting(meeting: UpdateMeetingInput!): Meeting
+
+  """"""
+  updateVotation(votation: UpdateVotationInput!): Votation
 }
 
 type Participant {
@@ -71,6 +80,7 @@ type Query {
   """Find a meeting by id from meetings youre participating in"""
   meetingsById(meetingId: String!): Meeting
   user: GetUserResult
+  votationById(votationId: ID!): Votation
 }
 
 enum Role {
@@ -83,6 +93,23 @@ enum Status {
   ENDED
   ONGOING
   UPCOMING
+}
+
+input UpdateMeetingInput {
+  description: String
+  id: String!
+  startTime: DateTime
+  status: Status
+  title: String
+}
+
+input UpdateVotationInput {
+  blankVotes: Boolean!
+  description: String!
+  id: String!
+  majorityThreshold: Int!
+  majorityType: MajorityType!
+  title: String!
 }
 
 type User {
