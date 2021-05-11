@@ -42,9 +42,122 @@ const staticVotationData: StaticVotationDataType = {
     majorityThreshold,
 };
 
+const updatedVotationTitle = 'updated votation title';
+const updatedVotationDescription = 'updated votation description';
+const updatedMajorityType = 'QUALIFIED';
+const updatedBlankVotes = true;
+const updatedMajorityThreshold = 60;
+const updatedStaticVotationData: StaticVotationDataType = {
+    title: updatedVotationTitle,
+    description: updatedVotationDescription,
+    blankVotes: updatedBlankVotes,
+    majorityType: updatedMajorityType,
+    majorityThreshold: updatedMajorityThreshold,
+};
+
 const alternative1Text = 'alternative1 text';
 
 const alternative2Text = 'alternative2 text';
+
+it('should return votation by id', async () => {
+    const meetingOwnerId = ctx.userId;
+    const meeting = await ctx.prisma.meeting.create({
+        data: {
+            ...staticMeetingData,
+            ownerId: meetingOwnerId,
+            participants: {
+                create: {
+                    userId: ctx.userId,
+                    role: 'COUNTER',
+                    isVotingEligible: true,
+                },
+            },
+        },
+    });
+    const meetingId = meeting.id;
+    const votationStatus = 'UPCOMING';
+    const votation = await ctx.prisma.votation.create({
+        data: {
+            ...staticVotationData,
+            status: votationStatus,
+            meetingId,
+        },
+    });
+
+    const votationId = votation.id;
+
+    const getVotation = await ctx.client.request(
+        gql`
+            query GetVotationById($votationId: ID!) {
+                votationById(votationId: $votationId) {
+                    id
+                    title
+                    description
+                    blankVotes
+                    majorityType
+                    majorityThreshold
+                    meetingId
+                }
+            }
+        `,
+        {
+            votationId,
+        }
+    );
+    expect(getVotation.votationById).toEqual({
+        id: votationId,
+        ...staticVotationData,
+        meetingId,
+    });
+});
+
+it('should throw error from votation by id', async () => {
+    const meetingOwnerId = ctx.userId;
+    const meeting = await ctx.prisma.meeting.create({
+        data: {
+            ...staticMeetingData,
+            ownerId: meetingOwnerId,
+            participants: {
+                create: {
+                    userId: ctx.userId,
+                    role: 'COUNTER',
+                    isVotingEligible: true,
+                },
+            },
+        },
+    });
+    const meetingId = meeting.id;
+    const votationStatus = 'UPCOMING';
+    const votation = await ctx.prisma.votation.create({
+        data: {
+            ...staticVotationData,
+            status: votationStatus,
+            meetingId,
+        },
+    });
+
+    expect(
+        async () =>
+            await ctx.client.request(
+                gql`
+                    query GetVotationById($votationId: ID!) {
+                        votationById(votationId: $votationId) {
+                            id
+                            title
+                            description
+                            blankVotes
+                            majorityType
+                            majorityThreshold
+                            meetingId
+                        }
+                    }
+                `,
+                {
+                    votationId: '1',
+                }
+            )
+    ).rejects.toThrow();
+});
 
 it('should return alternatives by votation successfully', async () => {
     const meetingOwnerId = ctx.userId;
@@ -206,6 +319,100 @@ it('should create votation successfully', async () => {
     expect(createVotation.createVotation).toEqual({
         ...variables.votation,
     });
+});
+
+it('should update votation successfully', async () => {
+    const meetingOwnerId = ctx.userId;
+    const meeting = await ctx.prisma.meeting.create({
+        data: {
+            ...staticMeetingData,
+            ownerId: meetingOwnerId,
+            participants: {
+                create: {
+                    userId: ctx.userId,
+                    role: 'ADMIN',
+                    isVotingEligible: true,
+                },
+            },
+        },
+    });
+    const votation = await ctx.prisma.votation.create({
+        data: {
+            ...staticVotationData,
+            meetingId: meeting.id,
+        },
+    });
+    const variables = {
+        votation: {
+            id: votation.id,
+            ...updatedStaticVotationData,
+        },
+    };
+    const updateVotation = await ctx.client.request(
+        gql`
+            mutation UpdateVotation($votation: UpdateVotationInput!) {
+                updateVotation(votation: $votation) {
+                    id
+                    title
+                    description
+                    blankVotes
+                    majorityType
+                    majorityThreshold
+                }
+            }
+        `,
+        variables
+    );
+    expect(updateVotation.updateVotation).toEqual({
+        ...variables.votation,
+    });
+});
+
+it('should not update votation successfully', async () => {
+    const meetingOwnerId = ctx.userId;
+    const meeting = await ctx.prisma.meeting.create({
+        data: {
+            ...staticMeetingData,
+            ownerId: meetingOwnerId,
+            participants: {
+                create: {
+                    userId: ctx.userId,
+                    role: 'COUNTER',
+                    isVotingEligible: true,
+                },
+            },
+        },
+    });
+    const votation = await ctx.prisma.votation.create({
+        data: {
+            ...staticVotationData,
+            meetingId: meeting.id,
+        },
+    });
+    const variables = {
+        votation: {
+            id: votation.id,
+            ...updatedStaticVotationData,
+        },
+    };
+    expect(
+        async () =>
+            await ctx.client.request(
+                gql`
+                    mutation UpdateVotation($votation: UpdateVotationInput!) {
+                        updateVotation(votation: $votation) {
+                            id
+                            title
+                            description
+                            blankVotes
+                            majorityType
+                            majorityThreshold
+                        }
+                    }
+                `,
+                variables
+            )
+    ).rejects.toThrow();
 });
 
 it('should not create votation successfully', async () => {
