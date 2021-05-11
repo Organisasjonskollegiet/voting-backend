@@ -66,6 +66,7 @@ export const DeleteVotationMutation = mutationField('deleteVotation', {
         id: nonNull(stringArg()),
     },
     resolve: async (_, { id }, ctx) => {
+        await ctx.prisma.alternative.deleteMany({ where: { votationId: id } });
         const deletedVotation = await ctx.prisma.votation.delete({
             where: {
                 id,

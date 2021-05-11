@@ -535,3 +535,42 @@ it('should not create alternative successfully', async () => {
             )
     ).rejects.toThrow();
 });
+
+it('should delete votation successfully', async () => {
+    const meetingOwnerId = ctx.userId;
+    const meeting = await ctx.prisma.meeting.create({
+        data: {
+            ...staticMeetingData,
+            ownerId: meetingOwnerId,
+            participants: {
+                create: {
+                    userId: ctx.userId,
+                    role: 'ADMIN',
+                    isVotingEligible: true,
+                },
+            },
+        },
+    });
+    const votation = await ctx.prisma.votation.create({
+        data: {
+            ...staticVotationData,
+            meetingId: meeting.id,
+        },
+    });
+    const variables = {
+        text: alternative1Text,
+        votationId: votation.id,
+    };
+    const createAlternative = await ctx.client.request(
+        gql`
+            mutation CreateAlternative($text: String!, $votationId: String!) {
+                createAlternative(text: $text, votationId: $votationId) {
+                    text
+                    votationId
+                }
+            }
+        `,
+        variables
+    );
+    expect(createAlternative.createAlternative).toEqual(variables);
+});
