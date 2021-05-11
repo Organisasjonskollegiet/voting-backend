@@ -1,19 +1,52 @@
 import { createTestContext } from '../../../lib/tests/testContext';
 import { gql } from 'graphql-request';
-import { password, uuid } from 'casual';
+import { Role, Status } from '.prisma/client';
+import { create } from 'node:domain';
 const ctx = createTestContext();
 
-it('should create a meeting successfully', async () => {
-    const title = 'test creation title';
-    const startTime = '2021-04-13T11:45:43.000Z';
-    const description = 'test creation description';
-    const variables = {
-        meeting: {
-            title,
-            startTime,
-            description,
+interface StaticMeetingDataType {
+    title: string;
+    startTime: string;
+    description: string;
+    status: Status;
+}
+
+const meetingTitle = 'title';
+const meetingStartTime = '2021-04-13T11:45:43.000Z';
+const meetingDescription = 'description';
+const meetingStatus = 'UPCOMING';
+const createMeetingVariables = {
+    meeting: {
+        title: meetingTitle,
+        startTime: meetingStartTime,
+        description: meetingDescription,
+    },
+};
+
+const staticMeetingData: StaticMeetingDataType = {
+    title: meetingTitle,
+    startTime: meetingStartTime,
+    description: meetingDescription,
+    status: meetingStatus,
+};
+
+const createMeeting = async (ownerId: string, role: Role) => {
+    return await ctx.prisma.meeting.create({
+        data: {
+            ...staticMeetingData,
+            ownerId,
+            participants: {
+                create: {
+                    userId: ownerId,
+                    role,
+                    isVotingEligible: true,
+                },
+            },
         },
-    };
+    });
+};
+
+it('should create a meeting successfully', async () => {
     const createMeeting = await ctx.client.request(
         gql`
             mutation CreateMeeting($meeting: CreateMeetingInput!) {
@@ -34,11 +67,11 @@ it('should create a meeting successfully', async () => {
                 }
             }
         `,
-        variables
+        createMeetingVariables
     );
     const meeting = createMeeting.createMeeting;
     expect(meeting).toEqual({
-        ...variables.meeting,
+        ...createMeetingVariables.meeting,
         owner: {
             id: ctx.userId,
         },
@@ -55,27 +88,7 @@ it('should create a meeting successfully', async () => {
 });
 
 it('should return meetings where you are admin successfully', async () => {
-    const title = 'test get meeting';
-    const startTime = '2021-04-13T11:29:58.000Z';
-    const description = 'test get meeting description';
-    const status = 'UPCOMING';
-    const ownerId = ctx.userId;
-    const meeting = await ctx.prisma.meeting.create({
-        data: {
-            title,
-            startTime,
-            description,
-            status,
-            ownerId,
-            participants: {
-                create: {
-                    userId: ctx.userId,
-                    role: 'ADMIN',
-                    isVotingEligible: true,
-                },
-            },
-        },
-    });
+    const meeting = await createMeeting(ctx.userId, 'ADMIN');
     const getMeetings = await ctx.client.request(
         gql`
             query GetMeetings {
@@ -96,7 +109,7 @@ it('should return meetings where you are admin successfully', async () => {
     expect(meetings[0]).toEqual({
         id: meeting.id,
         title: meeting.title,
-        startTime,
+        startTime: meetingStartTime,
         status: meeting.status,
         description: meeting.description,
         owner: {
@@ -106,27 +119,7 @@ it('should return meetings where you are admin successfully', async () => {
 });
 
 it('should return meetings where you are counter successfully', async () => {
-    const title = 'test get meeting';
-    const startTime = '2021-04-13T11:29:58.000Z';
-    const description = 'test get meeting description';
-    const status = 'UPCOMING';
-    const ownerId = ctx.userId;
-    const meeting = await ctx.prisma.meeting.create({
-        data: {
-            title,
-            startTime,
-            description,
-            status,
-            ownerId,
-            participants: {
-                create: {
-                    userId: ctx.userId,
-                    role: 'COUNTER',
-                    isVotingEligible: true,
-                },
-            },
-        },
-    });
+    const meeting = await createMeeting(ctx.userId, 'COUNTER');
     const getMeetings = await ctx.client.request(
         gql`
             query GetMeetings {
@@ -147,7 +140,7 @@ it('should return meetings where you are counter successfully', async () => {
     expect(meetings[0]).toEqual({
         id: meeting.id,
         title: meeting.title,
-        startTime,
+        startTime: meetingStartTime,
         status: meeting.status,
         description: meeting.description,
         owner: {
@@ -157,27 +150,7 @@ it('should return meetings where you are counter successfully', async () => {
 });
 
 it('should return meetings where you are participant successfully', async () => {
-    const title = 'test get meeting';
-    const startTime = '2021-04-13T11:29:58.000Z';
-    const description = 'test get meeting description';
-    const status = 'UPCOMING';
-    const ownerId = ctx.userId;
-    const meeting = await ctx.prisma.meeting.create({
-        data: {
-            title,
-            startTime,
-            description,
-            status,
-            ownerId,
-            participants: {
-                create: {
-                    userId: ctx.userId,
-                    role: 'PARTICIPANT',
-                    isVotingEligible: true,
-                },
-            },
-        },
-    });
+    const meeting = await createMeeting(ctx.userId, 'PARTICIPANT');
     const getMeetings = await ctx.client.request(
         gql`
             query GetMeetings {
@@ -198,7 +171,7 @@ it('should return meetings where you are participant successfully', async () => 
     expect(meetings[0]).toEqual({
         id: meeting.id,
         title: meeting.title,
-        startTime,
+        startTime: meetingStartTime,
         status: meeting.status,
         description: meeting.description,
         owner: {
@@ -208,17 +181,10 @@ it('should return meetings where you are participant successfully', async () => 
 });
 
 it('should not return meetings where you are not participating', async () => {
-    const title = 'test get meeting';
-    const startTime = '2021-04-13T11:29:58.000Z';
-    const description = 'test get meeting description';
-    const status = 'UPCOMING';
     const ownerId = ctx.userId;
-    const meeting = await ctx.prisma.meeting.create({
+    await ctx.prisma.meeting.create({
         data: {
-            title,
-            startTime,
-            description,
-            status,
+            ...staticMeetingData,
             ownerId,
         },
     });
@@ -243,27 +209,7 @@ it('should not return meetings where you are not participating', async () => {
 });
 
 it('should return a meeting by id successfully', async () => {
-    const title = 'test get meeting by id ';
-    const startTime = '2021-04-13T14:06:30.000Z';
-    const description = 'test get meeting by id description';
-    const status = 'UPCOMING';
-    const ownerId = ctx.userId;
-    const meeting = await ctx.prisma.meeting.create({
-        data: {
-            title,
-            startTime,
-            description,
-            status,
-            ownerId,
-            participants: {
-                create: {
-                    userId: ctx.userId,
-                    role: 'ADMIN',
-                    isVotingEligible: true,
-                },
-            },
-        },
-    });
+    const meeting = await createMeeting(ctx.userId, 'ADMIN');
     const getMeeting = await ctx.client.request(
         gql`
             query GetMeetingsById($meetingId: String!) {
@@ -287,7 +233,7 @@ it('should return a meeting by id successfully', async () => {
     expect(meetingResult).toEqual({
         id: meeting.id,
         title: meeting.title,
-        startTime,
+        startTime: meetingStartTime,
         status: meeting.status,
         description: meeting.description,
         owner: {
@@ -297,11 +243,6 @@ it('should return a meeting by id successfully', async () => {
 });
 
 it('should update meeting successfully', async () => {
-    const title = 'test get meeting by id ';
-    const startTime = '2021-04-13T14:06:30.000Z';
-    const description = 'test get meeting by id description';
-    const status = 'UPCOMING';
-    const ownerId = ctx.userId;
     const updatedTitle = 'new title';
     const updatedStartTime = '2021-05-13T14:06:30.000Z';
     const updatedDescription = 'New description';
@@ -312,22 +253,7 @@ it('should update meeting successfully', async () => {
         description: updatedDescription,
         status: updatedStatus,
     };
-    const meeting = await ctx.prisma.meeting.create({
-        data: {
-            title,
-            startTime,
-            description,
-            status,
-            ownerId,
-            participants: {
-                create: {
-                    userId: ctx.userId,
-                    role: 'ADMIN',
-                    isVotingEligible: true,
-                },
-            },
-        },
-    });
+    const meeting = await createMeeting(ctx.userId, 'ADMIN');
     const updatedMeeting = await ctx.client.request(
         gql`
             mutation UpdateMeeting($meeting: UpdateMeetingInput!) {
@@ -355,11 +281,6 @@ it('should update meeting successfully', async () => {
 
 // Double check this
 it('should throw error for not authorized when trying to update meeting', async () => {
-    const title = 'test get meeting by id ';
-    const startTime = '2021-04-13T14:06:30.000Z';
-    const description = 'test get meeting by id description';
-    const status = 'UPCOMING';
-    const ownerId = ctx.userId;
     const updatedTitle = 'new title';
     const updatedStartTime = '2021-05-13T14:06:30.000Z';
     const updatedDescription = 'New description';
@@ -370,22 +291,7 @@ it('should throw error for not authorized when trying to update meeting', async 
         description: updatedDescription,
         status: updatedStatus,
     };
-    const meeting = await ctx.prisma.meeting.create({
-        data: {
-            title,
-            startTime,
-            description,
-            status,
-            ownerId,
-            participants: {
-                create: {
-                    userId: ctx.userId,
-                    role: 'COUNTER',
-                    isVotingEligible: true,
-                },
-            },
-        },
-    });
+    const meeting = await createMeeting(ctx.userId, 'COUNTER');
     expect(async () => {
         await ctx.client.request(
             gql`
@@ -410,27 +316,7 @@ it('should throw error for not authorized when trying to update meeting', async 
 });
 
 it('should delete meeting successfully', async () => {
-    const title = 'test get meeting by id ';
-    const startTime = '2021-04-13T14:06:30.000Z';
-    const description = 'test get meeting by id description';
-    const status = 'UPCOMING';
-    const ownerId = ctx.userId;
-    const meeting = await ctx.prisma.meeting.create({
-        data: {
-            title,
-            startTime,
-            description,
-            status,
-            ownerId,
-            participants: {
-                create: {
-                    userId: ctx.userId,
-                    role: 'ADMIN',
-                    isVotingEligible: true,
-                },
-            },
-        },
-    });
+    const meeting = await createMeeting(ctx.userId, 'ADMIN');
     const votation = await ctx.prisma.votation.create({
         data: {
             title: 'votationTitle',
@@ -464,33 +350,13 @@ it('should delete meeting successfully', async () => {
 });
 
 it('should not delete meeting successfully', async () => {
-    const title = 'test get meeting by id ';
-    const startTime = '2021-04-13T14:06:30.000Z';
-    const description = 'test get meeting by id description';
-    const status = 'UPCOMING';
     const user = await ctx.prisma.user.create({
         data: {
             email: 'e@mail.com',
             password: 'secret',
         },
     });
-    const ownerId = user.id;
-    const meeting = await ctx.prisma.meeting.create({
-        data: {
-            title,
-            startTime,
-            description,
-            status,
-            ownerId,
-            participants: {
-                create: {
-                    userId: ownerId,
-                    role: 'ADMIN',
-                    isVotingEligible: true,
-                },
-            },
-        },
-    });
+    const meeting = await createMeeting(user.id, 'ADMIN');
     try {
         await ctx.client.request(
             gql`
