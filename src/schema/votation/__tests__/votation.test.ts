@@ -557,20 +557,76 @@ it('should delete votation successfully', async () => {
             meetingId: meeting.id,
         },
     });
-    const variables = {
-        text: alternative1Text,
-        votationId: votation.id,
-    };
-    const createAlternative = await ctx.client.request(
+    await ctx.prisma.alternative.create({
+        data: {
+            text: 'alternative',
+            votationId: votation.id,
+        },
+    });
+    await ctx.client.request(
         gql`
-            mutation CreateAlternative($text: String!, $votationId: String!) {
-                createAlternative(text: $text, votationId: $votationId) {
-                    text
-                    votationId
+            mutation DeleteVotation($id: String!) {
+                deleteVotation(id: $id) {
+                    id
                 }
             }
         `,
-        variables
+        {
+            id: votation.id,
+        }
     );
-    expect(createAlternative.createAlternative).toEqual(variables);
+    const numberOfVotationsWithId = await ctx.prisma.votation.count({ where: { id: votation.id } });
+    expect(numberOfVotationsWithId).toEqual(0);
+});
+
+it('should not delete votation successfully', async () => {
+    const meetingOwner = await ctx.prisma.user.create({
+        data: {
+            email: 'e@mail.com',
+            password: 'secret',
+        },
+    });
+    const meetingOwnerId = meetingOwner.id;
+    const meeting = await ctx.prisma.meeting.create({
+        data: {
+            ...staticMeetingData,
+            ownerId: meetingOwnerId,
+            participants: {
+                create: {
+                    userId: meetingOwnerId,
+                    role: 'ADMIN',
+                    isVotingEligible: true,
+                },
+            },
+        },
+    });
+    const votation = await ctx.prisma.votation.create({
+        data: {
+            ...staticVotationData,
+            meetingId: meeting.id,
+        },
+    });
+    await ctx.prisma.alternative.create({
+        data: {
+            text: 'alternative',
+            votationId: votation.id,
+        },
+    });
+    try {
+        await ctx.client.request(
+            gql`
+                mutation DeleteVotation($id: String!) {
+                    deleteVotation(id: $id) {
+                        id
+                    }
+                }
+            `,
+            {
+                id: votation.id,
+            }
+        );
+        expect(false).toBeTruthy();
+    } catch (error) {
+        expect(error.message).toContain('Not Authorised!');
+    }
 });
