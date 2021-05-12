@@ -6,17 +6,20 @@ it('should create a meeting successfully', async () => {
     const title = 'test creation title';
     const startTime = '2021-04-13T11:45:43.000Z';
     const description = 'test creation description';
+    const organization = 'organization';
     const variables = {
         meeting: {
             title,
             startTime,
             description,
+            organization,
         },
     };
     const createMeeting = await ctx.client.request(
         gql`
             mutation CreateMeeting($meeting: CreateMeetingInput!) {
                 createMeeting(meeting: $meeting) {
+                    organization
                     title
                     description
                     startTime
@@ -58,10 +61,12 @@ it('should return meetings where you are admin successfully', async () => {
     const startTime = '2021-04-13T11:29:58.000Z';
     const description = 'test get meeting description';
     const status = 'UPCOMING';
+    const organization = 'organization';
     const ownerId = ctx.userId;
     const meeting = await ctx.prisma.meeting.create({
         data: {
             title,
+            organization,
             startTime,
             description,
             status,
@@ -105,6 +110,7 @@ it('should return meetings where you are admin successfully', async () => {
 });
 
 it('should return meetings where you are counter successfully', async () => {
+    const organization = 'organization';
     const title = 'test get meeting';
     const startTime = '2021-04-13T11:29:58.000Z';
     const description = 'test get meeting description';
@@ -112,6 +118,7 @@ it('should return meetings where you are counter successfully', async () => {
     const ownerId = ctx.userId;
     const meeting = await ctx.prisma.meeting.create({
         data: {
+            organization,
             title,
             startTime,
             description,
@@ -156,6 +163,7 @@ it('should return meetings where you are counter successfully', async () => {
 });
 
 it('should return meetings where you are participant successfully', async () => {
+    const organization = 'organization';
     const title = 'test get meeting';
     const startTime = '2021-04-13T11:29:58.000Z';
     const description = 'test get meeting description';
@@ -163,6 +171,7 @@ it('should return meetings where you are participant successfully', async () => 
     const ownerId = ctx.userId;
     const meeting = await ctx.prisma.meeting.create({
         data: {
+            organization,
             title,
             startTime,
             description,
@@ -207,6 +216,7 @@ it('should return meetings where you are participant successfully', async () => 
 });
 
 it('should not return meetings where you are not participating', async () => {
+    const organization = 'organization';
     const title = 'test get meeting';
     const startTime = '2021-04-13T11:29:58.000Z';
     const description = 'test get meeting description';
@@ -214,6 +224,7 @@ it('should not return meetings where you are not participating', async () => {
     const ownerId = ctx.userId;
     const meeting = await ctx.prisma.meeting.create({
         data: {
+            organization,
             title,
             startTime,
             description,
@@ -242,6 +253,7 @@ it('should not return meetings where you are not participating', async () => {
 });
 
 it('should return a meeting by id successfully', async () => {
+    const organization = 'organization';
     const title = 'test get meeting by id ';
     const startTime = '2021-04-13T14:06:30.000Z';
     const description = 'test get meeting by id description';
@@ -249,6 +261,7 @@ it('should return a meeting by id successfully', async () => {
     const ownerId = ctx.userId;
     const meeting = await ctx.prisma.meeting.create({
         data: {
+            organization,
             title,
             startTime,
             description,
@@ -296,6 +309,7 @@ it('should return a meeting by id successfully', async () => {
 });
 
 it('should update meeting successfully', async () => {
+    const organization = 'organization';
     const title = 'test get meeting by id ';
     const startTime = '2021-04-13T14:06:30.000Z';
     const description = 'test get meeting by id description';
@@ -313,6 +327,7 @@ it('should update meeting successfully', async () => {
     };
     const meeting = await ctx.prisma.meeting.create({
         data: {
+            organization,
             title,
             startTime,
             description,
@@ -354,6 +369,7 @@ it('should update meeting successfully', async () => {
 
 // Double check this
 it('should throw error for not authorized when trying to update meeting', async () => {
+    const organization = 'organization';
     const title = 'test get meeting by id ';
     const startTime = '2021-04-13T14:06:30.000Z';
     const description = 'test get meeting by id description';
@@ -371,6 +387,7 @@ it('should throw error for not authorized when trying to update meeting', async 
     };
     const meeting = await ctx.prisma.meeting.create({
         data: {
+            organization,
             title,
             startTime,
             description,

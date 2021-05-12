@@ -5,6 +5,7 @@ import { Meeting } from './typedefs';
 export const CreateMeetingInput = inputObjectType({
     name: 'CreateMeetingInput',
     definition(t) {
+        t.nonNull.string('organization');
         t.nonNull.string('title');
         t.nonNull.datetime('startTime');
         t.nonNull.string('description', { default: 'Ingen beskrivelse satt.' });
@@ -15,6 +16,7 @@ export const UpdateMeetingInput = inputObjectType({
     name: 'UpdateMeetingInput',
     definition(t) {
         t.nonNull.string('id');
+        t.string('organization');
         t.string('title');
         t.datetime('startTime');
         t.string('description');
