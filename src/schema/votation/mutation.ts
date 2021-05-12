@@ -93,6 +93,22 @@ export const UpdateAlternativeMutation = mutationField('updateAlternative', {
     },
 });
 
+export const DeleteAlternativeMutation = mutationField('deleteAlternative', {
+    type: Alternative,
+    description: '',
+    args: {
+        id: nonNull(stringArg()),
+    },
+    resolve: async (_, { id }, ctx) => {
+        const deletedAlternative = await ctx.prisma.alternative.delete({
+            where: {
+                id,
+            },
+        });
+        return deletedAlternative;
+    },
+});
+
 export const CastVoteMutation = mutationField('castVote', {
     type: Vote,
     args: {

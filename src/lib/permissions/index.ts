@@ -24,6 +24,7 @@ const permissions = shield(
             updateMeeting: and(isAdminOfMeetingByObject),
             updateVotation: and(isAdminOfVotation),
             updateAlternative: and(isAdminOfAlternative),
+            deleteAlternative: and(isAdminOfAlternative),
         },
         Alternative: {
             votes: or(isAdminOfMeetingById, isCounterOfMeeting),
