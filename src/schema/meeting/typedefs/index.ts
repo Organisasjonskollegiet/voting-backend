@@ -63,3 +63,5 @@ export const Participant = objectType({
         });
     },
 });
+
+export * from './results';

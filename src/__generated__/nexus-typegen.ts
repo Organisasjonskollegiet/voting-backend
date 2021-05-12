@@ -88,6 +88,9 @@ export interface NexusGenObjects {
     title: string; // String!
   }
   Mutation: {};
+  OwnerCannotBeRemovedFromParticipantError: { // root type
+    message: string; // String!
+  }
   Participant: { // root type
     isVotingEligible: boolean; // Boolean!
     role: NexusGenEnums['Role']; // Role!
@@ -124,6 +127,7 @@ export interface NexusGenInterfaces {
 }
 
 export interface NexusGenUnions {
+  DeleteParticipantResult: core.Discriminate<'OwnerCannotBeRemovedFromParticipantError', 'required'> | core.Discriminate<'Participant', 'required'>;
   GetUserResult: core.Discriminate<'User', 'required'> | core.Discriminate<'UserNotFoundError', 'required'>;
 }
 
@@ -153,9 +157,13 @@ export interface NexusGenFieldTypes {
     createAlternative: NexusGenRootTypes['Alternative'] | null; // Alternative
     createMeeting: NexusGenRootTypes['Meeting'] | null; // Meeting
     createVotation: NexusGenRootTypes['Votation'] | null; // Votation
+    deleteParticipant: NexusGenRootTypes['DeleteParticipantResult'] | null; // DeleteParticipantResult
     updateAlternative: NexusGenRootTypes['Alternative'] | null; // Alternative
     updateMeeting: NexusGenRootTypes['Meeting'] | null; // Meeting
     updateVotation: NexusGenRootTypes['Votation'] | null; // Votation
+  }
+  OwnerCannotBeRemovedFromParticipantError: { // field return type
+    message: string; // String!
   }
   Participant: { // field return type
     isVotingEligible: boolean; // Boolean!
@@ -222,9 +230,13 @@ export interface NexusGenFieldTypeNames {
     createAlternative: 'Alternative'
     createMeeting: 'Meeting'
     createVotation: 'Votation'
+    deleteParticipant: 'DeleteParticipantResult'
     updateAlternative: 'Alternative'
     updateMeeting: 'Meeting'
     updateVotation: 'Votation'
+  }
+  OwnerCannotBeRemovedFromParticipantError: { // field return type name
+    message: 'String'
   }
   Participant: { // field return type name
     isVotingEligible: 'Boolean'
@@ -285,6 +297,10 @@ export interface NexusGenArgTypes {
     createVotation: { // args
       votation: NexusGenInputs['CreateVotationInput']; // CreateVotationInput!
     }
+    deleteParticipant: { // args
+      meetingId: string; // String!
+      userId: string; // String!
+    }
     updateAlternative: { // args
       id: string; // String!
       text: string; // String!
@@ -310,6 +326,7 @@ export interface NexusGenArgTypes {
 }
 
 export interface NexusGenAbstractTypeMembers {
+  DeleteParticipantResult: "OwnerCannotBeRemovedFromParticipantError" | "Participant"
   GetUserResult: "User" | "UserNotFoundError"
 }
 
