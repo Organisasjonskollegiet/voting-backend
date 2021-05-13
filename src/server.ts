@@ -9,19 +9,19 @@ import { protectedSchema } from './schema';
 import cors from 'cors';
 import 'dotenv/config';
 import { Context } from './context';
+import { PubSub } from 'graphql-subscriptions';
+
+const pubsub = new PubSub();
 
 export const createApollo = (prisma: PrismaClient) => {
     const server = new ApolloServer({
         context: async ({ req }): Promise<Context> => {
             const userId = await userFromRequest(req);
-            return { userId, prisma };
+            return { userId, prisma, pubsub };
         },
         schema: protectedSchema,
         mocks: process.env.MOCKING == 'true' && simpleMock,
         tracing: process.env.NODE_ENV == 'development',
-        subscriptions: {
-            path: '/subscriptions',
-        },
     });
     return server;
 };
