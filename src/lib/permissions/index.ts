@@ -5,10 +5,12 @@ import {
     isParticipantOfVotation,
     isAdminOfMeetingById,
     isAdminOfMeetingByObject,
-    isAdminOfVotation,
+    isAdminOfVotationByObject,
+    isAdminOfVotationById,
     isAdminOfVotationByMeetingId,
     isAdminOfAlternative,
     isCounterOfMeeting,
+    isOwnerOfMeeting,
 } from './rules';
 
 const permissions = shield(
@@ -22,8 +24,12 @@ const permissions = shield(
             castVote: and(isParticipantOfVotation),
             createVotation: and(isAdminOfVotationByMeetingId),
             updateMeeting: and(isAdminOfMeetingByObject),
-            updateVotation: and(isAdminOfVotation),
+            updateVotation: and(isAdminOfVotationByObject),
             updateAlternative: and(isAdminOfAlternative),
+            deleteParticipant: and(isAdminOfMeetingById),
+            deleteAlternative: and(isAdminOfAlternative),
+            deleteVotation: and(isAdminOfVotationById),
+            deleteMeeting: and(isOwnerOfMeeting),
         },
         Alternative: {
             votes: or(isAdminOfMeetingById, isCounterOfMeeting),
