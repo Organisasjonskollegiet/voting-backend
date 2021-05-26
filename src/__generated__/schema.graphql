@@ -58,7 +58,16 @@ type Mutation {
   createVotation(votation: CreateVotationInput!): Votation
 
   """"""
+  deleteAlternative(id: String!): Alternative
+
+  """"""
+  deleteMeeting(id: String!): Meeting
+
+  """"""
   deleteParticipant(meetingId: String!, userId: String!): DeleteParticipantResult
+
+  """"""
+  deleteVotation(id: String!): Votation
 
   """"""
   updateAlternative(id: String!, text: String!): Alternative

@@ -51,8 +51,17 @@ export const isAdminOfAlternative = rule({ cache: 'strict' })(async (_, { id }, 
 /**
  * Rule: The user is an Admin of the meeting that the votation belongs to
  */
-export const isAdminOfVotation = rule({ cache: 'strict' })(async (_, { votation }, ctx: Context) => {
+export const isAdminOfVotationByObject = rule({ cache: 'strict' })(async (_, { votation }, ctx: Context) => {
     const votationFromDB = await ctx.prisma.votation.findUnique({ where: { id: votation.id } });
+    if (!votationFromDB) return false;
+    return await checkIsAdminOfMeetingId(votationFromDB.meetingId, ctx);
+});
+
+/**
+ * Rule: The user is an Admin of the meeting that the votation belongs to
+ */
+export const isAdminOfVotationById = rule({ cache: 'strict' })(async (_, { id }, ctx: Context) => {
+    const votationFromDB = await ctx.prisma.votation.findUnique({ where: { id } });
     if (!votationFromDB) return false;
     return await checkIsAdminOfMeetingId(votationFromDB.meetingId, ctx);
 });
@@ -87,6 +96,14 @@ const checkIsAdminOfMeetingId = async (meetingId: string, ctx: Context) => {
     });
     return particpant ? particpant.role === 'ADMIN' : false;
 };
+
+/**
+ * Rule: The user is Owner of the meeting
+ */
+export const isOwnerOfMeeting = rule({ cache: 'strict' })(async (_, { id }, ctx: Context) => {
+    const meeting = await ctx.prisma.meeting.findUnique({ where: { id } });
+    return meeting ? meeting.ownerId === ctx.userId : false;
+});
 
 /**
  * Rule: The user is an Counter of the meeting
