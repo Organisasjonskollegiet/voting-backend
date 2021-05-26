@@ -9,6 +9,7 @@ export const Meeting = objectType({
     definition: (t) => {
         t.nonNull.id('id');
         t.nonNull.string('title');
+        t.nonNull.string('organization');
         t.nonNull.datetime('startTime');
         t.string('description');
         t.field('owner', {
@@ -63,3 +64,5 @@ export const Participant = objectType({
         });
     },
 });
+
+export * from './results';

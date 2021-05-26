@@ -11,6 +11,7 @@ type Alternative {
 
 input CreateMeetingInput {
   description: String! = "Ingen beskrivelse satt."
+  organization: String!
   startTime: DateTime!
   title: String!
 }
@@ -29,6 +30,8 @@ A date-time string at UTC, such as 2007-12-03T10:15:30Z, compliant with the `dat
 """
 scalar DateTime
 
+union DeleteParticipantResult = OwnerCannotBeRemovedFromParticipantError | Participant
+
 union GetUserResult = User | UserNotFoundError
 
 enum MajorityType {
@@ -39,6 +42,7 @@ enum MajorityType {
 type Meeting {
   description: String
   id: ID!
+  organization: String!
   owner: User
   participants: [Participant]!
   startTime: DateTime!
@@ -54,6 +58,31 @@ type Mutation {
   """"""
   createMeeting(meeting: CreateMeetingInput!): Meeting
   createVotation(votation: CreateVotationInput!): Votation
+
+  """"""
+  deleteAlternative(id: String!): Alternative
+
+  """"""
+  deleteMeeting(id: String!): Meeting
+
+  """"""
+  deleteParticipant(meetingId: String!, userId: String!): DeleteParticipantResult
+
+  """"""
+  deleteVotation(id: String!): Votation
+
+  """"""
+  updateAlternative(id: String!, text: String!): Alternative
+
+  """"""
+  updateMeeting(meeting: UpdateMeetingInput!): Meeting
+
+  """"""
+  updateVotation(votation: UpdateVotationInput!): Votation
+}
+
+type OwnerCannotBeRemovedFromParticipantError {
+  message: String!
 }
 
 type Participant {
@@ -71,6 +100,7 @@ type Query {
   """Find a meeting by id from meetings youre participating in"""
   meetingsById(meetingId: String!): Meeting
   user: GetUserResult
+  votationById(votationId: ID!): Votation
 }
 
 enum Role {
@@ -83,6 +113,24 @@ enum Status {
   ENDED
   ONGOING
   UPCOMING
+}
+
+input UpdateMeetingInput {
+  description: String
+  id: String!
+  organization: String
+  startTime: DateTime
+  status: Status
+  title: String
+}
+
+input UpdateVotationInput {
+  blankVotes: Boolean!
+  description: String!
+  id: String!
+  majorityThreshold: Int!
+  majorityType: MajorityType!
+  title: String!
 }
 
 type User {

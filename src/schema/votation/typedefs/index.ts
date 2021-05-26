@@ -1,7 +1,7 @@
 import { objectType } from 'nexus';
 import { Alternative as AlternativeModel, Vote as VoteModel, Votation as VotationModel } from '@prisma/client';
-import { MajorityType, Status } from '../enums';
-import { User } from '../auth';
+import { MajorityType, Status } from '../../enums';
+import { User } from '../../auth';
 
 export const Vote = objectType({
     name: 'Vote',

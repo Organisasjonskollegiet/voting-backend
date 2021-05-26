@@ -3,8 +3,14 @@ import {
     isAuthenticated,
     isParticipantOfMeeting,
     isParticipantOfVotation,
-    isAdminOfMeeting,
+    isAdminOfMeetingById,
+    isAdminOfMeetingByObject,
+    isAdminOfVotationByObject,
+    isAdminOfVotationById,
+    isAdminOfVotationByMeetingId,
+    isAdminOfAlternative,
     isCounterOfMeeting,
+    isOwnerOfMeeting,
 } from './rules';
 
 const permissions = shield(
@@ -12,13 +18,21 @@ const permissions = shield(
         Query: {
             meetingsById: and(isParticipantOfMeeting),
             alternativesByVotation: and(isParticipantOfVotation),
+            votationById: and(isParticipantOfVotation),
         },
         Mutation: {
             castVote: and(isParticipantOfVotation),
-            createVotation: and(isAdminOfMeeting),
+            createVotation: and(isAdminOfVotationByMeetingId),
+            updateMeeting: and(isAdminOfMeetingByObject),
+            updateVotation: and(isAdminOfVotationByObject),
+            updateAlternative: and(isAdminOfAlternative),
+            deleteParticipant: and(isAdminOfMeetingById),
+            deleteAlternative: and(isAdminOfAlternative),
+            deleteVotation: and(isAdminOfVotationById),
+            deleteMeeting: and(isOwnerOfMeeting),
         },
         Alternative: {
-            votes: or(isAdminOfMeeting, isCounterOfMeeting),
+            votes: or(isAdminOfMeetingById, isCounterOfMeeting),
         },
     },
     // If rule is not defined, use isAuthenticated rule
