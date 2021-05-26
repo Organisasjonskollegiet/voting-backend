@@ -53,6 +53,7 @@ type Meeting {
 
 type Mutation {
   castVote(alternativeId: String!, votationId: String!): Vote
+  changeView(state: ViewState!): ViewState
   createAlternative(text: String!, votationId: String!): Alternative
 
   """"""
@@ -115,6 +116,10 @@ enum Status {
   UPCOMING
 }
 
+type Subscription {
+  viewChanged: ViewState
+}
+
 input UpdateMeetingInput {
   description: String
   id: String!
@@ -141,6 +146,26 @@ type User {
 
 type UserNotFoundError {
   message: String!
+}
+
+"""The payload of viewChanged subscription"""
+type ViewChangedPayload {
+  viewState: ViewState!
+}
+
+"""
+
+        LOADING: When the votation is loading for a new votation,
+        ONGOING: When the Votation is in process, 
+        CLOSED: When the votation has closed and no new votes are allowed,
+        ENDED: When the votation has ended, the result will be announced and then switch to LOADING
+        
+"""
+enum ViewState {
+  CLOSED
+  ENDED
+  LOADING
+  ONGOING
 }
 
 type Votation {
