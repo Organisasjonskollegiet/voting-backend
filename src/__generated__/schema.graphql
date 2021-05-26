@@ -59,6 +59,12 @@ type Mutation {
   deleteAlternative(id: String!): Alternative
 
   """"""
+  deleteMeeting(id: String!): Meeting
+
+  """"""
+  deleteVotation(id: String!): Votation
+
+  """"""
   updateAlternative(id: String!, text: String!): Alternative
 
   """"""
