@@ -98,6 +98,14 @@ const checkIsAdminOfMeetingId = async (meetingId: string, ctx: Context) => {
 };
 
 /**
+ * Rule: The user is Owner of the meeting
+ */
+export const isOwnerOfMeeting = rule({ cache: 'strict' })(async (_, { id }, ctx: Context) => {
+    const meeting = await ctx.prisma.meeting.findUnique({ where: { id } });
+    return meeting ? meeting.ownerId === ctx.userId : false;
+});
+
+/**
  * Rule: The user is an Counter of the meeting
  */
 export const isCounterOfMeeting = rule({ cache: 'strict' })(async (_, { meetingId }, ctx: Context) => {

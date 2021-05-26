@@ -1,4 +1,4 @@
-import { inputObjectType, mutationField, nonNull } from 'nexus';
+import { inputObjectType, mutationField, nonNull, stringArg } from 'nexus';
 import { Status } from '../enums';
 import { Meeting } from './typedefs';
 
@@ -66,5 +66,20 @@ export const UpdateMeetingMutation = mutationField('updateMeeting', {
             },
         });
         return updatedMeeting;
+    },
+});
+
+export const DeleteMeetingMutation = mutationField('deleteMeeting', {
+    type: Meeting,
+    description: '',
+    args: {
+        id: nonNull(stringArg()),
+    },
+    resolve: async (_, { id }, ctx) => {
+        await ctx.prisma.alternative.deleteMany({ where: { votation: { meetingId: id } } });
+        await ctx.prisma.votation.deleteMany({ where: { meetingId: id } });
+        await ctx.prisma.participant.deleteMany({ where: { meetingId: id } });
+        const deletedMeeting = await ctx.prisma.meeting.delete({ where: { id } });
+        return deletedMeeting;
     },
 });
