@@ -40,20 +40,6 @@ export const CreateVotationMutation = mutationField('createVotation', {
     },
 });
 
-export const CreateAlternativeMutation = mutationField('createAlternative', {
-    type: Alternative,
-    args: {
-        text: nonNull(stringArg()),
-        votationId: nonNull(stringArg()),
-    },
-    resolve: async (_, args, ctx) => {
-        const createdAlternative = await ctx.prisma.alternative.create({
-            data: args,
-        });
-        return createdAlternative;
-    },
-});
-
 export const UpdateVotationMutation = mutationField('updateVotation', {
     type: Votation,
     description: '',
@@ -70,6 +56,37 @@ export const UpdateVotationMutation = mutationField('updateVotation', {
             },
         });
         return updatedVotation;
+    },
+});
+
+export const DeleteVotationMutation = mutationField('deleteVotation', {
+    type: Votation,
+    description: '',
+    args: {
+        id: nonNull(stringArg()),
+    },
+    resolve: async (_, { id }, ctx) => {
+        await ctx.prisma.alternative.deleteMany({ where: { votationId: id } });
+        const deletedVotation = await ctx.prisma.votation.delete({
+            where: {
+                id,
+            },
+        });
+        return deletedVotation;
+    },
+});
+
+export const CreateAlternativeMutation = mutationField('createAlternative', {
+    type: Alternative,
+    args: {
+        text: nonNull(stringArg()),
+        votationId: nonNull(stringArg()),
+    },
+    resolve: async (_, args, ctx) => {
+        const createdAlternative = await ctx.prisma.alternative.create({
+            data: args,
+        });
+        return createdAlternative;
     },
 });
 

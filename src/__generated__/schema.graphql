@@ -59,6 +59,9 @@ type Mutation {
   deleteMeeting(id: String!): Meeting
 
   """"""
+  deleteVotation(id: String!): Votation
+
+  """"""
   updateAlternative(id: String!, text: String!): Alternative
 
   """"""
