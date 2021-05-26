@@ -1,6 +1,6 @@
 import { inputObjectType, mutationField, nonNull, stringArg } from 'nexus';
 import { Status } from '../enums';
-import { Meeting } from './typedefs';
+import { Meeting, DeleteParticipantResult } from './typedefs';
 
 export const CreateMeetingInput = inputObjectType({
     name: 'CreateMeetingInput',
@@ -66,6 +66,33 @@ export const UpdateMeetingMutation = mutationField('updateMeeting', {
             },
         });
         return updatedMeeting;
+    },
+});
+
+export const DeleteParticipantMutation = mutationField('deleteParticipant', {
+    type: DeleteParticipantResult,
+    description: '',
+    args: {
+        meetingId: nonNull(stringArg()),
+        userId: nonNull(stringArg()),
+    },
+    resolve: async (_, { meetingId, userId }, ctx) => {
+        const meeting = await ctx.prisma.meeting.findUnique({
+            where: {
+                id: meetingId,
+            },
+        });
+        if (meeting?.ownerId === userId)
+            return {
+                __typename: 'OwnerCannotBeRemovedFromParticipantError',
+                message: 'The owner of the meeting cannot be removed from being a participant.',
+            };
+        const deletedParticipant = await ctx.prisma.participant.delete({
+            where: {
+                userId_meetingId: { userId, meetingId },
+            },
+        });
+        return { __typename: 'Participant', ...deletedParticipant };
     },
 });
 

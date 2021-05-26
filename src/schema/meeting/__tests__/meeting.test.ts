@@ -1,7 +1,6 @@
 import { createTestContext } from '../../../lib/tests/testContext';
 import { gql } from 'graphql-request';
 import { Role, Status } from '.prisma/client';
-import { create } from 'node:domain';
 const ctx = createTestContext();
 
 interface StaticMeetingDataType {
@@ -374,4 +373,125 @@ it('should not delete meeting successfully', async () => {
     } catch (error) {
         expect(error.message).toContain('Not Authorised!');
     }
+});
+
+it('should delete participant successfully', async () => {
+    const otherUser = await ctx.prisma.user.create({
+        data: {
+            email: 'e@mail.com',
+            password: 'secret',
+        },
+    });
+    const meeting = await createMeeting(ctx.userId, 'ADMIN');
+    await ctx.prisma.participant.create({
+        data: {
+            meetingId: meeting.id,
+            userId: otherUser.id,
+            role: 'ADMIN',
+        },
+    });
+    await ctx.client.request(
+        gql`
+            mutation DeleteParticipant($meetingId: String!, $userId: String!) {
+                deleteParticipant(meetingId: $meetingId, userId: $userId) {
+                    ... on Participant {
+                        role
+                    }
+                    ... on OwnerCannotBeRemovedFromParticipantError {
+                        message
+                    }
+                }
+            }
+        `,
+        {
+            meetingId: meeting.id,
+            userId: otherUser.id,
+        }
+    );
+    const participantCount = await ctx.prisma.participant.count({
+        where: {
+            userId: otherUser.id,
+            meetingId: meeting.id,
+        },
+    });
+    expect(participantCount).toBe(0);
+});
+
+it('should return OwnerCannotBeRemovedFromParticipantError', async () => {
+    const meeting = await createMeeting(ctx.userId, 'ADMIN');
+    const deleteParticipant = await ctx.client.request(
+        gql`
+            mutation DeleteParticipant($meetingId: String!, $userId: String!) {
+                deleteParticipant(meetingId: $meetingId, userId: $userId) {
+                    ... on Participant {
+                        role
+                    }
+                    ... on OwnerCannotBeRemovedFromParticipantError {
+                        message
+                    }
+                }
+            }
+        `,
+        {
+            meetingId: meeting.id,
+            userId: ctx.userId,
+        }
+    );
+    expect(deleteParticipant.deleteParticipant.message).toEqual(
+        'The owner of the meeting cannot be removed from being a participant.'
+    );
+    const participantCount = await ctx.prisma.participant.count({
+        where: {
+            userId: ctx.userId,
+            meetingId: meeting.id,
+        },
+    });
+    expect(participantCount).toBe(1);
+});
+
+it('should return Not Authorised', async () => {
+    const otherUser = await ctx.prisma.user.create({
+        data: {
+            email: 'e@mail.com',
+            password: 'secret',
+        },
+    });
+    const meeting = await createMeeting(otherUser.id, 'ADMIN');
+    await ctx.prisma.participant.create({
+        data: {
+            userId: ctx.userId,
+            meetingId: meeting.id,
+            role: 'COUNTER',
+        },
+    });
+    try {
+        await ctx.client.request(
+            gql`
+                mutation DeleteParticipant($meetingId: String!, $userId: String!) {
+                    deleteParticipant(meetingId: $meetingId, userId: $userId) {
+                        ... on Participant {
+                            role
+                        }
+                        ... on OwnerCannotBeRemovedFromParticipantError {
+                            message
+                        }
+                    }
+                }
+            `,
+            {
+                meetingId: meeting.id,
+                userId: ctx.userId,
+            }
+        );
+        expect(false).toBeTruthy();
+    } catch (error) {
+        expect(error.message).toContain('Not Authorised!');
+    }
+    const participantCount = await ctx.prisma.participant.count({
+        where: {
+            userId: ctx.userId,
+            meetingId: meeting.id,
+        },
+    });
+    expect(participantCount).toBe(1);
 });

@@ -29,6 +29,8 @@ A date-time string at UTC, such as 2007-12-03T10:15:30Z, compliant with the `dat
 """
 scalar DateTime
 
+union DeleteParticipantResult = OwnerCannotBeRemovedFromParticipantError | Participant
+
 union GetUserResult = User | UserNotFoundError
 
 enum MajorityType {
@@ -62,6 +64,9 @@ type Mutation {
   deleteMeeting(id: String!): Meeting
 
   """"""
+  deleteParticipant(meetingId: String!, userId: String!): DeleteParticipantResult
+
+  """"""
   deleteVotation(id: String!): Votation
 
   """"""
@@ -72,6 +77,10 @@ type Mutation {
 
   """"""
   updateVotation(votation: UpdateVotationInput!): Votation
+}
+
+type OwnerCannotBeRemovedFromParticipantError {
+  message: String!
 }
 
 type Participant {
