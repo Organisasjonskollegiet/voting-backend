@@ -4,6 +4,7 @@ import { Status, MajorityType, Role } from '.prisma/client';
 const ctx = createTestContext();
 
 interface StaticMeetingDataType {
+    organization: string;
     title: string;
     startTime: string;
     description: string;
@@ -18,11 +19,13 @@ interface StaticVotationDataType {
     majorityThreshold: number;
 }
 
+const organization = 'organization';
 const meetingTitle = 'test get votation';
 const meetingStartTime = '2021-04-13T11:29:58.000Z';
 const meetingDescription = 'test get meeting description';
 const meetingStatus = 'UPCOMING';
 const staticMeetingData: StaticMeetingDataType = {
+    organization,
     title: meetingTitle,
     startTime: meetingStartTime,
     description: meetingDescription,

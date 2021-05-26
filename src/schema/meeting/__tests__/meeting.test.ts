@@ -5,25 +5,42 @@ const ctx = createTestContext();
 
 interface StaticMeetingDataType {
     title: string;
+    organization: string;
     startTime: string;
     description: string;
     status: Status;
 }
 
 const meetingTitle = 'title';
+const meetingOrganization = 'Organisasjonskollegiet';
 const meetingStartTime = '2021-04-13T11:45:43.000Z';
 const meetingDescription = 'description';
 const meetingStatus = 'UPCOMING';
 const createMeetingVariables = {
     meeting: {
         title: meetingTitle,
+        organization: meetingOrganization,
         startTime: meetingStartTime,
         description: meetingDescription,
     },
 };
 
+const updatedMeetingTitle = 'new title';
+const updatedMeetingOrganization = 'OrgKoll';
+const updatedMeetingStartTime = '2021-05-13T14:06:30.000Z';
+const updatedMeetingDescription = 'New description';
+const updatedMeetingStatus = 'ONGOING';
+const updatedMeetingInfo = {
+    title: updatedMeetingTitle,
+    organization: updatedMeetingOrganization,
+    startTime: updatedMeetingStartTime,
+    description: updatedMeetingDescription,
+    status: updatedMeetingStatus,
+};
+
 const staticMeetingData: StaticMeetingDataType = {
     title: meetingTitle,
+    organization: meetingOrganization,
     startTime: meetingStartTime,
     description: meetingDescription,
     status: meetingStatus,
@@ -51,6 +68,7 @@ it('should create a meeting successfully', async () => {
             mutation CreateMeeting($meeting: CreateMeetingInput!) {
                 createMeeting(meeting: $meeting) {
                     title
+                    organization
                     description
                     startTime
                     owner {
@@ -94,6 +112,7 @@ it('should return meetings where you are admin successfully', async () => {
                 meetings {
                     id
                     title
+                    organization
                     description
                     startTime
                     status
@@ -108,6 +127,7 @@ it('should return meetings where you are admin successfully', async () => {
     expect(meetings[0]).toEqual({
         id: meeting.id,
         title: meeting.title,
+        organization: meeting.organization,
         startTime: meetingStartTime,
         status: meeting.status,
         description: meeting.description,
@@ -125,6 +145,7 @@ it('should return meetings where you are counter successfully', async () => {
                 meetings {
                     id
                     title
+                    organization
                     description
                     startTime
                     status
@@ -139,6 +160,7 @@ it('should return meetings where you are counter successfully', async () => {
     expect(meetings[0]).toEqual({
         id: meeting.id,
         title: meeting.title,
+        organization: meeting.organization,
         startTime: meetingStartTime,
         status: meeting.status,
         description: meeting.description,
@@ -156,6 +178,7 @@ it('should return meetings where you are participant successfully', async () => 
                 meetings {
                     id
                     title
+                    organization
                     description
                     startTime
                     status
@@ -170,6 +193,7 @@ it('should return meetings where you are participant successfully', async () => 
     expect(meetings[0]).toEqual({
         id: meeting.id,
         title: meeting.title,
+        organization: meeting.organization,
         startTime: meetingStartTime,
         status: meeting.status,
         description: meeting.description,
@@ -193,6 +217,7 @@ it('should not return meetings where you are not participating', async () => {
                 meetings {
                     id
                     title
+                    organization
                     description
                     startTime
                     status
@@ -215,6 +240,7 @@ it('should return a meeting by id successfully', async () => {
                 meetingsById(meetingId: $meetingId) {
                     id
                     title
+                    organization
                     description
                     startTime
                     status
@@ -232,6 +258,7 @@ it('should return a meeting by id successfully', async () => {
     expect(meetingResult).toEqual({
         id: meeting.id,
         title: meeting.title,
+        organization: meeting.organization,
         startTime: meetingStartTime,
         status: meeting.status,
         description: meeting.description,
@@ -242,16 +269,6 @@ it('should return a meeting by id successfully', async () => {
 });
 
 it('should update meeting successfully', async () => {
-    const updatedTitle = 'new title';
-    const updatedStartTime = '2021-05-13T14:06:30.000Z';
-    const updatedDescription = 'New description';
-    const updatedStatus = 'ONGOING';
-    const updatedInfo = {
-        title: updatedTitle,
-        startTime: updatedStartTime,
-        description: updatedDescription,
-        status: updatedStatus,
-    };
     const meeting = await createMeeting(ctx.userId, 'ADMIN');
     const updatedMeeting = await ctx.client.request(
         gql`
@@ -259,6 +276,7 @@ it('should update meeting successfully', async () => {
                 updateMeeting(meeting: $meeting) {
                     id
                     title
+                    organization
                     description
                     startTime
                     status
@@ -268,30 +286,20 @@ it('should update meeting successfully', async () => {
         {
             meeting: {
                 id: meeting.id,
-                ...updatedInfo,
+                ...updatedMeetingInfo,
             },
         }
     );
     expect(updatedMeeting.updateMeeting).toEqual({
         id: meeting.id,
-        ...updatedInfo,
+        ...updatedMeetingInfo,
     });
 });
 
 // Double check this
 it('should throw error for not authorized when trying to update meeting', async () => {
-    const updatedTitle = 'new title';
-    const updatedStartTime = '2021-05-13T14:06:30.000Z';
-    const updatedDescription = 'New description';
-    const updatedStatus = 'ONGOING';
-    const updatedInfo = {
-        title: updatedTitle,
-        startTime: updatedStartTime,
-        description: updatedDescription,
-        status: updatedStatus,
-    };
     const meeting = await createMeeting(ctx.userId, 'COUNTER');
-    expect(async () => {
+    try {
         await ctx.client.request(
             gql`
                 mutation UpdateMeeting($meeting: UpdateMeetingInput!) {
@@ -307,11 +315,14 @@ it('should throw error for not authorized when trying to update meeting', async 
             {
                 meeting: {
                     id: meeting.id,
-                    ...updatedInfo,
+                    ...updatedMeetingInfo,
                 },
             }
         );
-    }).rejects.toThrow();
+        expect(false).toBeTruthy();
+    } catch (error) {
+        expect(error.message).toContain('Not Authorised!');
+    }
 });
 
 it('should delete meeting successfully', async () => {

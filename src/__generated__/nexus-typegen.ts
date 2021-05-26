@@ -31,6 +31,7 @@ declare global {
 export interface NexusGenInputs {
   CreateMeetingInput: { // input type
     description: string; // String!
+    organization: string; // String!
     startTime: NexusGenScalars['DateTime']; // DateTime!
     title: string; // String!
   }
@@ -45,6 +46,7 @@ export interface NexusGenInputs {
   UpdateMeetingInput: { // input type
     description?: string | null; // String
     id: string; // String!
+    organization?: string | null; // String
     startTime?: NexusGenScalars['DateTime'] | null; // DateTime
     status?: NexusGenEnums['Status'] | null; // Status
     title?: string | null; // String
@@ -83,6 +85,7 @@ export interface NexusGenObjects {
   Meeting: { // root type
     description?: string | null; // String
     id: string; // ID!
+    organization: string; // String!
     startTime: NexusGenScalars['DateTime']; // DateTime!
     status: NexusGenEnums['Status']; // Status!
     title: string; // String!
@@ -145,6 +148,7 @@ export interface NexusGenFieldTypes {
   Meeting: { // field return type
     description: string | null; // String
     id: string; // ID!
+    organization: string; // String!
     owner: NexusGenRootTypes['User'] | null; // User
     participants: Array<NexusGenRootTypes['Participant'] | null>; // [Participant]!
     startTime: NexusGenScalars['DateTime']; // DateTime!
@@ -221,6 +225,7 @@ export interface NexusGenFieldTypeNames {
   Meeting: { // field return type name
     description: 'String'
     id: 'ID'
+    organization: 'String'
     owner: 'User'
     participants: 'Participant'
     startTime: 'DateTime'

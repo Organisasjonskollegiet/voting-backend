@@ -11,6 +11,7 @@ type Alternative {
 
 input CreateMeetingInput {
   description: String! = "Ingen beskrivelse satt."
+  organization: String!
   startTime: DateTime!
   title: String!
 }
@@ -41,6 +42,7 @@ enum MajorityType {
 type Meeting {
   description: String
   id: ID!
+  organization: String!
   owner: User
   participants: [Participant]!
   startTime: DateTime!
@@ -116,6 +118,7 @@ enum Status {
 input UpdateMeetingInput {
   description: String
   id: String!
+  organization: String
   startTime: DateTime
   status: Status
   title: String

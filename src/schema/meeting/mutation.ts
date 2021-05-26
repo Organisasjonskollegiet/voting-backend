@@ -5,6 +5,7 @@ import { Meeting, DeleteParticipantResult } from './typedefs';
 export const CreateMeetingInput = inputObjectType({
     name: 'CreateMeetingInput',
     definition(t) {
+        t.nonNull.string('organization');
         t.nonNull.string('title');
         t.nonNull.datetime('startTime');
         t.nonNull.string('description', { default: 'Ingen beskrivelse satt.' });
@@ -15,6 +16,7 @@ export const UpdateMeetingInput = inputObjectType({
     name: 'UpdateMeetingInput',
     definition(t) {
         t.nonNull.string('id');
+        t.string('organization');
         t.string('title');
         t.datetime('startTime');
         t.string('description');
@@ -57,6 +59,7 @@ export const UpdateMeetingMutation = mutationField('updateMeeting', {
         const updatedMeeting = await ctx.prisma.meeting.update({
             data: {
                 title: meeting.title ?? undefined,
+                organization: meeting.organization ?? undefined,
                 startTime: meeting.startTime ?? undefined,
                 description: meeting.description ?? undefined,
                 status: meeting.status ?? undefined,
