@@ -208,32 +208,28 @@ it('should return not authorized', async () => {
     ).rejects.toThrow();
 });
 
-it('should create votation successfully', async () => {
+it('should create votations successfully', async () => {
     const meeting = await createMeeting(ctx.userId, 'ADMIN');
     const variables = {
-        votation: {
-            ...staticVotationData,
-            meetingId: meeting.id,
-        },
+        meetingId: meeting.id,
+        votations: [
+            {
+                ...staticVotationData,
+            },
+            {
+                ...staticVotationData,
+            },
+        ],
     };
-    const createVotation = await ctx.client.request(
+    const createVotations = await ctx.client.request(
         gql`
-            mutation CreateVotation($votation: CreateVotationInput!) {
-                createVotation(votation: $votation) {
-                    title
-                    description
-                    blankVotes
-                    majorityType
-                    majorityThreshold
-                    meetingId
-                }
+            mutation CreateVotations($meetingId: String!, $votations: [CreateVotationInput!]!) {
+                createVotations(meetingId: $meetingId, votations: $votations)
             }
         `,
         variables
     );
-    expect(createVotation.createVotation).toEqual({
-        ...variables.votation,
-    });
+    expect(createVotations.createVotations).toEqual(2);
 });
 
 it('should update votation successfully', async () => {
@@ -294,32 +290,32 @@ it('should not update votation successfully', async () => {
     ).rejects.toThrow();
 });
 
-it('should not create votation successfully', async () => {
+it('should not create votations successfully', async () => {
     const meeting = await createMeeting(ctx.userId, 'COUNTER');
     const variables = {
-        votation: {
-            ...staticVotationData,
-            meetingId: meeting.id,
-        },
+        meetingId: meeting.id,
+        votations: [
+            {
+                ...staticVotationData,
+            },
+            {
+                ...staticVotationData,
+            },
+        ],
     };
-    expect(
-        async () =>
-            await ctx.client.request(
-                gql`
-                    mutation CreateVotation($votation: CreateVotationInput!) {
-                        createVotation(votation: $votation) {
-                            title
-                            description
-                            blankVotes
-                            majorityType
-                            majorityThreshold
-                            meetingId
-                        }
-                    }
-                `,
-                variables
-            )
-    ).rejects.toThrow();
+    try {
+        await ctx.client.request(
+            gql`
+                mutation CreateVotations($meetingId: String!, $votations: [CreateVotationInput!]!) {
+                    createVotations(meetingId: $meetingId, votations: $votations)
+                }
+            `,
+            variables
+        );
+        expect(false).toBeTruthy();
+    } catch (error) {
+        expect(error.message).toContain('Not Authorised!');
+    }
 });
 
 it('should create alterative successfully', async () => {

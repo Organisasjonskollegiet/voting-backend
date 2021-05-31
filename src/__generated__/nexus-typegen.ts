@@ -40,7 +40,6 @@ export interface NexusGenInputs {
     description: string; // String!
     majorityThreshold: number; // Int!
     majorityType: NexusGenEnums['MajorityType']; // MajorityType!
-    meetingId: string; // String!
     title: string; // String!
   }
   UpdateMeetingInput: { // input type
@@ -160,7 +159,7 @@ export interface NexusGenFieldTypes {
     castVote: NexusGenRootTypes['Vote'] | null; // Vote
     createAlternative: NexusGenRootTypes['Alternative'] | null; // Alternative
     createMeeting: NexusGenRootTypes['Meeting'] | null; // Meeting
-    createVotation: NexusGenRootTypes['Votation'] | null; // Votation
+    createVotations: number | null; // Int
     deleteAlternative: NexusGenRootTypes['Alternative'] | null; // Alternative
     deleteMeeting: NexusGenRootTypes['Meeting'] | null; // Meeting
     deleteParticipant: NexusGenRootTypes['DeleteParticipantResult'] | null; // DeleteParticipantResult
@@ -237,7 +236,7 @@ export interface NexusGenFieldTypeNames {
     castVote: 'Vote'
     createAlternative: 'Alternative'
     createMeeting: 'Meeting'
-    createVotation: 'Votation'
+    createVotations: 'Int'
     deleteAlternative: 'Alternative'
     deleteMeeting: 'Meeting'
     deleteParticipant: 'DeleteParticipantResult'
@@ -305,8 +304,9 @@ export interface NexusGenArgTypes {
     createMeeting: { // args
       meeting: NexusGenInputs['CreateMeetingInput']; // CreateMeetingInput!
     }
-    createVotation: { // args
-      votation: NexusGenInputs['CreateVotationInput']; // CreateVotationInput!
+    createVotations: { // args
+      meetingId: string; // String!
+      votations: NexusGenInputs['CreateVotationInput'][]; // [CreateVotationInput!]!
     }
     deleteAlternative: { // args
       id: string; // String!

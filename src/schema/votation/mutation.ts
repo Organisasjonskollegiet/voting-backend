@@ -1,7 +1,8 @@
-import { inputObjectType, mutationField, nonNull, stringArg } from 'nexus';
+import { inputObjectType, intArg, list, mutationField, nonNull, stringArg } from 'nexus';
 import { Vote } from './';
 import { Alternative, Votation } from './typedefs';
 import { MajorityType } from '../enums';
+import { integer, string } from 'casual';
 
 export const UpdateVotationInput = inputObjectType({
     name: 'UpdateVotationInput',
@@ -23,20 +24,43 @@ export const CreateVotationInput = inputObjectType({
         t.nonNull.boolean('blankVotes');
         t.nonNull.field('majorityType', { type: MajorityType });
         t.nonNull.int('majorityThreshold');
-        t.nonNull.string('meetingId');
     },
 });
 
-export const CreateVotationMutation = mutationField('createVotation', {
-    type: Votation,
+// export const CreateVotationMutation = mutationField('createVotation', {
+//     type: Votation,
+//     args: {
+//         meetingId: nonNull(stringArg()),
+//         votation: nonNull(CreateVotationInput),
+//     },
+//     resolve: async (_, { votation, meetingId }, ctx) => {
+//         const createdVotation = await ctx.prisma.votation.create({
+//             data: {
+//                 ...votation,
+//                 meetingId,
+//             },
+//         });
+//         return createdVotation;
+//     },
+// });
+
+export const CreateVotationsMutatioon = mutationField('createVotations', {
+    type: 'Int',
     args: {
-        votation: nonNull(CreateVotationInput),
+        meetingId: nonNull(stringArg()),
+        votations: nonNull(list(nonNull(CreateVotationInput))),
     },
-    resolve: async (_, { votation }, ctx) => {
-        const createdVotation = await ctx.prisma.votation.create({
-            data: votation,
+    resolve: async (_, { votations, meetingId }, ctx) => {
+        const votationsInput = votations.map((votation) => {
+            return {
+                ...votation,
+                meetingId,
+            };
         });
-        return createdVotation;
+        const createdVotations = await ctx.prisma.votation.createMany({
+            data: [...votationsInput],
+        });
+        return createdVotations.count;
     },
 });
 
