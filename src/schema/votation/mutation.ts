@@ -11,6 +11,8 @@ export const UpdateVotationInput = inputObjectType({
         t.nonNull.string('title');
         t.nonNull.string('description');
         t.nonNull.boolean('blankVotes');
+        t.nonNull.boolean('hiddenVotes');
+        t.nonNull.boolean('severalVotes');
         t.nonNull.field('majorityType', { type: MajorityType });
         t.nonNull.int('majorityThreshold');
     },
@@ -22,6 +24,8 @@ export const CreateVotationInput = inputObjectType({
         t.nonNull.string('title');
         t.nonNull.string('description');
         t.nonNull.boolean('blankVotes');
+        t.nonNull.boolean('hiddenVotes');
+        t.nonNull.boolean('severalVotes');
         t.nonNull.field('majorityType', { type: MajorityType });
         t.nonNull.int('majorityThreshold');
     },

@@ -38,8 +38,10 @@ export interface NexusGenInputs {
   CreateVotationInput: { // input type
     blankVotes: boolean; // Boolean!
     description: string; // String!
+    hiddenVotes: boolean; // Boolean!
     majorityThreshold: number; // Int!
     majorityType: NexusGenEnums['MajorityType']; // MajorityType!
+    severalVotes: boolean; // Boolean!
     title: string; // String!
   }
   UpdateMeetingInput: { // input type
@@ -53,9 +55,11 @@ export interface NexusGenInputs {
   UpdateVotationInput: { // input type
     blankVotes: boolean; // Boolean!
     description: string; // String!
+    hiddenVotes: boolean; // Boolean!
     id: string; // String!
     majorityThreshold: number; // Int!
     majorityType: NexusGenEnums['MajorityType']; // MajorityType!
+    severalVotes: boolean; // Boolean!
     title: string; // String!
   }
 }
@@ -110,11 +114,13 @@ export interface NexusGenObjects {
     blankVotes?: boolean | null; // Boolean
     description: string; // String!
     hasVoted?: Array<NexusGenRootTypes['User'] | null> | null; // [User]
+    hiddenVotes?: boolean | null; // Boolean
     id: string; // ID!
     majorityThreshold: number; // Int!
     majorityType: NexusGenEnums['MajorityType']; // MajorityType!
     meetingId: string; // String!
     order?: number | null; // Int
+    severalVotes?: boolean | null; // Boolean
     status: NexusGenEnums['Status']; // Status!
     title: string; // String!
   }
@@ -196,11 +202,13 @@ export interface NexusGenFieldTypes {
     blankVotes: boolean | null; // Boolean
     description: string; // String!
     hasVoted: Array<NexusGenRootTypes['User'] | null> | null; // [User]
+    hiddenVotes: boolean | null; // Boolean
     id: string; // ID!
     majorityThreshold: number; // Int!
     majorityType: NexusGenEnums['MajorityType']; // MajorityType!
     meetingId: string; // String!
     order: number | null; // Int
+    severalVotes: boolean | null; // Boolean
     status: NexusGenEnums['Status']; // Status!
     title: string; // String!
   }
@@ -273,11 +281,13 @@ export interface NexusGenFieldTypeNames {
     blankVotes: 'Boolean'
     description: 'String'
     hasVoted: 'User'
+    hiddenVotes: 'Boolean'
     id: 'ID'
     majorityThreshold: 'Int'
     majorityType: 'MajorityType'
     meetingId: 'String'
     order: 'Int'
+    severalVotes: 'Boolean'
     status: 'Status'
     title: 'String'
   }
