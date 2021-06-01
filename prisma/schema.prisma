@@ -68,6 +68,8 @@ model Votation {
   description       String
   status            Status        @default(UPCOMING)
   blankVotes        Boolean
+  hiddenVotes       Boolean
+  severalVotes      Boolean
   majorityType      MajorityType
   majorityThreshold Int
   meetingId         String        @db.Uuid

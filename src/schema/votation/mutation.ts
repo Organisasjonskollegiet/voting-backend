@@ -1,4 +1,4 @@
-import { inputObjectType, mutationField, nonNull, stringArg } from 'nexus';
+import { inputObjectType, intArg, list, mutationField, nonNull, stringArg } from 'nexus';
 import { Vote } from './';
 import { Alternative, Votation } from './typedefs';
 import { MajorityType } from '../enums';
@@ -10,6 +10,8 @@ export const UpdateVotationInput = inputObjectType({
         t.nonNull.string('title');
         t.nonNull.string('description');
         t.nonNull.boolean('blankVotes');
+        t.nonNull.boolean('hiddenVotes');
+        t.nonNull.boolean('severalVotes');
         t.nonNull.field('majorityType', { type: MajorityType });
         t.nonNull.int('majorityThreshold');
     },
@@ -21,22 +23,45 @@ export const CreateVotationInput = inputObjectType({
         t.nonNull.string('title');
         t.nonNull.string('description');
         t.nonNull.boolean('blankVotes');
+        t.nonNull.boolean('hiddenVotes');
+        t.nonNull.boolean('severalVotes');
         t.nonNull.field('majorityType', { type: MajorityType });
         t.nonNull.int('majorityThreshold');
-        t.nonNull.string('meetingId');
+        t.list.nonNull.string('alternatives');
     },
 });
 
-export const CreateVotationMutation = mutationField('createVotation', {
-    type: Votation,
+export const CreateVotationsMutatioon = mutationField('createVotations', {
+    type: list('String'),
     args: {
-        votation: nonNull(CreateVotationInput),
+        meetingId: nonNull(stringArg()),
+        votations: nonNull(list(nonNull(CreateVotationInput))),
     },
-    resolve: async (_, { votation }, ctx) => {
-        const createdVotation = await ctx.prisma.votation.create({
-            data: votation,
-        });
-        return createdVotation;
+    resolve: async (_, { votations, meetingId }, ctx) => {
+        const promises = [];
+        for (const votation of votations) {
+            promises.push(
+                ctx.prisma.votation.create({
+                    data: {
+                        ...votation,
+                        meetingId,
+                        alternatives: {
+                            createMany: {
+                                data: votation.alternatives
+                                    ? votation.alternatives.map((alternative) => {
+                                          return {
+                                              text: alternative,
+                                          };
+                                      })
+                                    : [],
+                            },
+                        },
+                    },
+                })
+            );
+        }
+        const resolved = await Promise.all(promises);
+        return resolved.map((votation) => votation.id);
     },
 });
 

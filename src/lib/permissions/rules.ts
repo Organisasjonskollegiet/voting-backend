@@ -76,7 +76,7 @@ export const isAdminOfVotationByMeetingId = rule({ cache: 'strict' })(async (_, 
 /**
  * Rule: The user is an Admin of the meeting where meeting id is input parameter
  */
-export const isAdminOfMeetingById = rule({ cache: 'strict' })(async (_, { meetingId }, ctx: Context) => {
+export const isAdminOfMeetingId = rule({ cache: 'strict' })(async (_, { meetingId }, ctx: Context) => {
     return await checkIsAdminOfMeetingId(meetingId, ctx);
 });
 

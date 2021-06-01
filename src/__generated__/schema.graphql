@@ -17,11 +17,13 @@ input CreateMeetingInput {
 }
 
 input CreateVotationInput {
+  alternatives: [String!]
   blankVotes: Boolean!
   description: String!
+  hiddenVotes: Boolean!
   majorityThreshold: Int!
   majorityType: MajorityType!
-  meetingId: String!
+  severalVotes: Boolean!
   title: String!
 }
 
@@ -57,7 +59,7 @@ type Mutation {
 
   """"""
   createMeeting(meeting: CreateMeetingInput!): Meeting
-  createVotation(votation: CreateVotationInput!): Votation
+  createVotations(meetingId: String!, votations: [CreateVotationInput!]!): [String]
 
   """"""
   deleteAlternative(id: String!): Alternative
@@ -127,9 +129,11 @@ input UpdateMeetingInput {
 input UpdateVotationInput {
   blankVotes: Boolean!
   description: String!
+  hiddenVotes: Boolean!
   id: String!
   majorityThreshold: Int!
   majorityType: MajorityType!
+  severalVotes: Boolean!
   title: String!
 }
 
@@ -145,14 +149,16 @@ type UserNotFoundError {
 
 type Votation {
   alternatives: [Alternative]
-  blankVotes: Boolean
+  blankVotes: Boolean!
   description: String!
   hasVoted: [User]
+  hiddenVotes: Boolean!
   id: ID!
   majorityThreshold: Int!
   majorityType: MajorityType!
   meetingId: String!
   order: Int
+  severalVotes: Boolean!
   status: Status!
   title: String!
 }
