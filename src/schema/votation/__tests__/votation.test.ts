@@ -1,6 +1,7 @@
 import { createTestContext } from '../../../lib/tests/testContext';
 import { gql } from 'graphql-request';
 import { Status, MajorityType, Role } from '.prisma/client';
+import { execPath } from 'node:process';
 const ctx = createTestContext();
 
 interface StaticMeetingDataType {
@@ -15,6 +16,8 @@ interface StaticVotationDataType {
     title: string;
     description: string;
     blankVotes: boolean;
+    hiddenVotes: boolean;
+    severalVotes: boolean;
     majorityType: MajorityType;
     majorityThreshold: number;
 }
@@ -36,11 +39,15 @@ const votationTitle = 'test votation title';
 const votationDescription = 'test votation description';
 const majorityType = 'SIMPLE';
 const blankVotes = true;
+const hiddenVotes = true;
+const severalVotes = true;
 const majorityThreshold = 50;
 const staticVotationData: StaticVotationDataType = {
     title: votationTitle,
     description: votationDescription,
     blankVotes,
+    hiddenVotes,
+    severalVotes,
     majorityType,
     majorityThreshold,
 };
@@ -48,12 +55,16 @@ const staticVotationData: StaticVotationDataType = {
 const updatedVotationTitle = 'updated votation title';
 const updatedVotationDescription = 'updated votation description';
 const updatedMajorityType = 'QUALIFIED';
-const updatedBlankVotes = true;
+const updatedBlankVotes = false;
+const updatedHiddenVotes = false;
+const updatedSeveralVotes = false;
 const updatedMajorityThreshold = 60;
 const updatedStaticVotationData: StaticVotationDataType = {
     title: updatedVotationTitle,
     description: updatedVotationDescription,
     blankVotes: updatedBlankVotes,
+    hiddenVotes: updatedHiddenVotes,
+    severalVotes: updatedSeveralVotes,
     majorityType: updatedMajorityType,
     majorityThreshold: updatedMajorityThreshold,
 };
@@ -109,6 +120,8 @@ it('should return votation by id', async () => {
                     title
                     description
                     blankVotes
+                    hiddenVotes
+                    severalVotes
                     majorityType
                     majorityThreshold
                     meetingId
@@ -129,28 +142,29 @@ it('should return votation by id', async () => {
 it('should throw error from votation by id', async () => {
     const meeting = await createMeeting(ctx.userId, 'COUNTER');
     await createVotation(meeting.id, 'UPCOMING');
-
-    expect(
-        async () =>
-            await ctx.client.request(
-                gql`
-                    query GetVotationById($votationId: ID!) {
-                        votationById(votationId: $votationId) {
-                            id
-                            title
-                            description
-                            blankVotes
-                            majorityType
-                            majorityThreshold
-                            meetingId
-                        }
+    try {
+        await ctx.client.request(
+            gql`
+                query GetVotationById($votationId: ID!) {
+                    votationById(votationId: $votationId) {
+                        id
+                        title
+                        description
+                        blankVotes
+                        majorityType
+                        majorityThreshold
+                        meetingId
                     }
-                `,
-                {
-                    votationId: '1',
                 }
-            )
-    ).rejects.toThrow();
+            `,
+            {
+                votationId: '1',
+            }
+        );
+        expect(false).toBeTruthy();
+    } catch (error) {
+        expect(error.message).toContain('Not Authorised!');
+    }
 });
 
 it('should return alternatives by votation successfully', async () => {
@@ -189,23 +203,24 @@ it('should return not authorized', async () => {
     const votation = await createVotation(meeting.id, 'UPCOMING');
     await createAlternative(votation.id, alternative1Text);
     await createAlternative(votation.id, alternative2Text);
-    expect(
-        async () =>
-            await ctx.client.request(
-                gql`
-                    query AlternativesByVotation($votationId: String!) {
-                        alternativesByVotation(votationId: $votationId) {
-                            id
-                            text
-                            votationId
-                        }
+    try {
+        await ctx.client.request(
+            gql`
+                query AlternativesByVotation($votationId: String!) {
+                    alternativesByVotation(votationId: $votationId) {
+                        id
+                        text
+                        votationId
                     }
-                `,
-                {
-                    votationId: votation.id,
                 }
-            )
-    ).rejects.toThrow();
+            `,
+            {
+                votationId: votation.id,
+            }
+        );
+    } catch (error) {
+        expect(error.message).toContain('Not Authorised!');
+    }
 });
 
 it('should create votations successfully', async () => {
@@ -215,6 +230,7 @@ it('should create votations successfully', async () => {
         votations: [
             {
                 ...staticVotationData,
+                alternatives: ['alternative1', 'alternative2'],
             },
             {
                 ...staticVotationData,
@@ -229,7 +245,19 @@ it('should create votations successfully', async () => {
         `,
         variables
     );
-    expect(createVotations.createVotations).toEqual(2);
+    const alternativesCountFirstVotation = await ctx.prisma.alternative.count({
+        where: {
+            votationId: createVotations.createVotations[0],
+        },
+    });
+    const alternativesCountSecondVotation = await ctx.prisma.alternative.count({
+        where: {
+            votationId: createVotations.createVotations[1],
+        },
+    });
+    expect(createVotations.createVotations.length).toEqual(2);
+    expect(alternativesCountFirstVotation).toEqual(2);
+    expect(alternativesCountSecondVotation).toEqual(0);
 });
 
 it('should update votation successfully', async () => {
@@ -249,6 +277,8 @@ it('should update votation successfully', async () => {
                     title
                     description
                     blankVotes
+                    hiddenVotes
+                    severalVotes
                     majorityType
                     majorityThreshold
                 }
@@ -270,24 +300,26 @@ it('should not update votation successfully', async () => {
             ...updatedStaticVotationData,
         },
     };
-    expect(
-        async () =>
-            await ctx.client.request(
-                gql`
-                    mutation UpdateVotation($votation: UpdateVotationInput!) {
-                        updateVotation(votation: $votation) {
-                            id
-                            title
-                            description
-                            blankVotes
-                            majorityType
-                            majorityThreshold
-                        }
+    try {
+        await ctx.client.request(
+            gql`
+                mutation UpdateVotation($votation: UpdateVotationInput!) {
+                    updateVotation(votation: $votation) {
+                        id
+                        title
+                        description
+                        blankVotes
+                        majorityType
+                        majorityThreshold
                     }
-                `,
-                variables
-            )
-    ).rejects.toThrow();
+                }
+            `,
+            variables
+        );
+        expect(false).toBeTruthy();
+    } catch (error) {
+        expect(error.message).toContain('Not Authorised!');
+    }
 });
 
 it('should not create votations successfully', async () => {
