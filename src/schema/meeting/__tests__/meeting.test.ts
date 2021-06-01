@@ -332,6 +332,8 @@ it('should delete meeting successfully', async () => {
             title: 'votationTitle',
             description: 'votationDescription',
             blankVotes: true,
+            severalVotes: true,
+            hiddenVotes: true,
             majorityType: 'QUALIFIED',
             majorityThreshold: 60,
             meetingId: meeting.id,

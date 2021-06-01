@@ -17,6 +17,7 @@ input CreateMeetingInput {
 }
 
 input CreateVotationInput {
+  alternatives: [String!]
   blankVotes: Boolean!
   description: String!
   hiddenVotes: Boolean!
@@ -148,16 +149,16 @@ type UserNotFoundError {
 
 type Votation {
   alternatives: [Alternative]
-  blankVotes: Boolean
+  blankVotes: Boolean!
   description: String!
   hasVoted: [User]
-  hiddenVotes: Boolean
+  hiddenVotes: Boolean!
   id: ID!
   majorityThreshold: Int!
   majorityType: MajorityType!
   meetingId: String!
   order: Int
-  severalVotes: Boolean
+  severalVotes: Boolean!
   status: Status!
   title: String!
 }
