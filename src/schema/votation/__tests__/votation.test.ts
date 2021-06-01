@@ -230,6 +230,7 @@ it('should create votations successfully', async () => {
         votations: [
             {
                 ...staticVotationData,
+                alternatives: ['alternative1', 'alternative2'],
             },
             {
                 ...staticVotationData,
@@ -244,7 +245,19 @@ it('should create votations successfully', async () => {
         `,
         variables
     );
-    expect(createVotations.createVotations).toEqual(2);
+    const alternativesCountFirstVotation = await ctx.prisma.alternative.count({
+        where: {
+            votationId: createVotations.createVotations[0],
+        },
+    });
+    const alternativesCountSecondVotation = await ctx.prisma.alternative.count({
+        where: {
+            votationId: createVotations.createVotations[1],
+        },
+    });
+    expect(createVotations.createVotations.length).toEqual(2);
+    expect(alternativesCountFirstVotation).toEqual(2);
+    expect(alternativesCountSecondVotation).toEqual(0);
 });
 
 it('should update votation successfully', async () => {

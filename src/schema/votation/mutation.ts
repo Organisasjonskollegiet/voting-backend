@@ -32,7 +32,7 @@ export const CreateVotationInput = inputObjectType({
 });
 
 export const CreateVotationsMutatioon = mutationField('createVotations', {
-    type: 'Int',
+    type: list('String'),
     args: {
         meetingId: nonNull(stringArg()),
         votations: nonNull(list(nonNull(CreateVotationInput))),
@@ -61,7 +61,7 @@ export const CreateVotationsMutatioon = mutationField('createVotations', {
             );
         }
         const resolved = await Promise.all(promises);
-        return resolved.length;
+        return resolved.map((votation) => votation.id);
     },
 });
 
