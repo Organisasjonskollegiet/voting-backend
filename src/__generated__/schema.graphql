@@ -11,17 +11,19 @@ type Alternative {
 
 input CreateMeetingInput {
   description: String! = "Ingen beskrivelse satt."
+  organization: String!
   startTime: DateTime!
   title: String!
 }
 
 input CreateVotationInput {
+  alternatives: [String!]
   blankVotes: Boolean!
   description: String!
+  hiddenVotes: Boolean!
   majorityThreshold: Int!
   majorityType: MajorityType!
-  meetingId: String!
-  order: Int!
+  severalVotes: Boolean!
   title: String!
 }
 
@@ -29,6 +31,8 @@ input CreateVotationInput {
 A date-time string at UTC, such as 2007-12-03T10:15:30Z, compliant with the `date-time` format outlined in section 5.6 of the RFC 3339 profile of the ISO 8601 standard for representation of dates and times using the Gregorian calendar.
 """
 scalar DateTime
+
+union DeleteParticipantResult = OwnerCannotBeRemovedFromParticipantError | Participant
 
 union GetUserResult = User | UserNotFoundError
 
@@ -40,7 +44,8 @@ enum MajorityType {
 type Meeting {
   description: String
   id: ID!
-  owner: User!
+  organization: String!
+  owner: User
   participants: [Participant]!
   startTime: DateTime!
   status: Status!
@@ -54,7 +59,32 @@ type Mutation {
 
   """"""
   createMeeting(meeting: CreateMeetingInput!): Meeting
-  createVotation(votation: CreateVotationInput!): Votation
+  createVotations(meetingId: String!, votations: [CreateVotationInput!]!): [String]
+
+  """"""
+  deleteAlternative(id: String!): Alternative
+
+  """"""
+  deleteMeeting(id: String!): Meeting
+
+  """"""
+  deleteParticipant(meetingId: String!, userId: String!): DeleteParticipantResult
+
+  """"""
+  deleteVotation(id: String!): Votation
+
+  """"""
+  updateAlternative(id: String!, text: String!): Alternative
+
+  """"""
+  updateMeeting(meeting: UpdateMeetingInput!): Meeting
+
+  """"""
+  updateVotation(votation: UpdateVotationInput!): Votation
+}
+
+type OwnerCannotBeRemovedFromParticipantError {
+  message: String!
 }
 
 type Participant {
@@ -72,6 +102,7 @@ type Query {
   """Find a meeting by id from meetings youre participating in"""
   meetingsById(meetingId: String!): Meeting
   user: GetUserResult
+  votationById(votationId: ID!): Votation
 }
 
 enum Role {
@@ -86,6 +117,26 @@ enum Status {
   UPCOMING
 }
 
+input UpdateMeetingInput {
+  description: String
+  id: String!
+  organization: String
+  startTime: DateTime
+  status: Status
+  title: String
+}
+
+input UpdateVotationInput {
+  blankVotes: Boolean!
+  description: String!
+  hiddenVotes: Boolean!
+  id: String!
+  majorityThreshold: Int!
+  majorityType: MajorityType!
+  severalVotes: Boolean!
+  title: String!
+}
+
 type User {
   email: String!
   emailVerified: Boolean!
@@ -98,14 +149,16 @@ type UserNotFoundError {
 
 type Votation {
   alternatives: [Alternative]
-  blankVotes: Boolean
+  blankVotes: Boolean!
   description: String!
   hasVoted: [User]
+  hiddenVotes: Boolean!
   id: ID!
   majorityThreshold: Int!
   majorityType: MajorityType!
   meetingId: String!
   order: Int
+  severalVotes: Boolean!
   status: Status!
   title: String!
 }

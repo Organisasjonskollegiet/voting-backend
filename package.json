@@ -9,7 +9,7 @@
   "scripts": {
     "dev": "ts-node-dev --transpile-only --no-notify src/index.ts",
     "build": "tsc",
-    "test": "yarn nexus-generate && jest",
+    "test": "yarn nexus-generate && jest --runInBand",
     "lint": "eslint src/",
     "format": "prettier --write src/*",
     "start": "node dist/src/index.js",
@@ -35,8 +35,7 @@
     "jsonwebtoken": "^8.5.1",
     "jwks-rsa": "^2.0.1",
     "nexus": "^1.0.0",
-    "nexus-plugin-prisma": "^0.33.0",
-    "ws": "^7.4.4"
+    "ws": "^7.4.6"
   },
   "devDependencies": {
     "@types/bcrypt": "^3.0.0",

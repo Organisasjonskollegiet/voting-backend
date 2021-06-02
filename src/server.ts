@@ -14,9 +14,7 @@ export const createApollo = (prisma: PrismaClient) => {
     const server = new ApolloServer({
         context: async ({ req }): Promise<Context> => {
             const userId = await userFromRequest(req);
-            const user = await prisma.user.findUnique({ where: { id: userId } });
-            if (!user) throw new Error('Request is missing authorization headers');
-            return { user, prisma };
+            return { userId, prisma };
         },
         schema: protectedSchema,
         mocks: process.env.MOCKING == 'true' && simpleMock,

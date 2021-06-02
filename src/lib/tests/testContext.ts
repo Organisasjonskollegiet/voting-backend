@@ -8,28 +8,28 @@ import 'dotenv/config';
 import { GraphQLClient } from 'graphql-request';
 import { ApolloServer } from 'apollo-server-express';
 import { protectedSchema } from '../../schema';
+import casual from 'casual';
 
 const prisma = new PrismaClient();
 
 type TestContext = {
     client: GraphQLClient;
     prisma: PrismaClient;
-    user: User;
+    userId: string;
 };
 
 export const createTestContext = (): TestContext => {
     const ctx = {} as TestContext;
     const graphqlCtx = graphqlTestContext();
     const prismaCtx = prismaTestContext();
-
     beforeEach(async () => {
         const prisma = await prismaCtx.before();
-        const user = await prisma.user.create({ data: { email: 'test@test.com', password: 'hunter2' } });
-        const client = await graphqlCtx.before(user);
+        const user = await prisma.user.create({ data: { id: casual.uuid, email: casual.email, password: 'hunter2' } });
+        const client = await graphqlCtx.before(user.id);
         Object.assign(ctx, {
             client,
             prisma,
-            user,
+            userId: user.id,
         });
     });
 
@@ -44,21 +44,22 @@ const graphqlTestContext = () => {
     let serverInstance: Server | null = null;
 
     return {
-        async before(user: User) {
-            const port = await getPort({ port: makeRange(4001, 6000) }); // 4
+        async before(userId: string) {
             const apollo = new ApolloServer({
-                context: { user, prisma },
+                context: { userId, prisma },
                 schema: protectedSchema,
                 subscriptions: {
                     path: '/subscriptions',
                 },
             });
             const server = await createGraphqlServer(apollo, prisma);
-            serverInstance = server.listen({ port }); // 5
+            const randomStartPort = Math.floor(Math.random() * (6000 - 4000)) + 4000;
+            const randomPort = await getPort({ port: getPort.makeRange(randomStartPort, 6000) });
+            serverInstance = server.listen({ port: randomPort }); // 5
             serverInstance.on('close', async () => {
                 prisma.$disconnect();
             });
-            return new GraphQLClient(`http://localhost:${port}/graphql`);
+            return new GraphQLClient(`http://localhost:${randomPort}/graphql`);
         },
         async after() {
             serverInstance?.close();

@@ -9,7 +9,7 @@ CREATE TYPE "Status" AS ENUM ('UPCOMING', 'ONGOING', 'ENDED');
 
 -- CreateTable
 CREATE TABLE "User" (
-    "id" TEXT NOT NULL,
+    "id" UUID NOT NULL,
     "email" VARCHAR(255) NOT NULL,
     "emailVerified" BOOLEAN NOT NULL DEFAULT false,
     "password" TEXT NOT NULL,
@@ -23,7 +23,7 @@ CREATE TABLE "Meeting" (
     "title" VARCHAR(255) NOT NULL,
     "startTime" TIMESTAMP(3) NOT NULL,
     "description" TEXT NOT NULL,
-    "ownerId" TEXT NOT NULL,
+    "ownerId" UUID NOT NULL,
     "status" "Status" NOT NULL,
 
     PRIMARY KEY ("id")
@@ -31,21 +31,13 @@ CREATE TABLE "Meeting" (
 
 -- CreateTable
 CREATE TABLE "Participant" (
+    "id" UUID NOT NULL,
     "role" "Role" NOT NULL,
-    "userId" TEXT NOT NULL,
+    "userId" UUID,
     "meetingId" UUID NOT NULL,
     "isVotingEligible" BOOLEAN NOT NULL DEFAULT true,
 
-    PRIMARY KEY ("userId","meetingId")
-);
-
--- CreateTable
-CREATE TABLE "HasVoted" (
-    "userId" TEXT NOT NULL,
-    "votationId" UUID NOT NULL,
-    "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
-
-    PRIMARY KEY ("userId","votationId")
+    PRIMARY KEY ("id")
 );
 
 -- CreateTable
@@ -53,14 +45,22 @@ CREATE TABLE "Votation" (
     "id" UUID NOT NULL,
     "title" VARCHAR(255) NOT NULL,
     "description" TEXT NOT NULL,
-    "order" INTEGER NOT NULL,
     "status" "Status" NOT NULL DEFAULT E'UPCOMING',
-    "blankVotes" BOOLEAN NOT NULL DEFAULT false,
-    "majorityType" "MajorityType" NOT NULL DEFAULT E'SIMPLE',
-    "majorityThreshold" INTEGER NOT NULL DEFAULT 50,
+    "blankVotes" BOOLEAN NOT NULL,
+    "majorityType" "MajorityType" NOT NULL,
+    "majorityThreshold" INTEGER NOT NULL,
     "meetingId" UUID NOT NULL,
 
     PRIMARY KEY ("id")
+);
+
+-- CreateTable
+CREATE TABLE "HasVoted" (
+    "votationId" UUID NOT NULL,
+    "userId" UUID NOT NULL,
+    "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+
+    PRIMARY KEY ("userId","votationId")
 );
 
 -- CreateTable
@@ -85,25 +85,28 @@ CREATE TABLE "Vote" (
 CREATE UNIQUE INDEX "User.email_unique" ON "User"("email");
 
 -- CreateIndex
+CREATE UNIQUE INDEX "Participant.userId_meetingId_unique" ON "Participant"("userId", "meetingId");
+
+-- CreateIndex
 CREATE UNIQUE INDEX "Vote_nextVoteId_unique" ON "Vote"("nextVoteId");
 
 -- AddForeignKey
 ALTER TABLE "Meeting" ADD FOREIGN KEY ("ownerId") REFERENCES "User"("id") ON DELETE CASCADE ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "Participant" ADD FOREIGN KEY ("userId") REFERENCES "User"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+ALTER TABLE "Participant" ADD FOREIGN KEY ("userId") REFERENCES "User"("id") ON DELETE SET NULL ON UPDATE CASCADE;
 
 -- AddForeignKey
 ALTER TABLE "Participant" ADD FOREIGN KEY ("meetingId") REFERENCES "Meeting"("id") ON DELETE CASCADE ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "HasVoted" ADD FOREIGN KEY ("userId") REFERENCES "User"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+ALTER TABLE "Votation" ADD FOREIGN KEY ("meetingId") REFERENCES "Meeting"("id") ON DELETE CASCADE ON UPDATE CASCADE;
 
 -- AddForeignKey
 ALTER TABLE "HasVoted" ADD FOREIGN KEY ("votationId") REFERENCES "Votation"("id") ON DELETE CASCADE ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "Votation" ADD FOREIGN KEY ("meetingId") REFERENCES "Meeting"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+ALTER TABLE "HasVoted" ADD FOREIGN KEY ("userId") REFERENCES "User"("id") ON DELETE CASCADE ON UPDATE CASCADE;
 
 -- AddForeignKey
 ALTER TABLE "Alternative" ADD FOREIGN KEY ("votationId") REFERENCES "Votation"("id") ON DELETE CASCADE ON UPDATE CASCADE;

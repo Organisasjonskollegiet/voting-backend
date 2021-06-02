@@ -9,9 +9,17 @@ export const Meeting = objectType({
     definition: (t) => {
         t.nonNull.id('id');
         t.nonNull.string('title');
+        t.nonNull.string('organization');
         t.nonNull.datetime('startTime');
         t.string('description');
-        t.nonNull.model.owner();
+        t.field('owner', {
+            type: User,
+            resolve: async (source, __, ctx) => {
+                const { ownerId } = source as MeetingModel;
+                const user = await ctx.prisma.user.findUnique({ where: { id: ownerId }, rejectOnNotFound: true });
+                return user;
+            },
+        });
         t.field('votations', {
             type: list(Votation),
             resolve: async (source, __, ctx) => {
@@ -45,6 +53,7 @@ export const Participant = objectType({
             type: User,
             resolve: async (source, __, ctx) => {
                 const { userId } = source as ParticipantModel;
+                if (!userId) return null;
                 const user = await ctx.prisma.user.findUnique({
                     where: { id: userId },
                     select: EXPOSED_USER_FIELDS,
@@ -55,3 +64,5 @@ export const Participant = objectType({
         });
     },
 });
+
+export * from './results';

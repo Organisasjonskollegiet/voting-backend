@@ -28,61 +28,64 @@ enum Status {
 }
 
 model User {
-  id            String        @id @default(uuid())
+  id            String        @id @default(uuid()) @db.Uuid
   email         String        @unique @db.VarChar(255)
   emailVerified Boolean       @default(false)
   password      String
   meetings      Meeting[]
-  votedAt       HasVoted[]
   participantAt Participant[]
+  HasVoted      HasVoted[]
 }
 
 model Meeting {
   id           String        @id @default(uuid()) @db.Uuid
+  organization String
   title        String        @db.VarChar(255)
   startTime    DateTime
   description  String
   owner        User          @relation(fields: [ownerId], references: [id])
-  ownerId      String
+  ownerId      String        @db.Uuid
   votations    Votation[]
   status       Status        @db.default(UPCOMING)
   participants Participant[]
 }
 
 model Participant {
+  id               String  @id @default(uuid()) @db.Uuid
   role             Role
-  userId           String
+  userId           String? @db.Uuid
   meetingId        String  @db.Uuid
   isVotingEligible Boolean @default(true)
-  user             User    @relation(fields: [userId], references: [id])
+  user             User?   @relation(fields: [userId], references: [id])
   meeting          Meeting @relation(fields: [meetingId], references: [id])
 
-  @@id([userId, meetingId])
-}
-
-model HasVoted {
-  userId     String
-  votationId String   @db.Uuid
-  createdAt  DateTime @default(now())
-  user       User     @relation(fields: [userId], references: [id])
-  votation   Votation @relation(fields: [votationId], references: [id])
-
-  @@id([userId, votationId])
+  @@unique([userId, meetingId])
 }
 
 model Votation {
   id                String        @id @default(uuid()) @db.Uuid
   title             String        @db.VarChar(255)
   description       String
-  order             Int
   status            Status        @default(UPCOMING)
   blankVotes        Boolean
+  hiddenVotes       Boolean
+  severalVotes      Boolean
   majorityType      MajorityType
   majorityThreshold Int
   meetingId         String        @db.Uuid
   meeting           Meeting       @relation(fields: [meetingId], references: [id])
-  hasVoted          HasVoted[]
   alternatives      Alternative[]
+  HasVoted          HasVoted[]
+}
+
+model HasVoted {
+  votationId String   @db.Uuid
+  userId     String   @db.Uuid
+  createdAt  DateTime @default(now())
+  votation   Votation @relation(fields: [votationId], references: [id])
+  user       User     @relation(fields: [userId], references: [id])
+
+  @@id([userId, votationId])
 }
 
 model Alternative {

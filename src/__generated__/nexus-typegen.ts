@@ -22,12 +22,7 @@ declare global {
     datetime<FieldName extends string>(fieldName: FieldName, ...opts: core.ScalarOutSpread<TypeName, FieldName>): void // "DateTime";
   }
 }
-declare global {
-  interface NexusGenCustomOutputProperties<TypeName extends string> {
-    model: NexusPrisma<TypeName, 'model'>
-    crud: any
-  }
-}
+
 
 declare global {
   interface NexusGen extends NexusGenTypes {}
@@ -36,16 +31,36 @@ declare global {
 export interface NexusGenInputs {
   CreateMeetingInput: { // input type
     description: string; // String!
+    organization: string; // String!
     startTime: NexusGenScalars['DateTime']; // DateTime!
     title: string; // String!
   }
   CreateVotationInput: { // input type
+    alternatives?: string[] | null; // [String!]
     blankVotes: boolean; // Boolean!
     description: string; // String!
+    hiddenVotes: boolean; // Boolean!
     majorityThreshold: number; // Int!
     majorityType: NexusGenEnums['MajorityType']; // MajorityType!
-    meetingId: string; // String!
-    order: number; // Int!
+    severalVotes: boolean; // Boolean!
+    title: string; // String!
+  }
+  UpdateMeetingInput: { // input type
+    description?: string | null; // String
+    id: string; // String!
+    organization?: string | null; // String
+    startTime?: NexusGenScalars['DateTime'] | null; // DateTime
+    status?: NexusGenEnums['Status'] | null; // Status
+    title?: string | null; // String
+  }
+  UpdateVotationInput: { // input type
+    blankVotes: boolean; // Boolean!
+    description: string; // String!
+    hiddenVotes: boolean; // Boolean!
+    id: string; // String!
+    majorityThreshold: number; // Int!
+    majorityType: NexusGenEnums['MajorityType']; // MajorityType!
+    severalVotes: boolean; // Boolean!
     title: string; // String!
   }
 }
@@ -74,11 +89,15 @@ export interface NexusGenObjects {
   Meeting: { // root type
     description?: string | null; // String
     id: string; // ID!
+    organization: string; // String!
     startTime: NexusGenScalars['DateTime']; // DateTime!
     status: NexusGenEnums['Status']; // Status!
     title: string; // String!
   }
   Mutation: {};
+  OwnerCannotBeRemovedFromParticipantError: { // root type
+    message: string; // String!
+  }
   Participant: { // root type
     isVotingEligible: boolean; // Boolean!
     role: NexusGenEnums['Role']; // Role!
@@ -93,14 +112,16 @@ export interface NexusGenObjects {
     message: string; // String!
   }
   Votation: { // root type
-    blankVotes?: boolean | null; // Boolean
+    blankVotes: boolean; // Boolean!
     description: string; // String!
     hasVoted?: Array<NexusGenRootTypes['User'] | null> | null; // [User]
+    hiddenVotes: boolean; // Boolean!
     id: string; // ID!
     majorityThreshold: number; // Int!
     majorityType: NexusGenEnums['MajorityType']; // MajorityType!
     meetingId: string; // String!
     order?: number | null; // Int
+    severalVotes: boolean; // Boolean!
     status: NexusGenEnums['Status']; // Status!
     title: string; // String!
   }
@@ -115,6 +136,7 @@ export interface NexusGenInterfaces {
 }
 
 export interface NexusGenUnions {
+  DeleteParticipantResult: core.Discriminate<'OwnerCannotBeRemovedFromParticipantError', 'required'> | core.Discriminate<'Participant', 'required'>;
   GetUserResult: core.Discriminate<'User', 'required'> | core.Discriminate<'UserNotFoundError', 'required'>;
 }
 
@@ -132,7 +154,8 @@ export interface NexusGenFieldTypes {
   Meeting: { // field return type
     description: string | null; // String
     id: string; // ID!
-    owner: NexusGenRootTypes['User']; // User!
+    organization: string; // String!
+    owner: NexusGenRootTypes['User'] | null; // User
     participants: Array<NexusGenRootTypes['Participant'] | null>; // [Participant]!
     startTime: NexusGenScalars['DateTime']; // DateTime!
     status: NexusGenEnums['Status']; // Status!
@@ -143,7 +166,17 @@ export interface NexusGenFieldTypes {
     castVote: NexusGenRootTypes['Vote'] | null; // Vote
     createAlternative: NexusGenRootTypes['Alternative'] | null; // Alternative
     createMeeting: NexusGenRootTypes['Meeting'] | null; // Meeting
-    createVotation: NexusGenRootTypes['Votation'] | null; // Votation
+    createVotations: Array<string | null> | null; // [String]
+    deleteAlternative: NexusGenRootTypes['Alternative'] | null; // Alternative
+    deleteMeeting: NexusGenRootTypes['Meeting'] | null; // Meeting
+    deleteParticipant: NexusGenRootTypes['DeleteParticipantResult'] | null; // DeleteParticipantResult
+    deleteVotation: NexusGenRootTypes['Votation'] | null; // Votation
+    updateAlternative: NexusGenRootTypes['Alternative'] | null; // Alternative
+    updateMeeting: NexusGenRootTypes['Meeting'] | null; // Meeting
+    updateVotation: NexusGenRootTypes['Votation'] | null; // Votation
+  }
+  OwnerCannotBeRemovedFromParticipantError: { // field return type
+    message: string; // String!
   }
   Participant: { // field return type
     isVotingEligible: boolean; // Boolean!
@@ -155,6 +188,7 @@ export interface NexusGenFieldTypes {
     meetings: Array<NexusGenRootTypes['Meeting'] | null>; // [Meeting]!
     meetingsById: NexusGenRootTypes['Meeting'] | null; // Meeting
     user: NexusGenRootTypes['GetUserResult'] | null; // GetUserResult
+    votationById: NexusGenRootTypes['Votation'] | null; // Votation
   }
   User: { // field return type
     email: string; // String!
@@ -166,14 +200,16 @@ export interface NexusGenFieldTypes {
   }
   Votation: { // field return type
     alternatives: Array<NexusGenRootTypes['Alternative'] | null> | null; // [Alternative]
-    blankVotes: boolean | null; // Boolean
+    blankVotes: boolean; // Boolean!
     description: string; // String!
     hasVoted: Array<NexusGenRootTypes['User'] | null> | null; // [User]
+    hiddenVotes: boolean; // Boolean!
     id: string; // ID!
     majorityThreshold: number; // Int!
     majorityType: NexusGenEnums['MajorityType']; // MajorityType!
     meetingId: string; // String!
     order: number | null; // Int
+    severalVotes: boolean; // Boolean!
     status: NexusGenEnums['Status']; // Status!
     title: string; // String!
   }
@@ -197,6 +233,7 @@ export interface NexusGenFieldTypeNames {
   Meeting: { // field return type name
     description: 'String'
     id: 'ID'
+    organization: 'String'
     owner: 'User'
     participants: 'Participant'
     startTime: 'DateTime'
@@ -208,7 +245,17 @@ export interface NexusGenFieldTypeNames {
     castVote: 'Vote'
     createAlternative: 'Alternative'
     createMeeting: 'Meeting'
-    createVotation: 'Votation'
+    createVotations: 'String'
+    deleteAlternative: 'Alternative'
+    deleteMeeting: 'Meeting'
+    deleteParticipant: 'DeleteParticipantResult'
+    deleteVotation: 'Votation'
+    updateAlternative: 'Alternative'
+    updateMeeting: 'Meeting'
+    updateVotation: 'Votation'
+  }
+  OwnerCannotBeRemovedFromParticipantError: { // field return type name
+    message: 'String'
   }
   Participant: { // field return type name
     isVotingEligible: 'Boolean'
@@ -220,6 +267,7 @@ export interface NexusGenFieldTypeNames {
     meetings: 'Meeting'
     meetingsById: 'Meeting'
     user: 'GetUserResult'
+    votationById: 'Votation'
   }
   User: { // field return type name
     email: 'String'
@@ -234,11 +282,13 @@ export interface NexusGenFieldTypeNames {
     blankVotes: 'Boolean'
     description: 'String'
     hasVoted: 'User'
+    hiddenVotes: 'Boolean'
     id: 'ID'
     majorityThreshold: 'Int'
     majorityType: 'MajorityType'
     meetingId: 'String'
     order: 'Int'
+    severalVotes: 'Boolean'
     status: 'Status'
     title: 'String'
   }
@@ -265,8 +315,32 @@ export interface NexusGenArgTypes {
     createMeeting: { // args
       meeting: NexusGenInputs['CreateMeetingInput']; // CreateMeetingInput!
     }
-    createVotation: { // args
-      votation: NexusGenInputs['CreateVotationInput']; // CreateVotationInput!
+    createVotations: { // args
+      meetingId: string; // String!
+      votations: NexusGenInputs['CreateVotationInput'][]; // [CreateVotationInput!]!
+    }
+    deleteAlternative: { // args
+      id: string; // String!
+    }
+    deleteMeeting: { // args
+      id: string; // String!
+    }
+    deleteParticipant: { // args
+      meetingId: string; // String!
+      userId: string; // String!
+    }
+    deleteVotation: { // args
+      id: string; // String!
+    }
+    updateAlternative: { // args
+      id: string; // String!
+      text: string; // String!
+    }
+    updateMeeting: { // args
+      meeting: NexusGenInputs['UpdateMeetingInput']; // UpdateMeetingInput!
+    }
+    updateVotation: { // args
+      votation: NexusGenInputs['UpdateVotationInput']; // UpdateVotationInput!
     }
   }
   Query: {
@@ -276,10 +350,14 @@ export interface NexusGenArgTypes {
     meetingsById: { // args
       meetingId: string; // String!
     }
+    votationById: { // args
+      votationId: string; // ID!
+    }
   }
 }
 
 export interface NexusGenAbstractTypeMembers {
+  DeleteParticipantResult: "OwnerCannotBeRemovedFromParticipantError" | "Participant"
   GetUserResult: "User" | "UserNotFoundError"
 }
 
