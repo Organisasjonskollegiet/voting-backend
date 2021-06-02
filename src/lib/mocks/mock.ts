@@ -34,7 +34,7 @@ const simpleMock = {
     }),
     Alternative: () => ({
         id: () => casual.uuid,
-        text: () => casual.text,
+        text: () => casual._full_name(),
         votationId: () => casual.uuid,
         votes: () => casual.integer(0, 100),
     }),
