@@ -45,6 +45,10 @@ export interface NexusGenInputs {
     severalVotes: boolean; // Boolean!
     title: string; // String!
   }
+  ParticipantInput: { // input type
+    email: string; // String!
+    role: NexusGenEnums['Role']; // Role!
+  }
   UpdateMeetingInput: { // input type
     description?: string | null; // String
     id: string; // String!
@@ -163,6 +167,7 @@ export interface NexusGenFieldTypes {
     votations: Array<NexusGenRootTypes['Votation'] | null> | null; // [Votation]
   }
   Mutation: { // field return type
+    addParticipants: number | null; // Int
     castVote: NexusGenRootTypes['Vote'] | null; // Vote
     createAlternative: NexusGenRootTypes['Alternative'] | null; // Alternative
     createMeeting: NexusGenRootTypes['Meeting'] | null; // Meeting
@@ -242,6 +247,7 @@ export interface NexusGenFieldTypeNames {
     votations: 'Votation'
   }
   Mutation: { // field return type name
+    addParticipants: 'Int'
     castVote: 'Vote'
     createAlternative: 'Alternative'
     createMeeting: 'Meeting'
@@ -304,6 +310,10 @@ export interface NexusGenFieldTypeNames {
 
 export interface NexusGenArgTypes {
   Mutation: {
+    addParticipants: { // args
+      meetingId: string; // String!
+      participants: NexusGenInputs['ParticipantInput'][]; // [ParticipantInput!]!
+    }
     castVote: { // args
       alternativeId: string; // String!
       votationId: string; // String!

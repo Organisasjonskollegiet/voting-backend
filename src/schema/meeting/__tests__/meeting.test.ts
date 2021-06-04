@@ -62,6 +62,15 @@ const createMeeting = async (ownerId: string, role: Role) => {
     });
 };
 
+const createUser = async (email: string) => {
+    return await ctx.prisma.user.create({
+        data: {
+            email,
+            password: 'secret',
+        },
+    });
+};
+
 it('should create a meeting successfully', async () => {
     const createMeeting = await ctx.client.request(
         gql`
@@ -362,12 +371,7 @@ it('should delete meeting successfully', async () => {
 });
 
 it('should not delete meeting successfully', async () => {
-    const user = await ctx.prisma.user.create({
-        data: {
-            email: 'e@mail.com',
-            password: 'secret',
-        },
-    });
+    const user = await createUser('1@mail.com');
     const meeting = await createMeeting(user.id, 'ADMIN');
     try {
         await ctx.client.request(
@@ -388,13 +392,54 @@ it('should not delete meeting successfully', async () => {
     }
 });
 
-it('should delete participant successfully', async () => {
-    const otherUser = await ctx.prisma.user.create({
-        data: {
-            email: 'e@mail.com',
-            password: 'secret',
+it('should add participant and invite successfully', async () => {
+    const meeting = await createMeeting(ctx.userId, 'ADMIN');
+    const user = await createUser('1@mail.com');
+    const participantRole = 'ADMIN';
+    const inviteEmail = '2@mail.com';
+    const inviteRole = 'COUNTER';
+    await ctx.client.request(
+        gql`
+            mutation AddParticipants($meetingId: String!, $participants: [ParticipantInput!]!) {
+                addParticipants(meetingId: $meetingId)
+            }
+        `,
+        {
+            meetingId: meeting.id,
+            participants: [
+                {
+                    email: user.email,
+                    role: participantRole,
+                },
+                {
+                    email: inviteEmail,
+                    role: inviteRole,
+                },
+            ],
+        }
+    );
+    const participant = await ctx.prisma.participant.findUnique({
+        where: {
+            userId_meetingId: {
+                meetingId: meeting.id,
+                userId: user.email,
+            },
         },
     });
+    const invite = await ctx.prisma.invite.findUnique({
+        where: {
+            email_meetingId: {
+                meetingId: meeting.id,
+                email: inviteEmail,
+            },
+        },
+    });
+    expect(participant?.role).toBe(participantRole);
+    expect(invite?.role).toBe(inviteRole);
+});
+
+it('should delete participant successfully', async () => {
+    const otherUser = await createUser('2@mail.com');
     const meeting = await createMeeting(ctx.userId, 'ADMIN');
     await ctx.prisma.participant.create({
         data: {
@@ -462,13 +507,8 @@ it('should return OwnerCannotBeRemovedFromParticipantError', async () => {
     expect(participantCount).toBe(1);
 });
 
-it('should return Not Authorised', async () => {
-    const otherUser = await ctx.prisma.user.create({
-        data: {
-            email: 'e@mail.com',
-            password: 'secret',
-        },
-    });
+it('should return Not Authorised when deleting participant', async () => {
+    const otherUser = await createUser('2@mail.com');
     const meeting = await createMeeting(otherUser.id, 'ADMIN');
     await ctx.prisma.participant.create({
         data: {

@@ -54,6 +54,8 @@ type Meeting {
 }
 
 type Mutation {
+  """"""
+  addParticipants(meetingId: String!, participants: [ParticipantInput!]!): Int
   castVote(alternativeId: String!, votationId: String!): Vote
   createAlternative(text: String!, votationId: String!): Alternative
 
@@ -91,6 +93,11 @@ type Participant {
   isVotingEligible: Boolean!
   role: Role!
   user: User
+}
+
+input ParticipantInput {
+  email: String!
+  role: Role!
 }
 
 type Query {

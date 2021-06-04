@@ -48,6 +48,7 @@ model Meeting {
   votations    Votation[]
   status       Status        @db.default(UPCOMING)
   participants Participant[]
+  Invite       Invite[]
 }
 
 model Participant {
@@ -60,6 +61,15 @@ model Participant {
   meeting          Meeting @relation(fields: [meetingId], references: [id])
 
   @@unique([userId, meetingId])
+}
+
+model Invite {
+  email     String
+  role      Role
+  meetingId String  @db.Uuid
+  meeting   Meeting @relation(fields: [meetingId], references: [id])
+
+  @@unique([email, meetingId])
 }
 
 model Votation {

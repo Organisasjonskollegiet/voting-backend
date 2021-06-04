@@ -1,6 +1,8 @@
-import { inputObjectType, mutationField, nonNull, stringArg } from 'nexus';
-import { Status } from '../enums';
-import { Meeting, DeleteParticipantResult } from './typedefs';
+import { User, Invite } from '.prisma/client';
+import { email } from 'casual';
+import { inputObjectType, mutationField, nonNull, stringArg, list } from 'nexus';
+import { Status, Role } from '../enums';
+import { Meeting, DeleteParticipantResult, Participant } from './typedefs';
 
 export const CreateMeetingInput = inputObjectType({
     name: 'CreateMeetingInput',
@@ -21,6 +23,14 @@ export const UpdateMeetingInput = inputObjectType({
         t.datetime('startTime');
         t.string('description');
         t.field('status', { type: Status });
+    },
+});
+
+export const ParticipantInput = inputObjectType({
+    name: 'ParticipantInput',
+    definition(t) {
+        t.nonNull.string('email');
+        t.nonNull.field('role', { type: Role });
     },
 });
 
@@ -69,6 +79,45 @@ export const UpdateMeetingMutation = mutationField('updateMeeting', {
             },
         });
         return updatedMeeting;
+    },
+});
+
+export const AddParticipants = mutationField('addParticipants', {
+    type: 'Int',
+    description: '',
+    args: {
+        meetingId: nonNull(stringArg()),
+        participants: nonNull(list(nonNull(ParticipantInput))),
+    },
+    resolve: async (_, { meetingId, participants }, ctx) => {
+        let participantsAdded = 0;
+        for (const participant of participants) {
+            try {
+                const user = await ctx.prisma.user.findUnique({ where: { email: participant.email } });
+                if (user) {
+                    await ctx.prisma.participant.create({
+                        data: {
+                            role: participant.role,
+                            userId: user?.id ?? null,
+                            meetingId,
+                        },
+                    });
+                    participantsAdded += 1;
+                } else {
+                    await ctx.prisma.invite.create({
+                        data: {
+                            email: participant.email,
+                            role: participant.role,
+                            meetingId,
+                        },
+                    });
+                    participantsAdded += 1;
+                }
+            } catch (error) {
+                console.log(error);
+            }
+        }
+        return participantsAdded;
     },
 });
 
