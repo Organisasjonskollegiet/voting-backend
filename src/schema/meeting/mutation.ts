@@ -31,6 +31,7 @@ export const ParticipantInput = inputObjectType({
     definition(t) {
         t.nonNull.string('email');
         t.nonNull.field('role', { type: Role });
+        t.nonNull.boolean('isVotingEligible');
     },
 });
 
@@ -95,20 +96,40 @@ export const AddParticipants = mutationField('addParticipants', {
             try {
                 const user = await ctx.prisma.user.findUnique({ where: { email: participant.email } });
                 if (user) {
-                    await ctx.prisma.participant.create({
-                        data: {
+                    await ctx.prisma.participant.upsert({
+                        where: {
+                            userId_meetingId: {
+                                userId: user?.id,
+                                meetingId,
+                            },
+                        },
+                        update: {
+                            role: participant.role,
+                            isVotingEligible: participant.isVotingEligible,
+                        },
+                        create: {
                             role: participant.role,
                             userId: user?.id ?? null,
                             meetingId,
+                            isVotingEligible: participant.isVotingEligible,
                         },
                     });
                     participantsAdded += 1;
                 } else {
-                    await ctx.prisma.invite.create({
-                        data: {
+                    await ctx.prisma.invite.upsert({
+                        where: {
+                            email_meetingId: {
+                                email: participant.email,
+                                meetingId,
+                            },
+                        },
+                        create: {
                             email: participant.email,
                             role: participant.role,
                             meetingId,
+                        },
+                        update: {
+                            role: participant.role,
                         },
                     });
                     participantsAdded += 1;

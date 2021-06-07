@@ -47,6 +47,7 @@ export interface NexusGenInputs {
   }
   ParticipantInput: { // input type
     email: string; // String!
+    isVotingEligible: boolean; // Boolean!
     role: NexusGenEnums['Role']; // Role!
   }
   UpdateMeetingInput: { // input type

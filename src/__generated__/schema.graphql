@@ -97,6 +97,7 @@ type Participant {
 
 input ParticipantInput {
   email: String!
+  isVotingEligible: Boolean!
   role: Role!
 }
 

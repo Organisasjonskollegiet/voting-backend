@@ -1,6 +1,7 @@
 import { createTestContext } from '../../../lib/tests/testContext';
 import { gql } from 'graphql-request';
 import { Role, Status } from '.prisma/client';
+import casual from 'casual';
 const ctx = createTestContext();
 
 interface StaticMeetingDataType {
@@ -62,11 +63,21 @@ const createMeeting = async (ownerId: string, role: Role) => {
     });
 };
 
-const createUser = async (email: string) => {
+const createUser = async () => {
     return await ctx.prisma.user.create({
         data: {
-            email,
+            email: casual.email,
             password: 'secret',
+        },
+    });
+};
+
+const createParticipant = async (meetingId: string, userId: string, role: Role) => {
+    return await ctx.prisma.participant.create({
+        data: {
+            meetingId,
+            userId,
+            role,
         },
     });
 };
@@ -371,7 +382,7 @@ it('should delete meeting successfully', async () => {
 });
 
 it('should not delete meeting successfully', async () => {
-    const user = await createUser('1@mail.com');
+    const user = await createUser();
     const meeting = await createMeeting(user.id, 'ADMIN');
     try {
         await ctx.client.request(
@@ -394,14 +405,17 @@ it('should not delete meeting successfully', async () => {
 
 it('should add participant and invite successfully', async () => {
     const meeting = await createMeeting(ctx.userId, 'ADMIN');
-    const user = await createUser('1@mail.com');
+    const user = await createUser();
+    const existingParticipantUser = await createUser();
+    const existingParticipant = await createParticipant(meeting.id, existingParticipantUser.id, 'PARTICIPANT');
+    const existingParticipantNewRole = 'COUNTER';
     const participantRole = 'ADMIN';
-    const inviteEmail = '2@mail.com';
+    const inviteEmail = casual.email;
     const inviteRole = 'COUNTER';
     await ctx.client.request(
         gql`
             mutation AddParticipants($meetingId: String!, $participants: [ParticipantInput!]!) {
-                addParticipants(meetingId: $meetingId)
+                addParticipants(meetingId: $meetingId, participants: $participants)
             }
         `,
         {
@@ -410,44 +424,89 @@ it('should add participant and invite successfully', async () => {
                 {
                     email: user.email,
                     role: participantRole,
+                    isVotingEligible: true,
                 },
                 {
                     email: inviteEmail,
                     role: inviteRole,
+                    isVotingEligible: false,
+                },
+                {
+                    email: existingParticipantUser.email,
+                    role: existingParticipantNewRole,
+                    isVotingEligible: true,
                 },
             ],
         }
     );
-    const participant = await ctx.prisma.participant.findUnique({
+    const newParticipant = await ctx.prisma.participant.findUnique({
         where: {
             userId_meetingId: {
+                userId: user.id,
                 meetingId: meeting.id,
-                userId: user.email,
+            },
+        },
+    });
+    const existingParticipantUpdated = await ctx.prisma.participant.findUnique({
+        where: {
+            userId_meetingId: {
+                userId: existingParticipantUser.id,
+                meetingId: meeting.id,
             },
         },
     });
     const invite = await ctx.prisma.invite.findUnique({
         where: {
             email_meetingId: {
-                meetingId: meeting.id,
                 email: inviteEmail,
+                meetingId: meeting.id,
             },
         },
     });
-    expect(participant?.role).toBe(participantRole);
+    expect(newParticipant?.role).toBe(participantRole);
+    expect(existingParticipantUpdated?.role).toBe(existingParticipantNewRole);
     expect(invite?.role).toBe(inviteRole);
 });
 
+it('should return not Authorised trying to add participant and invite ', async () => {
+    const meeting = await createMeeting(ctx.userId, 'COUNTER');
+    const user = await createUser();
+    const participantRole = 'ADMIN';
+    const inviteEmail = '2@mail.com';
+    const inviteRole = 'COUNTER';
+    try {
+        await ctx.client.request(
+            gql`
+                mutation AddParticipants($meetingId: String!, $participants: [ParticipantInput!]!) {
+                    addParticipants(meetingId: $meetingId, participants: $participants)
+                }
+            `,
+            {
+                meetingId: meeting.id,
+                participants: [
+                    {
+                        email: user.email,
+                        role: participantRole,
+                        isVotingEligible: true,
+                    },
+                    {
+                        email: inviteEmail,
+                        role: inviteRole,
+                        isVotingEligible: true,
+                    },
+                ],
+            }
+        );
+        expect(false).toBeTruthy();
+    } catch (error) {
+        expect(error.message).toContain('Not Authorised!');
+    }
+});
+
 it('should delete participant successfully', async () => {
-    const otherUser = await createUser('2@mail.com');
+    const otherUser = await createUser();
     const meeting = await createMeeting(ctx.userId, 'ADMIN');
-    await ctx.prisma.participant.create({
-        data: {
-            meetingId: meeting.id,
-            userId: otherUser.id,
-            role: 'ADMIN',
-        },
-    });
+    await createParticipant(meeting.id, otherUser.id, 'ADMIN');
     await ctx.client.request(
         gql`
             mutation DeleteParticipant($meetingId: String!, $userId: String!) {
@@ -508,15 +567,9 @@ it('should return OwnerCannotBeRemovedFromParticipantError', async () => {
 });
 
 it('should return Not Authorised when deleting participant', async () => {
-    const otherUser = await createUser('2@mail.com');
+    const otherUser = await createUser();
     const meeting = await createMeeting(otherUser.id, 'ADMIN');
-    await ctx.prisma.participant.create({
-        data: {
-            userId: ctx.userId,
-            meetingId: meeting.id,
-            role: 'COUNTER',
-        },
-    });
+    await createParticipant(meeting.id, ctx.userId, 'COUNTER');
     try {
         await ctx.client.request(
             gql`
