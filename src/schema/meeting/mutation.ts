@@ -139,10 +139,12 @@ export const AddParticipantsMutation = mutationField('addParticipants', {
                         create: {
                             email: participant.email,
                             role: participant.role,
+                            isVotingEligible: participant.isVotingEligible,
                             meetingId,
                         },
                         update: {
                             role: participant.role,
+                            isVotingEligible: participant.isVotingEligible,
                         },
                     });
                     participantsAdded += 1;

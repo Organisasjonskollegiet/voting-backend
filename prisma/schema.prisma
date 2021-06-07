@@ -64,10 +64,11 @@ model Participant {
 }
 
 model Invite {
-  email     String
-  role      Role
-  meetingId String  @db.Uuid
-  meeting   Meeting @relation(fields: [meetingId], references: [id])
+  email            String
+  role             Role
+  isVotingEligible Boolean
+  meetingId        String  @db.Uuid
+  meeting          Meeting @relation(fields: [meetingId], references: [id])
 
   @@unique([email, meetingId])
 }
