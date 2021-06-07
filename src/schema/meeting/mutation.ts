@@ -1,8 +1,6 @@
-import { User, Invite } from '.prisma/client';
-import { email } from 'casual';
 import { inputObjectType, mutationField, nonNull, stringArg, list } from 'nexus';
 import { Status, Role } from '../enums';
-import { Meeting, DeleteParticipantResult, Participant } from './typedefs';
+import { Meeting, DeleteParticipantResult } from './typedefs';
 
 export const CreateMeetingInput = inputObjectType({
     name: 'CreateMeetingInput',
@@ -83,7 +81,22 @@ export const UpdateMeetingMutation = mutationField('updateMeeting', {
     },
 });
 
-export const AddParticipants = mutationField('addParticipants', {
+export const DeleteMeetingMutation = mutationField('deleteMeeting', {
+    type: Meeting,
+    description: '',
+    args: {
+        id: nonNull(stringArg()),
+    },
+    resolve: async (_, { id }, ctx) => {
+        await ctx.prisma.alternative.deleteMany({ where: { votation: { meetingId: id } } });
+        await ctx.prisma.votation.deleteMany({ where: { meetingId: id } });
+        await ctx.prisma.participant.deleteMany({ where: { meetingId: id } });
+        const deletedMeeting = await ctx.prisma.meeting.delete({ where: { id } });
+        return deletedMeeting;
+    },
+});
+
+export const AddParticipantsMutation = mutationField('addParticipants', {
     type: 'Int',
     description: '',
     args: {
@@ -166,20 +179,5 @@ export const DeleteParticipantMutation = mutationField('deleteParticipant', {
             },
         });
         return { __typename: 'Participant', ...deletedParticipant };
-    },
-});
-
-export const DeleteMeetingMutation = mutationField('deleteMeeting', {
-    type: Meeting,
-    description: '',
-    args: {
-        id: nonNull(stringArg()),
-    },
-    resolve: async (_, { id }, ctx) => {
-        await ctx.prisma.alternative.deleteMany({ where: { votation: { meetingId: id } } });
-        await ctx.prisma.votation.deleteMany({ where: { meetingId: id } });
-        await ctx.prisma.participant.deleteMany({ where: { meetingId: id } });
-        const deletedMeeting = await ctx.prisma.meeting.delete({ where: { id } });
-        return deletedMeeting;
     },
 });
