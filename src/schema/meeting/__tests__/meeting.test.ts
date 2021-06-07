@@ -336,6 +336,7 @@ it('should delete meeting successfully', async () => {
             hiddenVotes: true,
             majorityType: 'QUALIFIED',
             majorityThreshold: 60,
+            index: 1,
             meetingId: meeting.id,
         },
     });

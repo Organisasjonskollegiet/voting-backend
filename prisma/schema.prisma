@@ -72,6 +72,7 @@ model Votation {
   severalVotes      Boolean
   majorityType      MajorityType
   majorityThreshold Int
+  index             Int
   meetingId         String        @db.Uuid
   meeting           Meeting       @relation(fields: [meetingId], references: [id])
   alternatives      Alternative[]
