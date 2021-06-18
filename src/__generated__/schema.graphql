@@ -21,6 +21,7 @@ input CreateVotationInput {
   blankVotes: Boolean!
   description: String!
   hiddenVotes: Boolean!
+  index: Int!
   majorityThreshold: Int!
   majorityType: MajorityType!
   severalVotes: Boolean!
@@ -139,6 +140,7 @@ input UpdateVotationInput {
   description: String!
   hiddenVotes: Boolean!
   id: String!
+  index: Int!
   majorityThreshold: Int!
   majorityType: MajorityType!
   severalVotes: Boolean!
@@ -162,6 +164,7 @@ type Votation {
   hasVoted: [User]
   hiddenVotes: Boolean!
   id: ID!
+  index: Int!
   majorityThreshold: Int!
   majorityType: MajorityType!
   meetingId: String!

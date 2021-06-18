@@ -14,6 +14,7 @@ export const UpdateVotationInput = inputObjectType({
         t.nonNull.boolean('severalVotes');
         t.nonNull.field('majorityType', { type: MajorityType });
         t.nonNull.int('majorityThreshold');
+        t.nonNull.int('index');
     },
 });
 
@@ -27,6 +28,7 @@ export const CreateVotationInput = inputObjectType({
         t.nonNull.boolean('severalVotes');
         t.nonNull.field('majorityType', { type: MajorityType });
         t.nonNull.int('majorityThreshold');
+        t.nonNull.int('index');
         t.list.nonNull.string('alternatives');
     },
 });

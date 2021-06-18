@@ -53,6 +53,7 @@ export const Votation = objectType({
         t.nonNull.boolean('severalVotes');
         t.nonNull.field('majorityType', { type: MajorityType });
         t.nonNull.int('majorityThreshold');
+        t.nonNull.int('index');
         t.nonNull.string('meetingId');
         t.list.field('hasVoted', { type: User });
         t.list.field('alternatives', {
