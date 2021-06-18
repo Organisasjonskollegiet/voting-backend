@@ -62,7 +62,7 @@ type Mutation {
 
   """"""
   createMeeting(meeting: CreateMeetingInput!): Meeting
-  createVotations(meetingId: String!, votations: [CreateVotationInput!]!): [String]
+  createVotations(meetingId: String!, votations: [CreateVotationInput!]!): [Votation]
 
   """"""
   deleteAlternative(id: String!): Alternative

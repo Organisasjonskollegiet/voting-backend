@@ -34,7 +34,7 @@ export const CreateVotationInput = inputObjectType({
 });
 
 export const CreateVotationsMutatioon = mutationField('createVotations', {
-    type: list('String'),
+    type: list(Votation),
     args: {
         meetingId: nonNull(stringArg()),
         votations: nonNull(list(nonNull(CreateVotationInput))),
@@ -50,11 +50,13 @@ export const CreateVotationsMutatioon = mutationField('createVotations', {
                         alternatives: {
                             createMany: {
                                 data: votation.alternatives
-                                    ? votation.alternatives.map((alternative) => {
-                                          return {
-                                              text: alternative,
-                                          };
-                                      })
+                                    ? votation.alternatives
+                                          .filter((text) => text.trim().length > 0)
+                                          .map((alternative) => {
+                                              return {
+                                                  text: alternative,
+                                              };
+                                          })
                                     : [],
                             },
                         },
@@ -63,7 +65,7 @@ export const CreateVotationsMutatioon = mutationField('createVotations', {
             );
         }
         const resolved = await Promise.all(promises);
-        return resolved.map((votation) => votation.id);
+        return resolved;
     },
 });
 

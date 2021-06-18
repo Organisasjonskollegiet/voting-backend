@@ -237,27 +237,58 @@ it('should create votations successfully', async () => {
             {
                 ...staticVotationData,
                 index: 2,
+                alternatives: [],
             },
         ],
     };
     const createVotations = await ctx.client.request(
         gql`
             mutation CreateVotations($meetingId: String!, $votations: [CreateVotationInput!]!) {
-                createVotations(meetingId: $meetingId, votations: $votations)
+                createVotations(meetingId: $meetingId, votations: $votations) {
+                    id
+                    title
+                    description
+                    index
+                    blankVotes
+                    hiddenVotes
+                    severalVotes
+                    majorityType
+                    majorityThreshold
+                    alternatives {
+                        text
+                    }
+                }
             }
         `,
         variables
     );
     const alternativesCountFirstVotation = await ctx.prisma.alternative.count({
         where: {
-            votationId: createVotations.createVotations[0],
+            votationId: createVotations.createVotations[0].id,
         },
     });
     const alternativesCountSecondVotation = await ctx.prisma.alternative.count({
         where: {
-            votationId: createVotations.createVotations[1],
+            votationId: createVotations.createVotations[1].id,
         },
     });
+    expect(
+        createVotations.createVotations.map((votation: any) => {
+            return {
+                ...votation,
+                id: '',
+                alternatives: [],
+            };
+        })
+    ).toEqual(
+        variables.votations.map((votation) => {
+            return {
+                ...votation,
+                id: '',
+                alternatives: [],
+            };
+        })
+    );
     expect(createVotations.createVotations.length).toEqual(2);
     expect(alternativesCountFirstVotation).toEqual(2);
     expect(alternativesCountSecondVotation).toEqual(0);
@@ -336,10 +367,12 @@ it('should not create votations successfully', async () => {
             {
                 ...staticVotationData,
                 index: 1,
+                alternatives: [],
             },
             {
                 ...staticVotationData,
                 index: 2,
+                alternatives: [],
             },
         ],
     };
@@ -347,7 +380,20 @@ it('should not create votations successfully', async () => {
         await ctx.client.request(
             gql`
                 mutation CreateVotations($meetingId: String!, $votations: [CreateVotationInput!]!) {
-                    createVotations(meetingId: $meetingId, votations: $votations)
+                    createVotations(meetingId: $meetingId, votations: $votations) {
+                        id
+                        title
+                        description
+                        index
+                        blankVotes
+                        hiddenVotes
+                        severalVotes
+                        majorityType
+                        majorityThreshold
+                        alternatives {
+                            text
+                        }
+                    }
                 }
             `,
             variables
