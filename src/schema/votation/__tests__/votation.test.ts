@@ -231,10 +231,12 @@ it('should create votations successfully', async () => {
         votations: [
             {
                 ...staticVotationData,
+                index: 1,
                 alternatives: ['alternative1', 'alternative2'],
             },
             {
                 ...staticVotationData,
+                index: 2,
             },
         ],
     };
@@ -268,6 +270,7 @@ it('should update votation successfully', async () => {
         votation: {
             id: votation.id,
             ...updatedStaticVotationData,
+            index: 2,
         },
     };
     const updateVotation = await ctx.client.request(
@@ -282,6 +285,7 @@ it('should update votation successfully', async () => {
                     severalVotes
                     majorityType
                     majorityThreshold
+                    index
                 }
             }
         `,
@@ -299,6 +303,7 @@ it('should not update votation successfully', async () => {
         votation: {
             id: votation.id,
             ...updatedStaticVotationData,
+            index: 2,
         },
     };
     try {
@@ -330,9 +335,11 @@ it('should not create votations successfully', async () => {
         votations: [
             {
                 ...staticVotationData,
+                index: 1,
             },
             {
                 ...staticVotationData,
+                index: 2,
             },
         ],
     };
