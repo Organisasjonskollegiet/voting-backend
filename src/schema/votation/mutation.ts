@@ -1,7 +1,7 @@
 import { inputObjectType, intArg, list, mutationField, nonNull, stringArg } from 'nexus';
 import { Vote } from './';
 import { Alternative, Votation } from './typedefs';
-import { MajorityType } from '../enums';
+import { MajorityType, Status } from '../enums';
 
 export const UpdateVotationInput = inputObjectType({
     name: 'UpdateVotationInput',
@@ -14,6 +14,14 @@ export const UpdateVotationInput = inputObjectType({
         t.nonNull.boolean('severalVotes');
         t.nonNull.field('majorityType', { type: MajorityType });
         t.nonNull.int('majorityThreshold');
+    },
+});
+
+export const UpdateVotationStatusInput = inputObjectType({
+    name: 'UpdateVotationStatusInput',
+    definition(t) {
+        t.nonNull.string('id');;
+        t.nonNull.field('status', { type: Status })
     },
 });
 
@@ -31,7 +39,7 @@ export const CreateVotationInput = inputObjectType({
     },
 });
 
-export const CreateVotationsMutatioon = mutationField('createVotations', {
+export const CreateVotationsMutation = mutationField('createVotations', {
     type: list('String'),
     args: {
         meetingId: nonNull(stringArg()),
@@ -70,6 +78,25 @@ export const UpdateVotationMutation = mutationField('updateVotation', {
     description: '',
     args: {
         votation: nonNull(UpdateVotationInput),
+    },
+    resolve: async (_, { votation }, ctx) => {
+        const updatedVotation = await ctx.prisma.votation.update({
+            data: {
+                ...votation,
+            },
+            where: {
+                id: votation.id,
+            },
+        });
+        return updatedVotation;
+    },
+});
+
+export const UpdateVotationStatusMutation = mutationField('updateVotationStatus', {
+    type: Votation,
+    description: '',
+    args: {
+        votation: nonNull(UpdateVotationStatusInput),
     },
     resolve: async (_, { votation }, ctx) => {
         const updatedVotation = await ctx.prisma.votation.update({

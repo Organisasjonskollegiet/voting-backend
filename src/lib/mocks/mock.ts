@@ -1,8 +1,6 @@
 import { Role, Status } from '@prisma/client';
 import casual from 'casual';
 
-const statusArray = [Status.ENDED, Status.ONGOING, Status.UPCOMING];
-
 const simpleMock = {
     User: () => ({
         id: () => casual.uuid,
@@ -17,7 +15,7 @@ const simpleMock = {
         owner: () => ({ __typename: 'User' }),
         participants: () => new Array(casual.integer(2, 6)).fill({ __typename: 'Participant' }),
         votations: () => new Array(casual.integer(2, 6)).fill({ __typename: 'Votation' }),
-        status: () => statusArray[Math.floor(Math.random() * 3)],
+        status: () => [Status.ENDED, Status.ONGOING, Status.UPCOMING][casual.integer(0, 2)],
         organization: () => casual._company_name(),
     }),
     Votation: () => ({
@@ -31,6 +29,8 @@ const simpleMock = {
         order: () => casual.integer,
         status: () => [Status.ONGOING, Status.UPCOMING, Status.ENDED][casual.integer(0, 2)],
         alternatives: () => new Array(casual.integer(2, 6)).fill({ __typename: 'Alternative' }),
+        hiddenVotes: () => casual.boolean,
+        severalVotes: () => casual.boolean,
     }),
     Alternative: () => ({
         id: () => casual.uuid,

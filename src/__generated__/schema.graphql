@@ -81,6 +81,9 @@ type Mutation {
 
   """"""
   updateVotation(votation: UpdateVotationInput!): Votation
+
+  """"""
+  updateVotationStatus(votation: UpdateVotationStatusInput!): Votation
 }
 
 type OwnerCannotBeRemovedFromParticipantError {
@@ -102,7 +105,7 @@ type Query {
   """Find a meeting by id from meetings youre participating in"""
   meetingsById(meetingId: String!): Meeting
   user: GetUserResult
-  votationById(votationId: ID!): Votation
+  votationById(votationId: String!): Votation
 }
 
 enum Role {
@@ -135,6 +138,11 @@ input UpdateVotationInput {
   majorityType: MajorityType!
   severalVotes: Boolean!
   title: String!
+}
+
+input UpdateVotationStatusInput {
+  id: String!
+  status: Status!
 }
 
 type User {

@@ -63,6 +63,10 @@ export interface NexusGenInputs {
     severalVotes: boolean; // Boolean!
     title: string; // String!
   }
+  UpdateVotationStatusInput: { // input type
+    id: string; // String!
+    status: NexusGenEnums['Status']; // Status!
+  }
 }
 
 export interface NexusGenEnums {
@@ -174,6 +178,7 @@ export interface NexusGenFieldTypes {
     updateAlternative: NexusGenRootTypes['Alternative'] | null; // Alternative
     updateMeeting: NexusGenRootTypes['Meeting'] | null; // Meeting
     updateVotation: NexusGenRootTypes['Votation'] | null; // Votation
+    updateVotationStatus: NexusGenRootTypes['Votation'] | null; // Votation
   }
   OwnerCannotBeRemovedFromParticipantError: { // field return type
     message: string; // String!
@@ -253,6 +258,7 @@ export interface NexusGenFieldTypeNames {
     updateAlternative: 'Alternative'
     updateMeeting: 'Meeting'
     updateVotation: 'Votation'
+    updateVotationStatus: 'Votation'
   }
   OwnerCannotBeRemovedFromParticipantError: { // field return type name
     message: 'String'
@@ -342,6 +348,9 @@ export interface NexusGenArgTypes {
     updateVotation: { // args
       votation: NexusGenInputs['UpdateVotationInput']; // UpdateVotationInput!
     }
+    updateVotationStatus: { // args
+      votation: NexusGenInputs['UpdateVotationStatusInput']; // UpdateVotationStatusInput!
+    }
   }
   Query: {
     alternativesByVotation: { // args
@@ -351,7 +360,7 @@ export interface NexusGenArgTypes {
       meetingId: string; // String!
     }
     votationById: { // args
-      votationId: string; // ID!
+      votationId: string; // String!
     }
   }
 }
