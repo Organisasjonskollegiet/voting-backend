@@ -14,6 +14,7 @@ export const UpdateVotationInput = inputObjectType({
         t.nonNull.boolean('severalVotes');
         t.nonNull.field('majorityType', { type: MajorityType });
         t.nonNull.int('majorityThreshold');
+        t.nonNull.int('index');
     },
 });
 
@@ -35,12 +36,13 @@ export const CreateVotationInput = inputObjectType({
         t.nonNull.boolean('severalVotes');
         t.nonNull.field('majorityType', { type: MajorityType });
         t.nonNull.int('majorityThreshold');
+        t.nonNull.int('index');
         t.list.nonNull.string('alternatives');
     },
 });
 
-export const CreateVotationsMutation = mutationField('createVotations', {
-    type: list('String'),
+export const CreateVotationsMutatioon = mutationField('createVotations', {
+    type: list(Votation),
     args: {
         meetingId: nonNull(stringArg()),
         votations: nonNull(list(nonNull(CreateVotationInput))),
@@ -56,11 +58,13 @@ export const CreateVotationsMutation = mutationField('createVotations', {
                         alternatives: {
                             createMany: {
                                 data: votation.alternatives
-                                    ? votation.alternatives.map((alternative) => {
-                                          return {
-                                              text: alternative,
-                                          };
-                                      })
+                                    ? votation.alternatives
+                                          .filter((text) => text.trim().length > 0)
+                                          .map((alternative) => {
+                                              return {
+                                                  text: alternative,
+                                              };
+                                          })
                                     : [],
                             },
                         },
@@ -69,7 +73,7 @@ export const CreateVotationsMutation = mutationField('createVotations', {
             );
         }
         const resolved = await Promise.all(promises);
-        return resolved.map((votation) => votation.id);
+        return resolved;
     },
 });
 

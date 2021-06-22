@@ -21,6 +21,7 @@ input CreateVotationInput {
   blankVotes: Boolean!
   description: String!
   hiddenVotes: Boolean!
+  index: Int!
   majorityThreshold: Int!
   majorityType: MajorityType!
   severalVotes: Boolean!
@@ -54,12 +55,14 @@ type Meeting {
 }
 
 type Mutation {
+  """"""
+  addParticipants(meetingId: String!, participants: [ParticipantInput!]!): Int
   castVote(alternativeId: String!, votationId: String!): Vote
   createAlternative(text: String!, votationId: String!): Alternative
 
   """"""
   createMeeting(meeting: CreateMeetingInput!): Meeting
-  createVotations(meetingId: String!, votations: [CreateVotationInput!]!): [String]
+  createVotations(meetingId: String!, votations: [CreateVotationInput!]!): [Votation]
 
   """"""
   deleteAlternative(id: String!): Alternative
@@ -94,6 +97,12 @@ type Participant {
   isVotingEligible: Boolean!
   role: Role!
   user: User
+}
+
+input ParticipantInput {
+  email: String!
+  isVotingEligible: Boolean!
+  role: Role!
 }
 
 type Query {
@@ -134,6 +143,7 @@ input UpdateVotationInput {
   description: String!
   hiddenVotes: Boolean!
   id: String!
+  index: Int!
   majorityThreshold: Int!
   majorityType: MajorityType!
   severalVotes: Boolean!
@@ -162,6 +172,7 @@ type Votation {
   hasVoted: [User]
   hiddenVotes: Boolean!
   id: ID!
+  index: Int!
   majorityThreshold: Int!
   majorityType: MajorityType!
   meetingId: String!
