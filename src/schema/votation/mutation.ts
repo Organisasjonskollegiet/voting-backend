@@ -21,8 +21,8 @@ export const UpdateVotationInput = inputObjectType({
 export const UpdateVotationStatusInput = inputObjectType({
     name: 'UpdateVotationStatusInput',
     definition(t) {
-        t.nonNull.string('id');;
-        t.nonNull.field('status', { type: Status })
+        t.nonNull.string('id');
+        t.nonNull.field('status', { type: Status });
     },
 });
 
