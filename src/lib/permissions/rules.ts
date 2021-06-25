@@ -49,12 +49,16 @@ export const isAdminOfAlternative = rule({ cache: 'strict' })(async (_, { id }, 
 });
 
 /**
- * Rule: The user is an Admin of the meeting that the votation belongs to
+ * Rule: The user is an Admin of the meetings that all the votation belongs to
  */
-export const isAdminOfVotationByObject = rule({ cache: 'strict' })(async (_, { votation }, ctx: Context) => {
-    const votationFromDB = await ctx.prisma.votation.findUnique({ where: { id: votation.id } });
-    if (!votationFromDB) return false;
-    return await checkIsAdminOfMeetingId(votationFromDB.meetingId, ctx);
+export const isAdminOfVotationsByObjects = rule({ cache: 'strict' })(async (_, { votations }, ctx: Context) => {
+    let isAdminOfAllVotations = true;
+    for (const votation of votations) {
+        const votationFromDB = await ctx.prisma.votation.findUnique({ where: { id: votation.id } });
+        if (!votationFromDB) return false;
+        isAdminOfAllVotations = isAdminOfAllVotations && (await checkIsAdminOfMeetingId(votationFromDB.meetingId, ctx));
+    }
+    return isAdminOfAllVotations;
 });
 
 /**

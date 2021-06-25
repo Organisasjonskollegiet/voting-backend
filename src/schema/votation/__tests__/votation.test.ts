@@ -294,20 +294,59 @@ it('should create votations successfully', async () => {
     expect(alternativesCountSecondVotation).toEqual(0);
 });
 
-it('should update votation successfully', async () => {
+it('should update votations successfully', async () => {
+    const alternative1UpdatedText = 'alternative1Updated';
+    const alternative2UpdatedText = 'alternative2Updated';
+    const alternative3UpdatedText = 'alternative3Updated';
+    const alternative4UpdatedText = 'alternative4Updated';
     const meeting = await createMeeting(ctx.userId, 'ADMIN');
-    const votation = await createVotation(meeting.id, 'UPCOMING', 1);
+    const votation1 = await createVotation(meeting.id, 'UPCOMING', 1);
+    const alternative1 = await createAlternative(votation1.id, 'alternative1');
+    const alternative2 = await createAlternative(votation1.id, 'alternative2');
+    const votation2 = await createVotation(meeting.id, 'UPCOMING', 2);
+    const alternative3 = await createAlternative(votation2.id, 'alternative3');
+    const alternative4 = await createAlternative(votation2.id, 'alternative4');
     const variables = {
-        votation: {
-            id: votation.id,
-            ...updatedStaticVotationData,
-            index: 2,
-        },
+        votations: [
+            {
+                id: votation1.id,
+                ...updatedStaticVotationData,
+                index: 2,
+                alternatives: [
+                    {
+                        id: alternative1.id,
+                        text: alternative1UpdatedText,
+                    },
+                    {
+                        id: alternative2.id,
+                        text: alternative2UpdatedText,
+                    },
+                ],
+            },
+            {
+                id: votation2.id,
+                ...updatedStaticVotationData,
+                index: 3,
+                alternatives: [
+                    {
+                        id: alternative3.id,
+                        text: alternative3UpdatedText,
+                    },
+                    {
+                        id: alternative4.id,
+                        text: alternative4UpdatedText,
+                    },
+                    {
+                        text: 'alternative5',
+                    },
+                ],
+            },
+        ],
     };
-    const updateVotation = await ctx.client.request(
+    const updateVotations = await ctx.client.request(
         gql`
-            mutation UpdateVotation($votation: UpdateVotationInput!) {
-                updateVotation(votation: $votation) {
+            mutation UpdateVotations($votations: [UpdateVotationInput!]!) {
+                updateVotations(votations: $votations) {
                     id
                     title
                     description
@@ -317,37 +356,103 @@ it('should update votation successfully', async () => {
                     majorityType
                     majorityThreshold
                     index
+                    alternatives {
+                        text
+                    }
                 }
             }
         `,
         variables
     );
-    expect(updateVotation.updateVotation).toEqual({
-        ...variables.votation,
+    const votation1Updated = await ctx.prisma.votation.findUnique({
+        where: {
+            id: votation1.id,
+        },
     });
+    const alternative1Updated = await ctx.prisma.alternative.findUnique({
+        where: {
+            id: alternative1.id,
+        },
+    });
+    const votation2Updated = await ctx.prisma.votation.findUnique({
+        where: {
+            id: votation2.id,
+        },
+    });
+    const alternativeToVotation2Count = await ctx.prisma.alternative.count({
+        where: {
+            votationId: votation2.id,
+        },
+    });
+    expect(votation1Updated?.index).toEqual(variables.votations[0].index);
+    expect(votation2Updated?.index).toEqual(variables.votations[1].index);
+    expect(alternative1Updated?.text).toEqual(alternative1UpdatedText);
+    expect(alternativeToVotation2Count).toEqual(3);
 });
 
 it('should not update votation successfully', async () => {
+    const alternative1UpdatedText = 'alternative1Updated';
+    const alternative2UpdatedText = 'alternative2Updated';
+    const alternative3UpdatedText = 'alternative3Updated';
+    const alternative4UpdatedText = 'alternative4Updated';
     const meeting = await createMeeting(ctx.userId, 'COUNTER');
-    const votation = await createVotation(meeting.id, 'UPCOMING', 1);
+    const votation1 = await createVotation(meeting.id, 'UPCOMING', 1);
+    const alternative1 = await createAlternative(votation1.id, 'alternative1');
+    const alternative2 = await createAlternative(votation1.id, 'alternative2');
+    const votation2 = await createVotation(meeting.id, 'UPCOMING', 2);
+    const alternative3 = await createAlternative(votation1.id, 'alternative3');
+    const alternative4 = await createAlternative(votation1.id, 'alternative4');
     const variables = {
-        votation: {
-            id: votation.id,
-            ...updatedStaticVotationData,
-            index: 2,
-        },
+        votations: [
+            {
+                id: votation1.id,
+                ...updatedStaticVotationData,
+                index: 2,
+                alternatives: [
+                    {
+                        id: alternative1.id,
+                        text: alternative1UpdatedText,
+                    },
+                    {
+                        id: alternative2.id,
+                        text: alternative2UpdatedText,
+                    },
+                ],
+            },
+            {
+                id: votation2.id,
+                ...updatedStaticVotationData,
+                index: 3,
+                alternatives: [
+                    {
+                        id: alternative3.id,
+                        text: alternative3UpdatedText,
+                    },
+                    {
+                        id: alternative4.id,
+                        text: alternative4UpdatedText,
+                    },
+                    {
+                        text: 'alternative5',
+                    },
+                ],
+            },
+        ],
     };
     try {
         await ctx.client.request(
             gql`
-                mutation UpdateVotation($votation: UpdateVotationInput!) {
-                    updateVotation(votation: $votation) {
+                mutation UpdateVotations($votations: [UpdateVotationInput!]!) {
+                    updateVotations(votations: $votations) {
                         id
                         title
                         description
                         blankVotes
+                        hiddenVotes
+                        severalVotes
                         majorityType
                         majorityThreshold
+                        index
                     }
                 }
             `,

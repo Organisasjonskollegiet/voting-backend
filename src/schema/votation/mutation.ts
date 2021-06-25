@@ -2,6 +2,15 @@ import { inputObjectType, intArg, list, mutationField, nonNull, stringArg } from
 import { Vote } from './';
 import { Alternative, Votation } from './typedefs';
 import { MajorityType } from '../enums';
+import { AlternativesByVotation } from './query';
+
+export const AlternativeInput = inputObjectType({
+    name: 'AlternativeInput',
+    definition(t) {
+        t.string('id');
+        t.nonNull.string('text');
+    },
+});
 
 export const UpdateVotationInput = inputObjectType({
     name: 'UpdateVotationInput',
@@ -15,6 +24,7 @@ export const UpdateVotationInput = inputObjectType({
         t.nonNull.field('majorityType', { type: MajorityType });
         t.nonNull.int('majorityThreshold');
         t.nonNull.int('index');
+        t.list.nonNull.field('alternatives', { type: AlternativeInput });
     },
 });
 
@@ -69,22 +79,62 @@ export const CreateVotationsMutatioon = mutationField('createVotations', {
     },
 });
 
-export const UpdateVotationMutation = mutationField('updateVotation', {
-    type: Votation,
+export const UpdateVotationsMutation = mutationField('updateVotations', {
+    type: list(Votation),
     description: '',
     args: {
-        votation: nonNull(UpdateVotationInput),
+        votations: nonNull(list(nonNull(UpdateVotationInput))),
     },
-    resolve: async (_, { votation }, ctx) => {
-        const updatedVotation = await ctx.prisma.votation.update({
-            data: {
-                ...votation,
-            },
-            where: {
-                id: votation.id,
-            },
-        });
-        return updatedVotation;
+    resolve: async (_, { votations }, ctx) => {
+        const promises = [];
+        const alternativePromises = [];
+        for (const votation of votations) {
+            if (votation.alternatives) {
+                for (const alternative of votation.alternatives) {
+                    if (alternative.id) {
+                        alternativePromises.push(
+                            ctx.prisma.alternative.update({
+                                where: {
+                                    id: alternative.id,
+                                },
+                                data: {
+                                    text: alternative.text,
+                                },
+                            })
+                        );
+                    } else {
+                        alternativePromises.push(
+                            ctx.prisma.alternative.create({
+                                data: {
+                                    text: alternative.text,
+                                    votationId: votation.id,
+                                },
+                            })
+                        );
+                    }
+                }
+            }
+            promises.push(
+                ctx.prisma.votation.update({
+                    where: {
+                        id: votation.id,
+                    },
+                    data: {
+                        title: votation.title,
+                        description: votation.title,
+                        index: votation.index,
+                        blankVotes: votation.blankVotes,
+                        hiddenVotes: votation.hiddenVotes,
+                        severalVotes: votation.severalVotes,
+                        majorityType: votation.majorityType,
+                        majorityThreshold: votation.majorityThreshold,
+                    },
+                })
+            );
+        }
+        await Promise.all(alternativePromises);
+        const resolved = await Promise.all(promises);
+        return resolved;
     },
 });
 
