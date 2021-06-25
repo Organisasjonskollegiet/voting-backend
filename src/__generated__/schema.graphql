@@ -10,7 +10,7 @@ type Alternative {
 }
 
 input AlternativeInput {
-  id: String
+  id: String!
   text: String!
 }
 

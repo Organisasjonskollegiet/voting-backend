@@ -30,7 +30,7 @@ declare global {
 
 export interface NexusGenInputs {
   AlternativeInput: { // input type
-    id?: string | null; // String
+    id: string; // String!
     text: string; // String!
   }
   CreateMeetingInput: { // input type

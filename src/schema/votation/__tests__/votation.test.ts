@@ -2,6 +2,7 @@ import { createTestContext } from '../../../lib/tests/testContext';
 import { gql } from 'graphql-request';
 import { Status, MajorityType, Role } from '.prisma/client';
 import { execPath } from 'node:process';
+import { uuid } from 'casual';
 const ctx = createTestContext();
 
 interface StaticMeetingDataType {
@@ -337,13 +338,14 @@ it('should update votations successfully', async () => {
                         text: alternative4UpdatedText,
                     },
                     {
+                        id: uuid,
                         text: 'alternative5',
                     },
                 ],
             },
         ],
     };
-    const updateVotations = await ctx.client.request(
+    await ctx.client.request(
         gql`
             mutation UpdateVotations($votations: [UpdateVotationInput!]!) {
                 updateVotations(votations: $votations) {
@@ -433,6 +435,7 @@ it('should not update votation successfully', async () => {
                         text: alternative4UpdatedText,
                     },
                     {
+                        id: uuid,
                         text: 'alternative5',
                     },
                 ],

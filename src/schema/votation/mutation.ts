@@ -7,7 +7,7 @@ import { AlternativesByVotation } from './query';
 export const AlternativeInput = inputObjectType({
     name: 'AlternativeInput',
     definition(t) {
-        t.string('id');
+        t.nonNull.string('id');
         t.nonNull.string('text');
     },
 });
@@ -91,27 +91,20 @@ export const UpdateVotationsMutation = mutationField('updateVotations', {
         for (const votation of votations) {
             if (votation.alternatives) {
                 for (const alternative of votation.alternatives) {
-                    if (alternative.id) {
-                        alternativePromises.push(
-                            ctx.prisma.alternative.update({
-                                where: {
-                                    id: alternative.id,
-                                },
-                                data: {
-                                    text: alternative.text,
-                                },
-                            })
-                        );
-                    } else {
-                        alternativePromises.push(
-                            ctx.prisma.alternative.create({
-                                data: {
-                                    text: alternative.text,
-                                    votationId: votation.id,
-                                },
-                            })
-                        );
-                    }
+                    alternativePromises.push(
+                        ctx.prisma.alternative.upsert({
+                            where: {
+                                id: alternative.id,
+                            },
+                            create: {
+                                text: alternative.text,
+                                votationId: votation.id,
+                            },
+                            update: {
+                                text: alternative.text,
+                            },
+                        })
+                    );
                 }
             }
             promises.push(
