@@ -35,10 +35,7 @@ export const is_voting_eligible = rule({ cache: 'contextual' })(async (_, { meet
     return particpant ? particpant.isVotingEligible : false;
 });
 
-/**
- * Rule: The user is an Admin of the meeting that the alternative with id belongs to
- */
-export const isAdminOfAlternative = rule({ cache: 'strict' })(async (_, { id }, ctx: Context) => {
+const checkIsAdminOfAlternative = async (id: string, ctx: Context) => {
     const votation = await ctx.prisma.votation.findFirst({
         where: {
             alternatives: { some: { id } },
@@ -46,6 +43,24 @@ export const isAdminOfAlternative = rule({ cache: 'strict' })(async (_, { id }, 
     });
     if (!votation) return false;
     return await checkIsAdminOfMeetingId(votation.meetingId, ctx);
+};
+
+/**
+ * Rule: The user is an Admin of the meeting that the alternative with id belongs to
+ */
+export const isAdminOfAlternative = rule({ cache: 'strict' })(async (_, { id }, ctx: Context) => {
+    return await checkIsAdminOfAlternative(id, ctx);
+});
+
+/**
+ * Rule: The user is an Admin of the meeting that the alternatives with ids belongs to
+ */
+export const isAdminOfAlternatives = rule({ cache: 'strict' })(async (_, { ids }, ctx: Context) => {
+    let isAdminOfAllAlternatives = true;
+    for (const id of ids) {
+        isAdminOfAllAlternatives = isAdminOfAllAlternatives && (await checkIsAdminOfAlternative(id, ctx));
+    }
+    return isAdminOfAllAlternatives;
 });
 
 /**

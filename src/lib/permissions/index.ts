@@ -10,6 +10,7 @@ import {
     isAdminOfVotationByMeetingId,
     isAdminOfVotationsById,
     isAdminOfAlternative,
+    isAdminOfAlternatives,
     isCounterOfMeeting,
     isOwnerOfMeeting,
 } from './rules';
@@ -29,7 +30,7 @@ const permissions = shield(
             updateVotations: and(isAdminOfVotationsByObjects),
             updateAlternative: and(isAdminOfAlternative),
             deleteParticipant: and(isAdminOfMeetingId),
-            deleteAlternative: and(isAdminOfAlternative),
+            deleteAlternatives: and(isAdminOfAlternatives),
             // deleteVotation: and(isAdminOfVotationById),
             deleteVotations: and(isAdminOfVotationsById),
             deleteMeeting: and(isOwnerOfMeeting),

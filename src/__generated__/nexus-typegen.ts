@@ -181,7 +181,7 @@ export interface NexusGenFieldTypes {
     createAlternative: NexusGenRootTypes['Alternative'] | null; // Alternative
     createMeeting: NexusGenRootTypes['Meeting'] | null; // Meeting
     createVotations: Array<NexusGenRootTypes['Votation'] | null> | null; // [Votation]
-    deleteAlternative: NexusGenRootTypes['Alternative'] | null; // Alternative
+    deleteAlternatives: Array<string | null> | null; // [String]
     deleteMeeting: NexusGenRootTypes['Meeting'] | null; // Meeting
     deleteParticipant: NexusGenRootTypes['DeleteParticipantResult'] | null; // DeleteParticipantResult
     deleteVotations: Array<string | null> | null; // [String]
@@ -262,7 +262,7 @@ export interface NexusGenFieldTypeNames {
     createAlternative: 'Alternative'
     createMeeting: 'Meeting'
     createVotations: 'Votation'
-    deleteAlternative: 'Alternative'
+    deleteAlternatives: 'String'
     deleteMeeting: 'Meeting'
     deleteParticipant: 'DeleteParticipantResult'
     deleteVotations: 'String'
@@ -340,8 +340,8 @@ export interface NexusGenArgTypes {
       meetingId: string; // String!
       votations: NexusGenInputs['CreateVotationInput'][]; // [CreateVotationInput!]!
     }
-    deleteAlternative: { // args
-      id: string; // String!
+    deleteAlternatives: { // args
+      ids: string[]; // [String!]!
     }
     deleteMeeting: { // args
       id: string; // String!

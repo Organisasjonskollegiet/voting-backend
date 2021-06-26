@@ -190,19 +190,25 @@ export const UpdateAlternativeMutation = mutationField('updateAlternative', {
     },
 });
 
-export const DeleteAlternativeMutation = mutationField('deleteAlternative', {
-    type: Alternative,
+export const DeleteAlternativesMutation = mutationField('deleteAlternatives', {
+    type: list('String'),
     description: '',
     args: {
-        id: nonNull(stringArg()),
+        ids: nonNull(list(nonNull(stringArg()))),
     },
-    resolve: async (_, { id }, ctx) => {
-        const deletedAlternative = await ctx.prisma.alternative.delete({
-            where: {
-                id,
-            },
-        });
-        return deletedAlternative;
+    resolve: async (_, { ids }, ctx) => {
+        const promises = [];
+        for (const id of ids) {
+            promises.push(
+                ctx.prisma.alternative.delete({
+                    where: {
+                        id,
+                    },
+                })
+            );
+        }
+        const alternatives = await Promise.all(promises);
+        return alternatives.map((alternative) => alternative.id);
     },
 });
 
