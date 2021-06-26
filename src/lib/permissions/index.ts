@@ -29,7 +29,6 @@ const permissions = shield(
             updateAlternative: and(isAdminOfAlternative),
             deleteParticipant: and(isAdminOfMeetingId),
             deleteAlternatives: and(isAdminOfAlternatives),
-            // deleteVotation: and(isAdminOfVotationById),
             deleteVotations: and(isAdminOfVotationsById),
             deleteMeeting: and(isOwnerOfMeeting),
         },
