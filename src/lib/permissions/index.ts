@@ -6,8 +6,6 @@ import {
     isAdminOfMeetingId,
     isAdminOfMeetingByObject,
     isAdminOfVotationsByObjects,
-    isAdminOfVotationById,
-    isAdminOfVotationByMeetingId,
     isAdminOfVotationsById,
     isAdminOfAlternative,
     isAdminOfAlternatives,

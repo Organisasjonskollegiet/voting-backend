@@ -1,4 +1,4 @@
-import { inputObjectType, intArg, list, mutationField, nonNull, stringArg } from 'nexus';
+import { inputObjectType, list, mutationField, nonNull, stringArg } from 'nexus';
 import { Vote } from './';
 import { Alternative, Votation } from './typedefs';
 import { MajorityType } from '../enums';
