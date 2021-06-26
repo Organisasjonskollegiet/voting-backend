@@ -62,6 +62,20 @@ export const isAdminOfVotationsByObjects = rule({ cache: 'strict' })(async (_, {
 });
 
 /**
+ * Rule: The user is Admin of all the meetings connected to the votations whose id is in the array
+ */
+
+export const isAdminOfVotationsById = rule({ cache: 'strict' })(async (_, { ids }, ctx: Context) => {
+    let isAdminOfAllVotations = true;
+    for (const id of ids) {
+        const votationFromDB = await ctx.prisma.votation.findUnique({ where: { id } });
+        if (!votationFromDB) return false;
+        isAdminOfAllVotations = isAdminOfAllVotations && (await checkIsAdminOfMeetingId(votationFromDB.meetingId, ctx));
+    }
+    return isAdminOfAllVotations;
+});
+
+/**
  * Rule: The user is an Admin of the meeting that the votation belongs to
  */
 export const isAdminOfVotationById = rule({ cache: 'strict' })(async (_, { id }, ctx: Context) => {

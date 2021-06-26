@@ -2,7 +2,6 @@ import { inputObjectType, intArg, list, mutationField, nonNull, stringArg } from
 import { Vote } from './';
 import { Alternative, Votation } from './typedefs';
 import { MajorityType } from '../enums';
-import { AlternativesByVotation } from './query';
 
 export const AlternativeInput = inputObjectType({
     name: 'AlternativeInput',
@@ -43,7 +42,7 @@ export const CreateVotationInput = inputObjectType({
     },
 });
 
-export const CreateVotationsMutatioon = mutationField('createVotations', {
+export const CreateVotationsMutation = mutationField('createVotations', {
     type: list(Votation),
     args: {
         meetingId: nonNull(stringArg()),
@@ -131,20 +130,29 @@ export const UpdateVotationsMutation = mutationField('updateVotations', {
     },
 });
 
-export const DeleteVotationMutation = mutationField('deleteVotation', {
-    type: Votation,
+export const DeleteVotationsMutation = mutationField('deleteVotations', {
+    type: list('String'),
     description: '',
     args: {
-        id: nonNull(stringArg()),
+        ids: nonNull(list(nonNull(stringArg()))),
     },
-    resolve: async (_, { id }, ctx) => {
-        await ctx.prisma.alternative.deleteMany({ where: { votationId: id } });
-        const deletedVotation = await ctx.prisma.votation.delete({
-            where: {
-                id,
-            },
-        });
-        return deletedVotation;
+    resolve: async (_, { ids }, ctx) => {
+        const promises = [];
+        for (const id of ids) {
+            promises.push(
+                new Promise(async (resolve) => {
+                    await ctx.prisma.alternative.deleteMany({ where: { votationId: id } });
+                    const votation = await ctx.prisma.votation.delete({
+                        where: {
+                            id,
+                        },
+                    });
+                    resolve(votation.id);
+                })
+            );
+        }
+        const resolved = (await Promise.all(promises)) as string[];
+        return resolved;
     },
 });
 

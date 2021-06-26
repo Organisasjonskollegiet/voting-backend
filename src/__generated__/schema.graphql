@@ -79,7 +79,7 @@ type Mutation {
   deleteParticipant(meetingId: String!, userId: String!): DeleteParticipantResult
 
   """"""
-  deleteVotation(id: String!): Votation
+  deleteVotations(ids: [String!]!): [String]
 
   """"""
   updateAlternative(id: String!, text: String!): Alternative
