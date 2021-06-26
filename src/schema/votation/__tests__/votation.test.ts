@@ -1,7 +1,6 @@
 import { createTestContext } from '../../../lib/tests/testContext';
 import { gql } from 'graphql-request';
 import { Status, MajorityType, Role } from '.prisma/client';
-import { execPath } from 'node:process';
 import { uuid } from 'casual';
 const ctx = createTestContext();
 
@@ -27,7 +26,7 @@ const organization = 'organization';
 const meetingTitle = 'test get votation';
 const meetingStartTime = '2021-04-13T11:29:58.000Z';
 const meetingDescription = 'test get meeting description';
-const meetingStatus = 'UPCOMING';
+const meetingStatus = Status.UPCOMING;
 const staticMeetingData: StaticMeetingDataType = {
     organization,
     title: meetingTitle,
@@ -110,9 +109,22 @@ const createAlternative = async (votationId: string, text: string) => {
     });
 };
 
+const formatVotationToCompare = (votation: any) => {
+    return {
+        title: votation.title,
+        description: votation.description,
+        blankVotes: votation.blankVotes,
+        hiddenVotes: votation.hiddenVotes,
+        severalVotes: votation.severalVotes,
+        majorityType: votation.majorityType,
+        majorityThreshold: votation.majorityThreshold,
+        index: votation.index,
+    };
+};
+
 it('should return votation by id', async () => {
-    const meeting = await createMeeting(ctx.userId, 'COUNTER');
-    const votation = await createVotation(meeting.id, 'UPCOMING', 1);
+    const meeting = await createMeeting(ctx.userId, Role.COUNTER);
+    const votation = await createVotation(meeting.id, Status.UPCOMING, 1);
     const votationId = votation.id;
     const getVotation = await ctx.client.request(
         gql`
@@ -142,8 +154,8 @@ it('should return votation by id', async () => {
 });
 
 it('should throw error from votation by id', async () => {
-    const meeting = await createMeeting(ctx.userId, 'COUNTER');
-    await createVotation(meeting.id, 'UPCOMING', 1);
+    const meeting = await createMeeting(ctx.userId, Role.COUNTER);
+    await createVotation(meeting.id, Status.UPCOMING, 1);
     try {
         await ctx.client.request(
             gql`
@@ -170,8 +182,8 @@ it('should throw error from votation by id', async () => {
 });
 
 it('should return alternatives by votation successfully', async () => {
-    const meeting = await createMeeting(ctx.userId, 'COUNTER');
-    const votation = await createVotation(meeting.id, 'UPCOMING', 1);
+    const meeting = await createMeeting(ctx.userId, Role.COUNTER);
+    const votation = await createVotation(meeting.id, Status.UPCOMING, 1);
     const alternative1 = await createAlternative(votation.id, alternative1Text);
     const alternative2 = await createAlternative(votation.id, alternative2Text);
     const votationId = votation.id;
@@ -201,8 +213,8 @@ it('should return not authorized', async () => {
             password: 'hash',
         },
     });
-    const meeting = await createMeeting(otherUser.id, 'COUNTER');
-    const votation = await createVotation(meeting.id, 'UPCOMING', 1);
+    const meeting = await createMeeting(otherUser.id, Role.COUNTER);
+    const votation = await createVotation(meeting.id, Status.UPCOMING, 1);
     await createAlternative(votation.id, alternative1Text);
     await createAlternative(votation.id, alternative2Text);
     try {
@@ -226,7 +238,7 @@ it('should return not authorized', async () => {
 });
 
 it('should create votations successfully', async () => {
-    const meeting = await createMeeting(ctx.userId, 'ADMIN');
+    const meeting = await createMeeting(ctx.userId, Role.ADMIN);
     const variables = {
         meetingId: meeting.id,
         votations: [
@@ -300,11 +312,11 @@ it('should update votations successfully', async () => {
     const alternative2UpdatedText = 'alternative2Updated';
     const alternative3UpdatedText = 'alternative3Updated';
     const alternative4UpdatedText = 'alternative4Updated';
-    const meeting = await createMeeting(ctx.userId, 'ADMIN');
-    const votation1 = await createVotation(meeting.id, 'UPCOMING', 1);
+    const meeting = await createMeeting(ctx.userId, Role.ADMIN);
+    const votation1 = await createVotation(meeting.id, Status.UPCOMING, 1);
     const alternative1 = await createAlternative(votation1.id, 'alternative1');
     const alternative2 = await createAlternative(votation1.id, 'alternative2');
-    const votation2 = await createVotation(meeting.id, 'UPCOMING', 2);
+    const votation2 = await createVotation(meeting.id, Status.UPCOMING, 2);
     const alternative3 = await createAlternative(votation2.id, 'alternative3');
     const alternative4 = await createAlternative(votation2.id, 'alternative4');
     const variables = {
@@ -358,6 +370,7 @@ it('should update votations successfully', async () => {
                     majorityType
                     majorityThreshold
                     index
+                    status
                     alternatives {
                         text
                     }
@@ -386,10 +399,15 @@ it('should update votations successfully', async () => {
             votationId: votation2.id,
         },
     });
-    expect(votation1Updated?.index).toEqual(variables.votations[0].index);
-    expect(votation2Updated?.index).toEqual(variables.votations[1].index);
-    expect(alternative1Updated?.text).toEqual(alternative1UpdatedText);
-    expect(alternativeToVotation2Count).toEqual(3);
+    if (!votation1Updated || !votation2Updated || !alternative1Updated || !alternativeToVotation2Count) {
+        expect(false).toBeTruthy();
+    } else {
+        console.log(votation1Updated);
+        expect(formatVotationToCompare(votation1Updated)).toEqual(formatVotationToCompare(variables.votations[0]));
+        expect(formatVotationToCompare(votation2Updated)).toEqual(formatVotationToCompare(variables.votations[1]));
+        expect(alternative1Updated?.text).toEqual(alternative1UpdatedText);
+        expect(alternativeToVotation2Count).toEqual(3);
+    }
 });
 
 it('should not update votation successfully', async () => {
@@ -397,11 +415,11 @@ it('should not update votation successfully', async () => {
     const alternative2UpdatedText = 'alternative2Updated';
     const alternative3UpdatedText = 'alternative3Updated';
     const alternative4UpdatedText = 'alternative4Updated';
-    const meeting = await createMeeting(ctx.userId, 'COUNTER');
-    const votation1 = await createVotation(meeting.id, 'UPCOMING', 1);
+    const meeting = await createMeeting(ctx.userId, Role.COUNTER);
+    const votation1 = await createVotation(meeting.id, Status.UPCOMING, 1);
     const alternative1 = await createAlternative(votation1.id, 'alternative1');
     const alternative2 = await createAlternative(votation1.id, 'alternative2');
-    const votation2 = await createVotation(meeting.id, 'UPCOMING', 2);
+    const votation2 = await createVotation(meeting.id, Status.UPCOMING, 2);
     const alternative3 = await createAlternative(votation1.id, 'alternative3');
     const alternative4 = await createAlternative(votation1.id, 'alternative4');
     const variables = {
@@ -468,7 +486,7 @@ it('should not update votation successfully', async () => {
 });
 
 it('should not create votations successfully', async () => {
-    const meeting = await createMeeting(ctx.userId, 'COUNTER');
+    const meeting = await createMeeting(ctx.userId, Role.COUNTER);
     const variables = {
         meetingId: meeting.id,
         votations: [
@@ -513,8 +531,8 @@ it('should not create votations successfully', async () => {
 });
 
 it('should create alterative successfully', async () => {
-    const meeting = await createMeeting(ctx.userId, 'ADMIN');
-    const votation = await createVotation(meeting.id, 'UPCOMING', 1);
+    const meeting = await createMeeting(ctx.userId, Role.ADMIN);
+    const votation = await createVotation(meeting.id, Status.UPCOMING, 1);
     const variables = {
         text: alternative1Text,
         votationId: votation.id,
@@ -534,8 +552,8 @@ it('should create alterative successfully', async () => {
 });
 
 it('should not create alternative successfully', async () => {
-    const meeting = await createMeeting(ctx.userId, 'COUNTER');
-    const votation = await createVotation(meeting.id, 'UPCOMING', 1);
+    const meeting = await createMeeting(ctx.userId, Role.COUNTER);
+    const votation = await createVotation(meeting.id, Status.UPCOMING, 1);
     const variables = {
         text: alternative1Text,
         votationId: votation.id,
@@ -557,8 +575,8 @@ it('should not create alternative successfully', async () => {
 });
 
 it('should delete alternative successfully', async () => {
-    const meeting = await createMeeting(ctx.userId, 'ADMIN');
-    const votation = await createVotation(meeting.id, 'UPCOMING', 1);
+    const meeting = await createMeeting(ctx.userId, Role.ADMIN);
+    const votation = await createVotation(meeting.id, Status.UPCOMING, 1);
     const alternative1 = await createAlternative(votation.id, alternative1Text);
     const alternative2 = await createAlternative(votation.id, alternative2Text);
     await ctx.client.request(
@@ -586,14 +604,14 @@ it('should delete votation successfully', async () => {
             participants: {
                 create: {
                     userId: ctx.userId,
-                    role: 'ADMIN',
+                    role: Role.ADMIN,
                     isVotingEligible: true,
                 },
             },
         },
     });
-    const votation1 = await createVotation(meeting.id, 'UPCOMING', 1);
-    const votation2 = await createVotation(meeting.id, 'UPCOMING', 2);
+    const votation1 = await createVotation(meeting.id, Status.UPCOMING, 1);
+    const votation2 = await createVotation(meeting.id, Status.UPCOMING, 2);
     await createAlternative(votation1.id, 'alternative');
     await ctx.client.request(
         gql`
@@ -612,10 +630,10 @@ it('should delete votation successfully', async () => {
 });
 
 it('should not delete alternative successfully', async () => {
-    const meeting1 = await createMeeting(ctx.userId, 'COUNTER');
-    const meeting2 = await createMeeting(ctx.userId, 'ADMIN');
-    const votation1 = await createVotation(meeting1.id, 'UPCOMING', 1);
-    const votation2 = await createVotation(meeting2.id, 'UPCOMING', 1);
+    const meeting1 = await createMeeting(ctx.userId, Role.COUNTER);
+    const meeting2 = await createMeeting(ctx.userId, Role.ADMIN);
+    const votation1 = await createVotation(meeting1.id, Status.UPCOMING, 1);
+    const votation2 = await createVotation(meeting2.id, Status.UPCOMING, 1);
     await createAlternative(votation1.id, alternative1Text);
     try {
         await ctx.client.request(
@@ -635,10 +653,10 @@ it('should not delete alternative successfully', async () => {
 });
 
 it('should not delete votation successfully', async () => {
-    const meeting1 = await createMeeting(ctx.userId, 'COUNTER');
-    const meeting2 = await createMeeting(ctx.userId, 'ADMIN');
-    const votation1 = await createVotation(meeting1.id, 'UPCOMING', 1);
-    const votation2 = await createVotation(meeting2.id, 'UPCOMING', 1);
+    const meeting1 = await createMeeting(ctx.userId, Role.COUNTER);
+    const meeting2 = await createMeeting(ctx.userId, Role.ADMIN);
+    const votation1 = await createVotation(meeting1.id, Status.UPCOMING, 1);
+    const votation2 = await createVotation(meeting2.id, Status.UPCOMING, 1);
     await createAlternative(votation1.id, alternative1Text);
     try {
         await ctx.client.request(

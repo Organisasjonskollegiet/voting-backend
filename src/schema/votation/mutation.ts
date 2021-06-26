@@ -113,7 +113,7 @@ export const UpdateVotationsMutation = mutationField('updateVotations', {
                     },
                     data: {
                         title: votation.title,
-                        description: votation.title,
+                        description: votation.description,
                         index: votation.index,
                         blankVotes: votation.blankVotes,
                         hiddenVotes: votation.hiddenVotes,
