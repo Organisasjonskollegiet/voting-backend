@@ -138,20 +138,11 @@ enum Role {
   PARTICIPANT
 }
 
-<<<<<<< HEAD
-enum Status {
-  ENDED
-  ONGOING
-  UPCOMING
-}
-
 type Subscription {
   newVoteRegistered: Int
   viewChanged: ViewState
 }
 
-=======
->>>>>>> e47508942c7c7b53c56c35e072705758189ed6a3
 input UpdateMeetingInput {
   description: String
   id: String!

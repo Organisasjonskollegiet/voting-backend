@@ -81,12 +81,8 @@ export interface NexusGenEnums {
   MajorityType: "QUALIFIED" | "SIMPLE"
   MeetingStatus: "ENDED" | "ONGOING" | "UPCOMING"
   Role: "ADMIN" | "COUNTER" | "PARTICIPANT"
-<<<<<<< HEAD
-  Status: "ENDED" | "ONGOING" | "UPCOMING"
   ViewState: "CLOSED" | "ENDED" | "LOADING" | "ONGOING"
-=======
   VotationStatus: "CHECKING_RESULT" | "OPEN" | "PUBLISHED_RESULT" | "UPCOMING"
->>>>>>> e47508942c7c7b53c56c35e072705758189ed6a3
 }
 
 export interface NexusGenScalars {
