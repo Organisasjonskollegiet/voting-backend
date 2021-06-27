@@ -1,6 +1,6 @@
 import { createTestContext } from '../../../lib/tests/testContext';
 import { gql } from 'graphql-request';
-import { Role, Status } from '.prisma/client';
+import { Role, MeetingStatus } from '.prisma/client';
 import casual from 'casual';
 const ctx = createTestContext();
 
@@ -9,7 +9,7 @@ interface StaticMeetingDataType {
     organization: string;
     startTime: string;
     description: string;
-    status: Status;
+    status: MeetingStatus;
 }
 
 const meetingTitle = 'title';

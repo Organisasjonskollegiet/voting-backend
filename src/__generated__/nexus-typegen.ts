@@ -29,6 +29,10 @@ declare global {
 }
 
 export interface NexusGenInputs {
+  AlternativeInput: { // input type
+    id: string; // String!
+    text: string; // String!
+  }
   CreateMeetingInput: { // input type
     description: string; // String!
     organization: string; // String!
@@ -56,10 +60,11 @@ export interface NexusGenInputs {
     id: string; // String!
     organization?: string | null; // String
     startTime?: NexusGenScalars['DateTime'] | null; // DateTime
-    status?: NexusGenEnums['Status'] | null; // Status
+    status?: NexusGenEnums['MeetingStatus'] | null; // MeetingStatus
     title?: string | null; // String
   }
   UpdateVotationInput: { // input type
+    alternatives?: NexusGenInputs['AlternativeInput'][] | null; // [AlternativeInput!]
     blankVotes: boolean; // Boolean!
     description: string; // String!
     hiddenVotes: boolean; // Boolean!
@@ -74,9 +79,10 @@ export interface NexusGenInputs {
 
 export interface NexusGenEnums {
   MajorityType: "QUALIFIED" | "SIMPLE"
+  MeetingStatus: "ENDED" | "ONGOING" | "UPCOMING"
   Role: "ADMIN" | "COUNTER" | "PARTICIPANT"
-  Status: "ENDED" | "ONGOING" | "UPCOMING"
   ViewState: "CLOSED" | "ENDED" | "LOADING" | "ONGOING"
+  VotationStatus: "CHECKING_RESULT" | "OPEN" | "PUBLISHED_RESULT" | "UPCOMING"
 }
 
 export interface NexusGenScalars {
@@ -99,7 +105,7 @@ export interface NexusGenObjects {
     id: string; // ID!
     organization: string; // String!
     startTime: NexusGenScalars['DateTime']; // DateTime!
-    status: NexusGenEnums['Status']; // Status!
+    status: NexusGenEnums['MeetingStatus']; // MeetingStatus!
     title: string; // String!
   }
   Mutation: {};
@@ -138,7 +144,7 @@ export interface NexusGenObjects {
     meetingId: string; // String!
     order?: number | null; // Int
     severalVotes: boolean; // Boolean!
-    status: NexusGenEnums['Status']; // Status!
+    status: NexusGenEnums['VotationStatus']; // VotationStatus!
     title: string; // String!
   }
   Vote: { // root type
@@ -174,7 +180,7 @@ export interface NexusGenFieldTypes {
     owner: NexusGenRootTypes['User'] | null; // User
     participants: Array<NexusGenRootTypes['Participant'] | null>; // [Participant]!
     startTime: NexusGenScalars['DateTime']; // DateTime!
-    status: NexusGenEnums['Status']; // Status!
+    status: NexusGenEnums['MeetingStatus']; // MeetingStatus!
     title: string; // String!
     votations: Array<NexusGenRootTypes['Votation'] | null> | null; // [Votation]
   }
@@ -185,13 +191,13 @@ export interface NexusGenFieldTypes {
     createAlternative: NexusGenRootTypes['Alternative'] | null; // Alternative
     createMeeting: NexusGenRootTypes['Meeting'] | null; // Meeting
     createVotations: Array<NexusGenRootTypes['Votation'] | null> | null; // [Votation]
-    deleteAlternative: NexusGenRootTypes['Alternative'] | null; // Alternative
+    deleteAlternatives: Array<string | null> | null; // [String]
     deleteMeeting: NexusGenRootTypes['Meeting'] | null; // Meeting
     deleteParticipant: NexusGenRootTypes['DeleteParticipantResult'] | null; // DeleteParticipantResult
-    deleteVotation: NexusGenRootTypes['Votation'] | null; // Votation
+    deleteVotations: Array<string | null> | null; // [String]
     updateAlternative: NexusGenRootTypes['Alternative'] | null; // Alternative
     updateMeeting: NexusGenRootTypes['Meeting'] | null; // Meeting
-    updateVotation: NexusGenRootTypes['Votation'] | null; // Votation
+    updateVotations: Array<NexusGenRootTypes['Votation'] | null> | null; // [Votation]
   }
   NewVoteRegistered: { // field return type
     numberOfVotes: number; // Int!
@@ -238,7 +244,7 @@ export interface NexusGenFieldTypes {
     meetingId: string; // String!
     order: number | null; // Int
     severalVotes: boolean; // Boolean!
-    status: NexusGenEnums['Status']; // Status!
+    status: NexusGenEnums['VotationStatus']; // VotationStatus!
     title: string; // String!
   }
   Vote: { // field return type
@@ -265,7 +271,7 @@ export interface NexusGenFieldTypeNames {
     owner: 'User'
     participants: 'Participant'
     startTime: 'DateTime'
-    status: 'Status'
+    status: 'MeetingStatus'
     title: 'String'
     votations: 'Votation'
   }
@@ -276,13 +282,13 @@ export interface NexusGenFieldTypeNames {
     createAlternative: 'Alternative'
     createMeeting: 'Meeting'
     createVotations: 'Votation'
-    deleteAlternative: 'Alternative'
+    deleteAlternatives: 'String'
     deleteMeeting: 'Meeting'
     deleteParticipant: 'DeleteParticipantResult'
-    deleteVotation: 'Votation'
+    deleteVotations: 'String'
     updateAlternative: 'Alternative'
     updateMeeting: 'Meeting'
-    updateVotation: 'Votation'
+    updateVotations: 'Votation'
   }
   NewVoteRegistered: { // field return type name
     numberOfVotes: 'Int'
@@ -329,7 +335,7 @@ export interface NexusGenFieldTypeNames {
     meetingId: 'String'
     order: 'Int'
     severalVotes: 'Boolean'
-    status: 'Status'
+    status: 'VotationStatus'
     title: 'String'
   }
   Vote: { // field return type name
@@ -365,8 +371,8 @@ export interface NexusGenArgTypes {
       meetingId: string; // String!
       votations: NexusGenInputs['CreateVotationInput'][]; // [CreateVotationInput!]!
     }
-    deleteAlternative: { // args
-      id: string; // String!
+    deleteAlternatives: { // args
+      ids: string[]; // [String!]!
     }
     deleteMeeting: { // args
       id: string; // String!
@@ -375,8 +381,8 @@ export interface NexusGenArgTypes {
       meetingId: string; // String!
       userId: string; // String!
     }
-    deleteVotation: { // args
-      id: string; // String!
+    deleteVotations: { // args
+      ids: string[]; // [String!]!
     }
     updateAlternative: { // args
       id: string; // String!
@@ -385,8 +391,8 @@ export interface NexusGenArgTypes {
     updateMeeting: { // args
       meeting: NexusGenInputs['UpdateMeetingInput']; // UpdateMeetingInput!
     }
-    updateVotation: { // args
-      votation: NexusGenInputs['UpdateVotationInput']; // UpdateVotationInput!
+    updateVotations: { // args
+      votations: NexusGenInputs['UpdateVotationInput'][]; // [UpdateVotationInput!]!
     }
   }
   Query: {

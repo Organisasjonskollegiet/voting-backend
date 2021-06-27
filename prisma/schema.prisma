@@ -21,10 +21,17 @@ enum MajorityType {
   SIMPLE
 }
 
-enum Status {
+enum MeetingStatus {
   UPCOMING
   ONGOING
   ENDED
+}
+
+enum VotationStatus {
+  UPCOMING
+  OPEN
+  CHECKING_RESULT
+  PUBLISHED_RESULT
 }
 
 model User {
@@ -46,7 +53,7 @@ model Meeting {
   owner        User          @relation(fields: [ownerId], references: [id])
   ownerId      String        @db.Uuid
   votations    Votation[]
-  status       Status        @db.default(UPCOMING)
+  status       MeetingStatus @db.default(UPCOMING)
   participants Participant[]
   Invite       Invite[]
 }
@@ -74,18 +81,18 @@ model Invite {
 }
 
 model Votation {
-  id                String        @id @default(uuid()) @db.Uuid
-  title             String        @db.VarChar(255)
+  id                String         @id @default(uuid()) @db.Uuid
+  title             String         @db.VarChar(255)
   description       String
-  status            Status        @default(UPCOMING)
+  status            VotationStatus @default(UPCOMING)
   blankVotes        Boolean
   hiddenVotes       Boolean
   severalVotes      Boolean
   majorityType      MajorityType
   majorityThreshold Int
   index             Int
-  meetingId         String        @db.Uuid
-  meeting           Meeting       @relation(fields: [meetingId], references: [id])
+  meetingId         String         @db.Uuid
+  meeting           Meeting        @relation(fields: [meetingId], references: [id])
   alternatives      Alternative[]
   HasVoted          HasVoted[]
 }

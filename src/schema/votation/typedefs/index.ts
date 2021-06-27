@@ -1,6 +1,6 @@
 import { objectType } from 'nexus';
 import { Alternative as AlternativeModel, Vote as VoteModel, Votation as VotationModel } from '@prisma/client';
-import { MajorityType, Status } from '../../enums';
+import { MajorityType, VotationStatus } from '../../enums';
 import { User } from '../../auth';
 
 export const Vote = objectType({
@@ -47,7 +47,7 @@ export const Votation = objectType({
         t.nonNull.string('title');
         t.nonNull.string('description');
         t.int('order');
-        t.nonNull.field('status', { type: Status });
+        t.nonNull.field('status', { type: VotationStatus });
         t.nonNull.boolean('blankVotes');
         t.nonNull.boolean('hiddenVotes');
         t.nonNull.boolean('severalVotes');

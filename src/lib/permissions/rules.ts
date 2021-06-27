@@ -1,7 +1,6 @@
 import { AuthenticationError } from 'apollo-server-express';
 import { rule } from 'graphql-shield';
 import { Context } from '../../context';
-import { Status } from '../../schema/enums';
 
 /**
  * Helper function for checking if person is admin of meeting
@@ -11,6 +10,16 @@ const checkIsAdminOfMeetingId = async (meetingId: string, ctx: Context) => {
         where: { userId_meetingId: { userId: ctx.userId, meetingId: meetingId } },
     });
     return particpant ? particpant.role === 'ADMIN' : false;
+};
+
+const checkIsAdminOfAlternative = async (id: string, ctx: Context) => {
+    const votation = await ctx.prisma.votation.findFirst({
+        where: {
+            alternatives: { some: { id } },
+        },
+    });
+    if (!votation) return false;
+    return await checkIsAdminOfMeetingId(votation.meetingId, ctx);
 };
 
 export const isAuthenticated = rule({ cache: 'contextual' })(async (_, __, ctx: Context) => {
@@ -44,6 +53,51 @@ export const isCounterOfMeeting = rule({ cache: 'strict' })(async (_, { meetingI
         where: { userId_meetingId: { userId: ctx.userId, meetingId } },
     });
     return particpant ? particpant.role === 'COUNTER' : false;
+});
+
+/**
+ * Rule: The user is an Admin of the meeting that the alternative with id belongs to
+ */
+export const isAdminOfAlternative = rule({ cache: 'strict' })(async (_, { id }, ctx: Context) => {
+    return await checkIsAdminOfAlternative(id, ctx);
+});
+
+/**
+ * Rule: The user is an Admin of the meeting that the alternatives with ids belongs to
+ */
+export const isAdminOfAlternatives = rule({ cache: 'strict' })(async (_, { ids }, ctx: Context) => {
+    let isAdminOfAllAlternatives = true;
+    for (const id of ids) {
+        isAdminOfAllAlternatives = isAdminOfAllAlternatives && (await checkIsAdminOfAlternative(id, ctx));
+    }
+    return isAdminOfAllAlternatives;
+});
+
+/**
+ * Rule: The user is an Admin of the meetings that all the votation belongs to
+ */
+export const isAdminOfVotationsByObjects = rule({ cache: 'strict' })(async (_, { votations }, ctx: Context) => {
+    let isAdminOfAllVotations = true;
+    for (const votation of votations) {
+        const votationFromDB = await ctx.prisma.votation.findUnique({ where: { id: votation.id } });
+        if (!votationFromDB) return false;
+        isAdminOfAllVotations = isAdminOfAllVotations && (await checkIsAdminOfMeetingId(votationFromDB.meetingId, ctx));
+    }
+    return isAdminOfAllVotations;
+});
+
+/**
+ * Rule: The user is Admin of all the meetings connected to the votations whose id is in the array
+ */
+
+export const isAdminOfVotationsById = rule({ cache: 'strict' })(async (_, { ids }, ctx: Context) => {
+    let isAdminOfAllVotations = true;
+    for (const id of ids) {
+        const votationFromDB = await ctx.prisma.votation.findUnique({ where: { id } });
+        if (!votationFromDB) return false;
+        isAdminOfAllVotations = isAdminOfAllVotations && (await checkIsAdminOfMeetingId(votationFromDB.meetingId, ctx));
+    }
+    return isAdminOfAllVotations;
 });
 
 /**
@@ -86,19 +140,6 @@ export const isAdminOfVotationByMeetingId = rule({ cache: 'strict' })(async (_, 
 });
 
 /**
- * Rule: The user is an Admin of the meeting that the alternative with id belongs to
- */
-export const isAdminOfAlternative = rule({ cache: 'strict' })(async (_, { id }, ctx: Context) => {
-    const votation = await ctx.prisma.votation.findFirst({
-        where: {
-            alternatives: { some: { id } },
-        },
-    });
-    if (!votation) return false;
-    return await checkIsAdminOfMeetingId(votation.meetingId, ctx);
-});
-
-/**
  * Rule: The user is Owner of the meeting
  */
 export const isOwnerOfMeeting = rule({ cache: 'strict' })(async (_, { id }, ctx: Context) => {
@@ -137,5 +178,5 @@ export const userCanVote = rule({ cache: 'contextual' })(async (_, { alternative
                 votationId: alternative.votationId,
             },
         })) > 0;
-    return !!participant && votation.status === 'ONGOING' && !hasVoted && participant.isVotingEligible;
+    return !!participant && votation.status === 'OPEN' && !hasVoted && participant.isVotingEligible;
 });
