@@ -23,51 +23,32 @@ interface StaticVotationDataType {
     majorityThreshold: number;
 }
 
-const organization = 'organization';
-const meetingTitle = 'test get votation';
-const meetingStartTime = '2021-04-13T11:29:58.000Z';
-const meetingDescription = 'test get meeting description';
-const meetingStatus = VotationStatus.UPCOMING;
 const staticMeetingData: StaticMeetingDataType = {
-    organization,
-    title: meetingTitle,
-    startTime: meetingStartTime,
-    description: meetingDescription,
-    status: meetingStatus,
+    organization: 'organization',
+    title: 'test title',
+    startTime: '2021-04-13T11:29:58.000Z',
+    description: 'test description',
+    status: MeetingStatus.UPCOMING,
 };
 
-const votationTitle = 'test votation title';
-const votationDescription = 'test votation description';
-const majorityType = 'SIMPLE';
-const blankVotes = true;
-const hiddenVotes = true;
-const severalVotes = true;
-const majorityThreshold = 50;
 const staticVotationData: StaticVotationDataType = {
-    title: votationTitle,
-    description: votationDescription,
-    blankVotes,
-    hiddenVotes,
-    severalVotes,
-    majorityType,
-    majorityThreshold,
+    title: 'test votation title',
+    description: 'test votation description',
+    blankVotes: true,
+    hiddenVotes: true,
+    severalVotes: true,
+    majorityType: MajorityType.SIMPLE,
+    majorityThreshold: 50,
 };
 
-const updatedVotationTitle = 'updated votation title';
-const updatedVotationDescription = 'updated votation description';
-const updatedMajorityType = 'QUALIFIED';
-const updatedBlankVotes = false;
-const updatedHiddenVotes = false;
-const updatedSeveralVotes = false;
-const updatedMajorityThreshold = 60;
 const updatedStaticVotationData: StaticVotationDataType = {
-    title: updatedVotationTitle,
-    description: updatedVotationDescription,
-    blankVotes: updatedBlankVotes,
-    hiddenVotes: updatedHiddenVotes,
-    severalVotes: updatedSeveralVotes,
-    majorityType: updatedMajorityType,
-    majorityThreshold: updatedMajorityThreshold,
+    title: 'updated votation title',
+    description: 'updated votation description',
+    blankVotes: false,
+    hiddenVotes: false,
+    severalVotes: false,
+    majorityType: MajorityType.QUALIFIED,
+    majorityThreshold: 67,
 };
 
 const alternative1Text = 'alternative1 text';
