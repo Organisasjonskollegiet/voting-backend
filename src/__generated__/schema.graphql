@@ -88,8 +88,9 @@ type Mutation {
 }
 
 """The payload of newVoteRegistered subscription"""
-type NewVoteRegistered {
-  numberOfVotes: Int!
+type NewVoteRegisteredPayload {
+  voteCount: Int!
+  votingEligibleCount: Int!
 }
 
 type OwnerCannotBeRemovedFromParticipantError {
@@ -133,6 +134,7 @@ enum Status {
 }
 
 type Subscription {
+  newVoteRegistered: Int
   viewChanged: ViewState
 }
 
