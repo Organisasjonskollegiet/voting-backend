@@ -60,7 +60,7 @@ export interface NexusGenInputs {
     id: string; // String!
     organization?: string | null; // String
     startTime?: NexusGenScalars['DateTime'] | null; // DateTime
-    status?: NexusGenEnums['Status'] | null; // Status
+    status?: NexusGenEnums['MeetingStatus'] | null; // MeetingStatus
     title?: string | null; // String
   }
   UpdateVotationInput: { // input type
@@ -79,8 +79,9 @@ export interface NexusGenInputs {
 
 export interface NexusGenEnums {
   MajorityType: "QUALIFIED" | "SIMPLE"
+  MeetingStatus: "ENDED" | "ONGOING" | "UPCOMING"
   Role: "ADMIN" | "COUNTER" | "PARTICIPANT"
-  Status: "ENDED" | "ONGOING" | "UPCOMING"
+  VotationStatus: "CHECKING_RESULT" | "OPEN" | "PUBLISHED_RESULT" | "UPCOMING"
 }
 
 export interface NexusGenScalars {
@@ -103,7 +104,7 @@ export interface NexusGenObjects {
     id: string; // ID!
     organization: string; // String!
     startTime: NexusGenScalars['DateTime']; // DateTime!
-    status: NexusGenEnums['Status']; // Status!
+    status: NexusGenEnums['MeetingStatus']; // MeetingStatus!
     title: string; // String!
   }
   Mutation: {};
@@ -135,7 +136,7 @@ export interface NexusGenObjects {
     meetingId: string; // String!
     order?: number | null; // Int
     severalVotes: boolean; // Boolean!
-    status: NexusGenEnums['Status']; // Status!
+    status: NexusGenEnums['VotationStatus']; // VotationStatus!
     title: string; // String!
   }
   Vote: { // root type
@@ -171,7 +172,7 @@ export interface NexusGenFieldTypes {
     owner: NexusGenRootTypes['User'] | null; // User
     participants: Array<NexusGenRootTypes['Participant'] | null>; // [Participant]!
     startTime: NexusGenScalars['DateTime']; // DateTime!
-    status: NexusGenEnums['Status']; // Status!
+    status: NexusGenEnums['MeetingStatus']; // MeetingStatus!
     title: string; // String!
     votations: Array<NexusGenRootTypes['Votation'] | null> | null; // [Votation]
   }
@@ -225,7 +226,7 @@ export interface NexusGenFieldTypes {
     meetingId: string; // String!
     order: number | null; // Int
     severalVotes: boolean; // Boolean!
-    status: NexusGenEnums['Status']; // Status!
+    status: NexusGenEnums['VotationStatus']; // VotationStatus!
     title: string; // String!
   }
   Vote: { // field return type
@@ -252,7 +253,7 @@ export interface NexusGenFieldTypeNames {
     owner: 'User'
     participants: 'Participant'
     startTime: 'DateTime'
-    status: 'Status'
+    status: 'MeetingStatus'
     title: 'String'
     votations: 'Votation'
   }
@@ -306,7 +307,7 @@ export interface NexusGenFieldTypeNames {
     meetingId: 'String'
     order: 'Int'
     severalVotes: 'Boolean'
-    status: 'Status'
+    status: 'VotationStatus'
     title: 'String'
   }
   Vote: { // field return type name
