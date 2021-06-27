@@ -159,23 +159,28 @@ export const CastVoteMutation = mutationField('castVote', {
     type: Vote,
     args: {
         alternativeId: nonNull(stringArg()),
-        votationId: nonNull(stringArg()),
     },
-    // TODO: Refactor resolve function
-    resolve: async (_, __, ___) => {
-        //const hasVoted = await userHasVoted(ctx, votationId);
-        //console.log(hasVoted);
-        return null;
-        // const participant = await ctx.prisma.participant.findFirst();
-        // if (hasVoted) throw new Error('This user has already cast vote for this votation.');
-        // const alternativeExists = checkAlternativeExists(ctx, alternativeId);
-        // if (!alternativeExists) throw new Error('Alternative does not exist.');
-        // await ctx.prisma.hasVoted.create({
-        //     data: {
-        //         votationId,
-        //     },
-        // });
-        // const vote = await ctx.prisma.vote.create({ data: { alternativeId } });
-        // return vote;
+    resolve: async (_, { alternativeId }, ctx) => {
+        const alternative = await ctx.prisma.alternative.findUnique({
+            where: {
+                id: alternativeId,
+            },
+            select: {
+                votationId: true,
+            },
+        });
+        if (!alternative) throw new Error();
+        await ctx.prisma.hasVoted.create({
+            data: {
+                userId: ctx.userId,
+                votationId: alternative.votationId,
+            },
+        });
+        const vote = await ctx.prisma.vote.create({
+            data: {
+                alternativeId,
+            },
+        });
+        return vote;
     },
 });
