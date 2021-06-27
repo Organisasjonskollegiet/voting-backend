@@ -28,7 +28,7 @@ export const Meeting = objectType({
                 return votation;
             },
         });
-        t.nonNull.field('status', { type: 'Status' });
+        t.nonNull.field('status', { type: 'MeetingStatus' });
         t.nonNull.field('participants', {
             type: list(Participant),
             resolve: async (source, __, ctx) => {

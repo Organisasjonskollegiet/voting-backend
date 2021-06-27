@@ -1,7 +1,6 @@
 import { AuthenticationError } from 'apollo-server-express';
 import { rule } from 'graphql-shield';
 import { Context } from '../../context';
-import { Status } from '../../schema/enums';
 
 /**
  * Helper function for checking if person is admin of meeting
@@ -179,5 +178,5 @@ export const userCanVote = rule({ cache: 'contextual' })(async (_, { alternative
                 votationId: alternative.votationId,
             },
         })) > 0;
-    return !!participant && votation.status === 'ONGOING' && !hasVoted && participant.isVotingEligible;
+    return !!participant && votation.status === 'OPEN' && !hasVoted && participant.isVotingEligible;
 });

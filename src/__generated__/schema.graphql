@@ -54,9 +54,15 @@ type Meeting {
   owner: User
   participants: [Participant]!
   startTime: DateTime!
-  status: Status!
+  status: MeetingStatus!
   title: String!
   votations: [Votation]
+}
+
+enum MeetingStatus {
+  ENDED
+  ONGOING
+  UPCOMING
 }
 
 type Mutation {
@@ -125,18 +131,12 @@ enum Role {
   PARTICIPANT
 }
 
-enum Status {
-  ENDED
-  ONGOING
-  UPCOMING
-}
-
 input UpdateMeetingInput {
   description: String
   id: String!
   organization: String
   startTime: DateTime
-  status: Status
+  status: MeetingStatus
   title: String
 }
 
@@ -176,8 +176,15 @@ type Votation {
   meetingId: String!
   order: Int
   severalVotes: Boolean!
-  status: Status!
+  status: VotationStatus!
   title: String!
+}
+
+enum VotationStatus {
+  CHECKING_RESULT
+  OPEN
+  PUBLISHED_RESULT
+  UPCOMING
 }
 
 type Vote {
