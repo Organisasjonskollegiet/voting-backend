@@ -1,6 +1,7 @@
 import { createTestContext } from '../../../lib/tests/testContext';
 import { gql } from 'graphql-request';
 import { Status, MajorityType, Role } from '.prisma/client';
+import { execPath } from 'node:process';
 const ctx = createTestContext();
 
 interface StaticMeetingDataType {
@@ -15,6 +16,8 @@ interface StaticVotationDataType {
     title: string;
     description: string;
     blankVotes: boolean;
+    hiddenVotes: boolean;
+    severalVotes: boolean;
     majorityType: MajorityType;
     majorityThreshold: number;
 }
@@ -23,7 +26,7 @@ const organization = 'organization';
 const meetingTitle = 'test get votation';
 const meetingStartTime = '2021-04-13T11:29:58.000Z';
 const meetingDescription = 'test get meeting description';
-const meetingStatus = 'UPCOMING';
+const meetingStatus = Status.UPCOMING;
 const staticMeetingData: StaticMeetingDataType = {
     organization,
     title: meetingTitle,
@@ -36,11 +39,15 @@ const votationTitle = 'test votation title';
 const votationDescription = 'test votation description';
 const majorityType = 'SIMPLE';
 const blankVotes = true;
+const hiddenVotes = true;
+const severalVotes = true;
 const majorityThreshold = 50;
 const staticVotationData: StaticVotationDataType = {
     title: votationTitle,
     description: votationDescription,
     blankVotes,
+    hiddenVotes,
+    severalVotes,
     majorityType,
     majorityThreshold,
 };
@@ -48,12 +55,16 @@ const staticVotationData: StaticVotationDataType = {
 const updatedVotationTitle = 'updated votation title';
 const updatedVotationDescription = 'updated votation description';
 const updatedMajorityType = 'QUALIFIED';
-const updatedBlankVotes = true;
+const updatedBlankVotes = false;
+const updatedHiddenVotes = false;
+const updatedSeveralVotes = false;
 const updatedMajorityThreshold = 60;
 const updatedStaticVotationData: StaticVotationDataType = {
     title: updatedVotationTitle,
     description: updatedVotationDescription,
     blankVotes: updatedBlankVotes,
+    hiddenVotes: updatedHiddenVotes,
+    severalVotes: updatedSeveralVotes,
     majorityType: updatedMajorityType,
     majorityThreshold: updatedMajorityThreshold,
 };
@@ -62,7 +73,7 @@ const alternative1Text = 'alternative1 text';
 
 const alternative2Text = 'alternative2 text';
 
-const createMeeting = async (ownerId: string, role: Role) => {
+const createMeeting = async (ownerId: string, role: Role, isVotingEligible: boolean) => {
     return await ctx.prisma.meeting.create({
         data: {
             ...staticMeetingData,
@@ -71,18 +82,19 @@ const createMeeting = async (ownerId: string, role: Role) => {
                 create: {
                     userId: ownerId,
                     role: role,
-                    isVotingEligible: true,
+                    isVotingEligible: isVotingEligible,
                 },
             },
         },
     });
 };
 
-const createVotation = async (meetingId: string, status: Status) => {
+const createVotation = async (meetingId: string, status: Status, index: number) => {
     return await ctx.prisma.votation.create({
         data: {
             ...staticVotationData,
             status: status,
+            index,
             meetingId,
         },
     });
@@ -98,8 +110,8 @@ const createAlternative = async (votationId: string, text: string) => {
 };
 
 it('should return votation by id', async () => {
-    const meeting = await createMeeting(ctx.userId, 'COUNTER');
-    const votation = await createVotation(meeting.id, 'UPCOMING');
+    const meeting = await createMeeting(ctx.userId, Role.COUNTER, true);
+    const votation = await createVotation(meeting.id, Status.UPCOMING, 1);
     const votationId = votation.id;
     const getVotation = await ctx.client.request(
         gql`
@@ -109,6 +121,8 @@ it('should return votation by id', async () => {
                     title
                     description
                     blankVotes
+                    hiddenVotes
+                    severalVotes
                     majorityType
                     majorityThreshold
                     meetingId
@@ -127,35 +141,36 @@ it('should return votation by id', async () => {
 });
 
 it('should throw error from votation by id', async () => {
-    const meeting = await createMeeting(ctx.userId, 'COUNTER');
-    await createVotation(meeting.id, 'UPCOMING');
-
-    expect(
-        async () =>
-            await ctx.client.request(
-                gql`
-                    query GetVotationById($votationId: ID!) {
-                        votationById(votationId: $votationId) {
-                            id
-                            title
-                            description
-                            blankVotes
-                            majorityType
-                            majorityThreshold
-                            meetingId
-                        }
+    const meeting = await createMeeting(ctx.userId, Role.COUNTER, true);
+    await createVotation(meeting.id, Status.UPCOMING, 1);
+    try {
+        await ctx.client.request(
+            gql`
+                query GetVotationById($votationId: ID!) {
+                    votationById(votationId: $votationId) {
+                        id
+                        title
+                        description
+                        blankVotes
+                        majorityType
+                        majorityThreshold
+                        meetingId
                     }
-                `,
-                {
-                    votationId: '1',
                 }
-            )
-    ).rejects.toThrow();
+            `,
+            {
+                votationId: '1',
+            }
+        );
+        expect(false).toBeTruthy();
+    } catch (error) {
+        expect(error.message).toContain('Not Authorised!');
+    }
 });
 
 it('should return alternatives by votation successfully', async () => {
-    const meeting = await createMeeting(ctx.userId, 'COUNTER');
-    const votation = await createVotation(meeting.id, 'UPCOMING');
+    const meeting = await createMeeting(ctx.userId, Role.COUNTER, true);
+    const votation = await createVotation(meeting.id, Status.UPCOMING, 1);
     const alternative1 = await createAlternative(votation.id, alternative1Text);
     const alternative2 = await createAlternative(votation.id, alternative2Text);
     const votationId = votation.id;
@@ -185,64 +200,108 @@ it('should return not authorized', async () => {
             password: 'hash',
         },
     });
-    const meeting = await createMeeting(otherUser.id, 'COUNTER');
-    const votation = await createVotation(meeting.id, 'UPCOMING');
+    const meeting = await createMeeting(otherUser.id, Role.COUNTER, true);
+    const votation = await createVotation(meeting.id, Status.UPCOMING, 1);
     await createAlternative(votation.id, alternative1Text);
     await createAlternative(votation.id, alternative2Text);
-    expect(
-        async () =>
-            await ctx.client.request(
-                gql`
-                    query AlternativesByVotation($votationId: String!) {
-                        alternativesByVotation(votationId: $votationId) {
-                            id
-                            text
-                            votationId
-                        }
+    try {
+        await ctx.client.request(
+            gql`
+                query AlternativesByVotation($votationId: String!) {
+                    alternativesByVotation(votationId: $votationId) {
+                        id
+                        text
+                        votationId
                     }
-                `,
-                {
-                    votationId: votation.id,
                 }
-            )
-    ).rejects.toThrow();
+            `,
+            {
+                votationId: votation.id,
+            }
+        );
+    } catch (error) {
+        expect(error.message).toContain('Not Authorised!');
+    }
 });
 
-it('should create votation successfully', async () => {
-    const meeting = await createMeeting(ctx.userId, 'ADMIN');
+it('should create votations successfully', async () => {
+    const meeting = await createMeeting(ctx.userId, Role.ADMIN, true);
     const variables = {
-        votation: {
-            ...staticVotationData,
-            meetingId: meeting.id,
-        },
+        meetingId: meeting.id,
+        votations: [
+            {
+                ...staticVotationData,
+                index: 1,
+                alternatives: ['alternative1', 'alternative2'],
+            },
+            {
+                ...staticVotationData,
+                index: 2,
+                alternatives: [],
+            },
+        ],
     };
-    const createVotation = await ctx.client.request(
+    const createVotations = await ctx.client.request(
         gql`
-            mutation CreateVotation($votation: CreateVotationInput!) {
-                createVotation(votation: $votation) {
+            mutation CreateVotations($meetingId: String!, $votations: [CreateVotationInput!]!) {
+                createVotations(meetingId: $meetingId, votations: $votations) {
+                    id
                     title
                     description
+                    index
                     blankVotes
+                    hiddenVotes
+                    severalVotes
                     majorityType
                     majorityThreshold
-                    meetingId
+                    alternatives {
+                        text
+                    }
                 }
             }
         `,
         variables
     );
-    expect(createVotation.createVotation).toEqual({
-        ...variables.votation,
+    const alternativesCountFirstVotation = await ctx.prisma.alternative.count({
+        where: {
+            votationId: createVotations.createVotations[0].id,
+        },
     });
+    const alternativesCountSecondVotation = await ctx.prisma.alternative.count({
+        where: {
+            votationId: createVotations.createVotations[1].id,
+        },
+    });
+    expect(
+        createVotations.createVotations.map((votation: any) => {
+            return {
+                ...votation,
+                id: '',
+                alternatives: [],
+            };
+        })
+    ).toEqual(
+        variables.votations.map((votation) => {
+            return {
+                ...votation,
+                id: '',
+                alternatives: [],
+            };
+        })
+    );
+    expect(createVotations.createVotations.length).toEqual(2);
+    expect(alternativesCountFirstVotation).toEqual(2);
+    expect(alternativesCountSecondVotation).toEqual(0);
 });
 
 it('should update votation successfully', async () => {
-    const meeting = await createMeeting(ctx.userId, 'ADMIN');
-    const votation = await createVotation(meeting.id, 'UPCOMING');
+    const meeting = await createMeeting(ctx.userId, Role.ADMIN, true);
+    const votation = await createVotation(meeting.id, Status.UPCOMING, 1);
     const variables = {
         votation: {
             id: votation.id,
             ...updatedStaticVotationData,
+            index: 2,
         },
     };
     const updateVotation = await ctx.client.request(
@@ -253,8 +312,11 @@ it('should update votation successfully', async () => {
                     title
                     description
                     blankVotes
+                    hiddenVotes
+                    severalVotes
                     majorityType
                     majorityThreshold
+                    index
                 }
             }
         `,
@@ -266,65 +328,85 @@ it('should update votation successfully', async () => {
 });
 
 it('should not update votation successfully', async () => {
-    const meeting = await createMeeting(ctx.userId, 'COUNTER');
-    const votation = await createVotation(meeting.id, 'UPCOMING');
+    const meeting = await createMeeting(ctx.userId, Role.COUNTER, true);
+    const votation = await createVotation(meeting.id, Status.UPCOMING, 1);
     const variables = {
         votation: {
             id: votation.id,
             ...updatedStaticVotationData,
+            index: 2,
         },
     };
-    expect(
-        async () =>
-            await ctx.client.request(
-                gql`
-                    mutation UpdateVotation($votation: UpdateVotationInput!) {
-                        updateVotation(votation: $votation) {
-                            id
-                            title
-                            description
-                            blankVotes
-                            majorityType
-                            majorityThreshold
-                        }
+    try {
+        await ctx.client.request(
+            gql`
+                mutation UpdateVotation($votation: UpdateVotationInput!) {
+                    updateVotation(votation: $votation) {
+                        id
+                        title
+                        description
+                        blankVotes
+                        majorityType
+                        majorityThreshold
                     }
-                `,
-                variables
-            )
-    ).rejects.toThrow();
+                }
+            `,
+            variables
+        );
+        expect(false).toBeTruthy();
+    } catch (error) {
+        expect(error.message).toContain('Not Authorised!');
+    }
 });
 
-it('should not create votation successfully', async () => {
-    const meeting = await createMeeting(ctx.userId, 'COUNTER');
+it('should not create votations successfully', async () => {
+    const meeting = await createMeeting(ctx.userId, Role.COUNTER, true);
     const variables = {
-        votation: {
-            ...staticVotationData,
-            meetingId: meeting.id,
-        },
+        meetingId: meeting.id,
+        votations: [
+            {
+                ...staticVotationData,
+                index: 1,
+                alternatives: [],
+            },
+            {
+                ...staticVotationData,
+                index: 2,
+                alternatives: [],
+            },
+        ],
     };
-    expect(
-        async () =>
-            await ctx.client.request(
-                gql`
-                    mutation CreateVotation($votation: CreateVotationInput!) {
-                        createVotation(votation: $votation) {
-                            title
-                            description
-                            blankVotes
-                            majorityType
-                            majorityThreshold
-                            meetingId
+    try {
+        await ctx.client.request(
+            gql`
+                mutation CreateVotations($meetingId: String!, $votations: [CreateVotationInput!]!) {
+                    createVotations(meetingId: $meetingId, votations: $votations) {
+                        id
+                        title
+                        description
+                        index
+                        blankVotes
+                        hiddenVotes
+                        severalVotes
+                        majorityType
+                        majorityThreshold
+                        alternatives {
+                            text
                         }
                     }
-                `,
-                variables
-            )
-    ).rejects.toThrow();
+                }
+            `,
+            variables
+        );
+        expect(false).toBeTruthy();
+    } catch (error) {
+        expect(error.message).toContain('Not Authorised!');
+    }
 });
 
 it('should create alterative successfully', async () => {
-    const meeting = await createMeeting(ctx.userId, 'ADMIN');
-    const votation = await createVotation(meeting.id, 'UPCOMING');
+    const meeting = await createMeeting(ctx.userId, Role.ADMIN, true);
+    const votation = await createVotation(meeting.id, Status.UPCOMING, 1);
     const variables = {
         text: alternative1Text,
         votationId: votation.id,
@@ -344,8 +426,8 @@ it('should create alterative successfully', async () => {
 });
 
 it('should not create alternative successfully', async () => {
-    const meeting = await createMeeting(ctx.userId, 'COUNTER');
-    const votation = await createVotation(meeting.id, 'UPCOMING');
+    const meeting = await createMeeting(ctx.userId, Role.COUNTER, true);
+    const votation = await createVotation(meeting.id, Status.UPCOMING, 1);
     const variables = {
         text: alternative1Text,
         votationId: votation.id,
@@ -367,8 +449,8 @@ it('should not create alternative successfully', async () => {
 });
 
 it('should delete alternative successfully', async () => {
-    const meeting = await createMeeting(ctx.userId, 'ADMIN');
-    const votation = await createVotation(meeting.id, 'UPCOMING');
+    const meeting = await createMeeting(ctx.userId, Role.ADMIN, true);
+    const votation = await createVotation(meeting.id, Status.UPCOMING, 1);
     const alternative = await createAlternative(votation.id, alternative1Text);
     await ctx.client.request(
         gql`
@@ -396,24 +478,14 @@ it('should delete votation successfully', async () => {
             participants: {
                 create: {
                     userId: ctx.userId,
-                    role: 'ADMIN',
+                    role: Role.ADMIN,
                     isVotingEligible: true,
                 },
             },
         },
     });
-    const votation = await ctx.prisma.votation.create({
-        data: {
-            ...staticVotationData,
-            meetingId: meeting.id,
-        },
-    });
-    await ctx.prisma.alternative.create({
-        data: {
-            text: 'alternative',
-            votationId: votation.id,
-        },
-    });
+    const votation = await createVotation(meeting.id, Status.UPCOMING, 1);
+    await createAlternative(votation.id, 'alternative');
     await ctx.client.request(
         gql`
             mutation DeleteVotation($id: String!) {
@@ -437,8 +509,8 @@ it('should not delete alternative successfully', async () => {
             password: 'secret',
         },
     });
-    const meeting = await createMeeting(meetingOwner.id, 'COUNTER');
-    const votation = await createVotation(meeting.id, 'UPCOMING');
+    const meeting = await createMeeting(meetingOwner.id, Role.COUNTER, true);
+    const votation = await createVotation(meeting.id, Status.UPCOMING, 1);
     const alternative = await createAlternative(votation.id, alternative1Text);
     try {
         await ctx.client.request(
@@ -467,8 +539,8 @@ it('should not delete votation successfully', async () => {
             password: 'secret',
         },
     });
-    const meeting = await createMeeting(meetingOwner.id, 'COUNTER');
-    const votation = await createVotation(meeting.id, 'UPCOMING');
+    const meeting = await createMeeting(meetingOwner.id, Role.COUNTER, true);
+    const votation = await createVotation(meeting.id, Status.UPCOMING, 1);
     await createAlternative(votation.id, alternative1Text);
     try {
         await ctx.client.request(
@@ -486,5 +558,183 @@ it('should not delete votation successfully', async () => {
         expect(false).toBeTruthy();
     } catch (error) {
         expect(error.message).toContain('Not Authorised!');
+    }
+});
+
+it('should cast vote successfully', async () => {
+    const meeting = await createMeeting(ctx.userId, Role.PARTICIPANT, true);
+    const votation = await createVotation(meeting.id, Status.ONGOING, 1);
+    const alternative = await createAlternative(votation.id, alternative1Text);
+    await ctx.client.request(
+        gql`
+            mutation CastVote($alternativeId: String!) {
+                castVote(alternativeId: $alternativeId) {
+                    alternative {
+                        id
+                        text
+                    }
+                }
+            }
+        `,
+        {
+            alternativeId: alternative.id,
+        }
+    );
+    const hasVoted = await ctx.prisma.hasVoted.count({
+        where: {
+            userId: ctx.userId,
+            votationId: votation.id,
+        },
+    });
+    expect(hasVoted).toBe(1);
+});
+
+it('should not cast vote successfully since votation is not ongoing', async () => {
+    const meeting = await createMeeting(ctx.userId, Role.PARTICIPANT, true);
+    const votation = await createVotation(meeting.id, 'ENDED', 1);
+    const alternative = await createAlternative(votation.id, alternative1Text);
+    try {
+        await ctx.client.request(
+            gql`
+                mutation CastVote($alternativeId: String!) {
+                    castVote(alternativeId: $alternativeId) {
+                        alternative {
+                            id
+                            text
+                        }
+                    }
+                }
+            `,
+            {
+                alternativeId: alternative.id,
+            }
+        );
+        expect(false).toBeTruthy();
+    } catch (error) {
+        // TODO: Check for correct error message
+        const hasVoted = await ctx.prisma.hasVoted.count({
+            where: {
+                userId: ctx.userId,
+                votationId: votation.id,
+            },
+        });
+        expect(hasVoted).toBe(0);
+    }
+});
+
+it('should not cast vote successfully since user is not participant', async () => {
+    const meetingOwner = await ctx.prisma.user.create({
+        data: {
+            email: 'e@mail.com',
+            password: 'password',
+        },
+    });
+    const meeting = await createMeeting(meetingOwner.id, Role.ADMIN, true);
+    const votation = await createVotation(meeting.id, Status.ONGOING, 1);
+    const alternative = await createAlternative(votation.id, alternative1Text);
+    try {
+        await ctx.client.request(
+            gql`
+                mutation CastVote($alternativeId: String!) {
+                    castVote(alternativeId: $alternativeId) {
+                        alternative {
+                            id
+                            text
+                        }
+                    }
+                }
+            `,
+            {
+                alternativeId: alternative.id,
+            }
+        );
+        expect(false).toBeTruthy();
+    } catch (error) {
+        // TODO: Check for correct error message
+        const hasVoted = await ctx.prisma.hasVoted.count({
+            where: {
+                userId: ctx.userId,
+                votationId: votation.id,
+            },
+        });
+        expect(hasVoted).toBe(0);
+    }
+});
+
+it('should not cast vote successfully since user has already voted', async () => {
+    const meeting = await createMeeting(ctx.userId, Role.ADMIN, true);
+    const votation = await createVotation(meeting.id, Status.ONGOING, 1);
+    const alternative = await createAlternative(votation.id, alternative1Text);
+    await ctx.prisma.hasVoted.create({
+        data: {
+            votationId: votation.id,
+            userId: ctx.userId,
+        },
+    });
+    try {
+        await ctx.client.request(
+            gql`
+                mutation CastVote($alternativeId: String!) {
+                    castVote(alternativeId: $alternativeId) {
+                        alternative {
+                            id
+                            text
+                        }
+                    }
+                }
+            `,
+            {
+                alternativeId: alternative.id,
+            }
+        );
+        expect(false).toBeTruthy();
+    } catch (error) {
+        // TODO: Check for correct error message
+        const hasVoted = await ctx.prisma.hasVoted.count({
+            where: {
+                userId: ctx.userId,
+                votationId: votation.id,
+            },
+        });
+        expect(hasVoted).toBe(1);
+    }
+});
+
+it('should not cast vote successfully since the participant is not votingEligible', async () => {
+    const meeting = await createMeeting(ctx.userId, Role.ADMIN, false);
+    const votation = await createVotation(meeting.id, Status.ONGOING, 1);
+    const alternative = await createAlternative(votation.id, alternative1Text);
+    await ctx.prisma.hasVoted.create({
+        data: {
+            votationId: votation.id,
+            userId: ctx.userId,
+        },
+    });
+    try {
+        await ctx.client.request(
+            gql`
+                mutation CastVote($alternativeId: String!) {
+                    castVote(alternativeId: $alternativeId) {
+                        alternative {
+                            id
+                            text
+                        }
+                    }
+                }
+            `,
+            {
+                alternativeId: alternative.id,
+            }
+        );
+        expect(false).toBeTruthy();
+    } catch (error) {
+        // TODO: Check for correct error message
+        const hasVoted = await ctx.prisma.hasVoted.count({
+            where: {
+                userId: ctx.userId,
+                votationId: votation.id,
+            },
+        });
+        expect(hasVoted).toBe(1);
     }
 });

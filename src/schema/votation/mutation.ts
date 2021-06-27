@@ -1,4 +1,4 @@
-import { inputObjectType, mutationField, nonNull, stringArg } from 'nexus';
+import { inputObjectType, intArg, list, mutationField, nonNull, stringArg } from 'nexus';
 import { Vote } from './';
 import { Alternative, Votation } from './typedefs';
 import { MajorityType } from '../enums';
@@ -10,8 +10,11 @@ export const UpdateVotationInput = inputObjectType({
         t.nonNull.string('title');
         t.nonNull.string('description');
         t.nonNull.boolean('blankVotes');
+        t.nonNull.boolean('hiddenVotes');
+        t.nonNull.boolean('severalVotes');
         t.nonNull.field('majorityType', { type: MajorityType });
         t.nonNull.int('majorityThreshold');
+        t.nonNull.int('index');
     },
 });
 
@@ -21,22 +24,48 @@ export const CreateVotationInput = inputObjectType({
         t.nonNull.string('title');
         t.nonNull.string('description');
         t.nonNull.boolean('blankVotes');
+        t.nonNull.boolean('hiddenVotes');
+        t.nonNull.boolean('severalVotes');
         t.nonNull.field('majorityType', { type: MajorityType });
         t.nonNull.int('majorityThreshold');
-        t.nonNull.string('meetingId');
+        t.nonNull.int('index');
+        t.list.nonNull.string('alternatives');
     },
 });
 
-export const CreateVotationMutation = mutationField('createVotation', {
-    type: Votation,
+export const CreateVotationsMutatioon = mutationField('createVotations', {
+    type: list(Votation),
     args: {
-        votation: nonNull(CreateVotationInput),
+        meetingId: nonNull(stringArg()),
+        votations: nonNull(list(nonNull(CreateVotationInput))),
     },
-    resolve: async (_, { votation }, ctx) => {
-        const createdVotation = await ctx.prisma.votation.create({
-            data: votation,
-        });
-        return createdVotation;
+    resolve: async (_, { votations, meetingId }, ctx) => {
+        const promises = [];
+        for (const votation of votations) {
+            promises.push(
+                ctx.prisma.votation.create({
+                    data: {
+                        ...votation,
+                        meetingId,
+                        alternatives: {
+                            createMany: {
+                                data: votation.alternatives
+                                    ? votation.alternatives
+                                          .filter((text) => text.trim().length > 0)
+                                          .map((alternative) => {
+                                              return {
+                                                  text: alternative,
+                                              };
+                                          })
+                                    : [],
+                            },
+                        },
+                    },
+                })
+            );
+        }
+        const resolved = await Promise.all(promises);
+        return resolved;
     },
 });
 
@@ -130,23 +159,30 @@ export const CastVoteMutation = mutationField('castVote', {
     type: Vote,
     args: {
         alternativeId: nonNull(stringArg()),
-        votationId: nonNull(stringArg()),
     },
-    // TODO: Refactor resolve function
-    resolve: async (_, __, ___) => {
-        //const hasVoted = await userHasVoted(ctx, votationId);
-        //console.log(hasVoted);
-        return null;
-        // const participant = await ctx.prisma.participant.findFirst();
-        // if (hasVoted) throw new Error('This user has already cast vote for this votation.');
-        // const alternativeExists = checkAlternativeExists(ctx, alternativeId);
-        // if (!alternativeExists) throw new Error('Alternative does not exist.');
-        // await ctx.prisma.hasVoted.create({
-        //     data: {
-        //         votationId,
-        //     },
-        // });
-        // const vote = await ctx.prisma.vote.create({ data: { alternativeId } });
-        // return vote;
+    resolve: async (_, { alternativeId }, ctx) => {
+        const alternative = await ctx.prisma.alternative.findUnique({
+            where: {
+                id: alternativeId,
+            },
+            select: {
+                votationId: true,
+            },
+        });
+        if (!alternative) throw new Error();
+        const [__, vote] = await ctx.prisma.$transaction([
+            ctx.prisma.hasVoted.create({
+                data: {
+                    userId: ctx.userId,
+                    votationId: alternative.votationId,
+                },
+            }),
+            ctx.prisma.vote.create({
+                data: {
+                    alternativeId,
+                },
+            }),
+        ]);
+        return vote;
     },
 });

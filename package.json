@@ -35,7 +35,8 @@
     "jsonwebtoken": "^8.5.1",
     "jwks-rsa": "^2.0.1",
     "nexus": "^1.0.0",
-    "subscriptions-transport-ws": "^0.9.18"
+    "subscriptions-transport-ws": "^0.9.18",
+    "ws": "^7.4.6"
   },
   "devDependencies": {
     "@types/bcrypt": "^3.0.0",

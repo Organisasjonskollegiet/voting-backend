@@ -1,5 +1,5 @@
-import { inputObjectType, mutationField, nonNull, stringArg } from 'nexus';
-import { Status } from '../enums';
+import { inputObjectType, mutationField, nonNull, stringArg, list } from 'nexus';
+import { Status, Role } from '../enums';
 import { Meeting, DeleteParticipantResult } from './typedefs';
 
 export const CreateMeetingInput = inputObjectType({
@@ -21,6 +21,15 @@ export const UpdateMeetingInput = inputObjectType({
         t.datetime('startTime');
         t.string('description');
         t.field('status', { type: Status });
+    },
+});
+
+export const ParticipantInput = inputObjectType({
+    name: 'ParticipantInput',
+    definition(t) {
+        t.nonNull.string('email');
+        t.nonNull.field('role', { type: Role });
+        t.nonNull.boolean('isVotingEligible');
     },
 });
 
@@ -72,6 +81,82 @@ export const UpdateMeetingMutation = mutationField('updateMeeting', {
     },
 });
 
+export const DeleteMeetingMutation = mutationField('deleteMeeting', {
+    type: Meeting,
+    description: '',
+    args: {
+        id: nonNull(stringArg()),
+    },
+    resolve: async (_, { id }, ctx) => {
+        await ctx.prisma.alternative.deleteMany({ where: { votation: { meetingId: id } } });
+        await ctx.prisma.votation.deleteMany({ where: { meetingId: id } });
+        await ctx.prisma.participant.deleteMany({ where: { meetingId: id } });
+        const deletedMeeting = await ctx.prisma.meeting.delete({ where: { id } });
+        return deletedMeeting;
+    },
+});
+
+export const AddParticipantsMutation = mutationField('addParticipants', {
+    type: 'Int',
+    description: '',
+    args: {
+        meetingId: nonNull(stringArg()),
+        participants: nonNull(list(nonNull(ParticipantInput))),
+    },
+    resolve: async (_, { meetingId, participants }, ctx) => {
+        let participantsAdded = 0;
+        for (const participant of participants) {
+            try {
+                const user = await ctx.prisma.user.findUnique({ where: { email: participant.email } });
+                if (user) {
+                    await ctx.prisma.participant.upsert({
+                        where: {
+                            userId_meetingId: {
+                                userId: user?.id,
+                                meetingId,
+                            },
+                        },
+                        update: {
+                            role: participant.role,
+                            isVotingEligible: participant.isVotingEligible,
+                        },
+                        create: {
+                            role: participant.role,
+                            userId: user?.id ?? null,
+                            meetingId,
+                            isVotingEligible: participant.isVotingEligible,
+                        },
+                    });
+                    participantsAdded += 1;
+                } else {
+                    await ctx.prisma.invite.upsert({
+                        where: {
+                            email_meetingId: {
+                                email: participant.email,
+                                meetingId,
+                            },
+                        },
+                        create: {
+                            email: participant.email,
+                            role: participant.role,
+                            isVotingEligible: participant.isVotingEligible,
+                            meetingId,
+                        },
+                        update: {
+                            role: participant.role,
+                            isVotingEligible: participant.isVotingEligible,
+                        },
+                    });
+                    participantsAdded += 1;
+                }
+            } catch (error) {
+                console.log(error);
+            }
+        }
+        return participantsAdded;
+    },
+});
+
 export const DeleteParticipantMutation = mutationField('deleteParticipant', {
     type: DeleteParticipantResult,
     description: '',
@@ -96,20 +181,5 @@ export const DeleteParticipantMutation = mutationField('deleteParticipant', {
             },
         });
         return { __typename: 'Participant', ...deletedParticipant };
-    },
-});
-
-export const DeleteMeetingMutation = mutationField('deleteMeeting', {
-    type: Meeting,
-    description: '',
-    args: {
-        id: nonNull(stringArg()),
-    },
-    resolve: async (_, { id }, ctx) => {
-        await ctx.prisma.alternative.deleteMany({ where: { votation: { meetingId: id } } });
-        await ctx.prisma.votation.deleteMany({ where: { meetingId: id } });
-        await ctx.prisma.participant.deleteMany({ where: { meetingId: id } });
-        const deletedMeeting = await ctx.prisma.meeting.delete({ where: { id } });
-        return deletedMeeting;
     },
 });

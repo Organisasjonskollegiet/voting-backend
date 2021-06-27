@@ -20,6 +20,7 @@ CREATE TABLE "User" (
 -- CreateTable
 CREATE TABLE "Meeting" (
     "id" UUID NOT NULL,
+    "organization" TEXT NOT NULL,
     "title" VARCHAR(255) NOT NULL,
     "startTime" TIMESTAMP(3) NOT NULL,
     "description" TEXT NOT NULL,
@@ -41,12 +42,22 @@ CREATE TABLE "Participant" (
 );
 
 -- CreateTable
+CREATE TABLE "Invite" (
+    "email" TEXT NOT NULL,
+    "role" "Role" NOT NULL,
+    "isVotingEligible" BOOLEAN NOT NULL,
+    "meetingId" UUID NOT NULL
+);
+
+-- CreateTable
 CREATE TABLE "Votation" (
     "id" UUID NOT NULL,
     "title" VARCHAR(255) NOT NULL,
     "description" TEXT NOT NULL,
     "status" "Status" NOT NULL DEFAULT E'UPCOMING',
     "blankVotes" BOOLEAN NOT NULL,
+    "hiddenVotes" BOOLEAN NOT NULL,
+    "severalVotes" BOOLEAN NOT NULL,
     "majorityType" "MajorityType" NOT NULL,
     "majorityThreshold" INTEGER NOT NULL,
     "meetingId" UUID NOT NULL,
@@ -88,6 +99,9 @@ CREATE UNIQUE INDEX "User.email_unique" ON "User"("email");
 CREATE UNIQUE INDEX "Participant.userId_meetingId_unique" ON "Participant"("userId", "meetingId");
 
 -- CreateIndex
+CREATE UNIQUE INDEX "Invite.email_meetingId_unique" ON "Invite"("email", "meetingId");
+
+-- CreateIndex
 CREATE UNIQUE INDEX "Vote_nextVoteId_unique" ON "Vote"("nextVoteId");
 
 -- AddForeignKey
@@ -98,6 +112,9 @@ ALTER TABLE "Participant" ADD FOREIGN KEY ("userId") REFERENCES "User"("id") ON 
 
 -- AddForeignKey
 ALTER TABLE "Participant" ADD FOREIGN KEY ("meetingId") REFERENCES "Meeting"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "Invite" ADD FOREIGN KEY ("meetingId") REFERENCES "Meeting"("id") ON DELETE CASCADE ON UPDATE CASCADE;
 
 -- AddForeignKey
 ALTER TABLE "Votation" ADD FOREIGN KEY ("meetingId") REFERENCES "Meeting"("id") ON DELETE CASCADE ON UPDATE CASCADE;

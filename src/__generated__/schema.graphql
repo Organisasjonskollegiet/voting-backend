@@ -17,11 +17,14 @@ input CreateMeetingInput {
 }
 
 input CreateVotationInput {
+  alternatives: [String!]
   blankVotes: Boolean!
   description: String!
+  hiddenVotes: Boolean!
+  index: Int!
   majorityThreshold: Int!
   majorityType: MajorityType!
-  meetingId: String!
+  severalVotes: Boolean!
   title: String!
 }
 
@@ -52,13 +55,15 @@ type Meeting {
 }
 
 type Mutation {
-  castVote(alternativeId: String!, votationId: String!): Vote
+  """"""
+  addParticipants(meetingId: String!, participants: [ParticipantInput!]!): Int
+  castVote(alternativeId: String!): Vote
   changeView(state: ViewState!): ViewState
   createAlternative(text: String!, votationId: String!): Alternative
 
   """"""
   createMeeting(meeting: CreateMeetingInput!): Meeting
-  createVotation(votation: CreateVotationInput!): Votation
+  createVotations(meetingId: String!, votations: [CreateVotationInput!]!): [Votation]
 
   """"""
   deleteAlternative(id: String!): Alternative
@@ -90,6 +95,12 @@ type Participant {
   isVotingEligible: Boolean!
   role: Role!
   user: User
+}
+
+input ParticipantInput {
+  email: String!
+  isVotingEligible: Boolean!
+  role: Role!
 }
 
 type Query {
@@ -132,9 +143,12 @@ input UpdateMeetingInput {
 input UpdateVotationInput {
   blankVotes: Boolean!
   description: String!
+  hiddenVotes: Boolean!
   id: String!
+  index: Int!
   majorityThreshold: Int!
   majorityType: MajorityType!
+  severalVotes: Boolean!
   title: String!
 }
 
@@ -170,14 +184,17 @@ enum ViewState {
 
 type Votation {
   alternatives: [Alternative]
-  blankVotes: Boolean
+  blankVotes: Boolean!
   description: String!
   hasVoted: [User]
+  hiddenVotes: Boolean!
   id: ID!
+  index: Int!
   majorityThreshold: Int!
   majorityType: MajorityType!
   meetingId: String!
   order: Int
+  severalVotes: Boolean!
   status: Status!
   title: String!
 }

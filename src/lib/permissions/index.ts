@@ -3,14 +3,15 @@ import {
     isAuthenticated,
     isParticipantOfMeeting,
     isParticipantOfVotation,
-    isAdminOfMeetingById,
+    isCounterOfMeeting,
+    isAdminOfMeetingId,
     isAdminOfMeetingByObject,
     isAdminOfVotationByObject,
     isAdminOfVotationById,
     isAdminOfVotationByMeetingId,
     isAdminOfAlternative,
-    isCounterOfMeeting,
     isOwnerOfMeeting,
+    userCanVote,
 } from './rules';
 
 const permissions = shield(
@@ -21,12 +22,13 @@ const permissions = shield(
             votationById: and(isParticipantOfVotation),
         },
         Mutation: {
-            castVote: and(isParticipantOfVotation),
-            createVotation: and(isAdminOfVotationByMeetingId),
+            addParticipants: and(isAdminOfMeetingId),
+            castVote: and(userCanVote),
+            createVotations: and(isAdminOfMeetingId),
             updateMeeting: and(isAdminOfMeetingByObject),
             updateVotation: and(isAdminOfVotationByObject),
             updateAlternative: and(isAdminOfAlternative),
-            deleteParticipant: and(isAdminOfMeetingById),
+            deleteParticipant: and(isAdminOfMeetingId),
             deleteAlternative: and(isAdminOfAlternative),
             deleteVotation: and(isAdminOfVotationById),
             deleteMeeting: and(isOwnerOfMeeting),
@@ -35,7 +37,7 @@ const permissions = shield(
             viewChanged: allow,
         },
         Alternative: {
-            votes: or(isAdminOfMeetingById, isCounterOfMeeting),
+            votes: or(isAdminOfMeetingId, isCounterOfMeeting),
         },
     },
     // If rule is not defined, use isAuthenticated rule
