@@ -10,9 +10,14 @@ export const MajorityType = enumType({
     members: ['QUALIFIED', 'SIMPLE'],
 });
 
-export const Status = enumType({
-    name: 'Status',
+export const MeetingStatus = enumType({
+    name: 'MeetingStatus',
     members: ['UPCOMING', 'ONGOING', 'ENDED'],
+});
+
+export const VotationStatus = enumType({
+    name: 'VotationStatus',
+    members: ['UPCOMING', 'OPEN', 'CHECKING_RESULT', 'PUBLISHED_RESULT'],
 });
 
 export const ViewState = enumType({

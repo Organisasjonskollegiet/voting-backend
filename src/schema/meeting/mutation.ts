@@ -1,5 +1,5 @@
 import { inputObjectType, mutationField, nonNull, stringArg, list } from 'nexus';
-import { Status, Role } from '../enums';
+import { MeetingStatus, Role } from '../enums';
 import { Meeting, DeleteParticipantResult } from './typedefs';
 
 export const CreateMeetingInput = inputObjectType({
@@ -20,7 +20,7 @@ export const UpdateMeetingInput = inputObjectType({
         t.string('title');
         t.datetime('startTime');
         t.string('description');
-        t.field('status', { type: Status });
+        t.field('status', { type: MeetingStatus });
     },
 });
 
