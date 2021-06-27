@@ -57,7 +57,7 @@ type Meeting {
 type Mutation {
   """"""
   addParticipants(meetingId: String!, participants: [ParticipantInput!]!): Int
-  castVote(alternativeId: String!, votationId: String!): Vote
+  castVote(alternativeId: String!): Vote
   createAlternative(text: String!, votationId: String!): Alternative
 
   """"""
