@@ -3,14 +3,15 @@ import {
     isAuthenticated,
     isParticipantOfMeeting,
     isParticipantOfVotation,
+    isCounterOfMeeting,
     isAdminOfMeetingId,
     isAdminOfMeetingByObject,
     isAdminOfVotationsByObjects,
     isAdminOfVotationsById,
     isAdminOfAlternative,
     isAdminOfAlternatives,
-    isCounterOfMeeting,
     isOwnerOfMeeting,
+    userCanVote,
 } from './rules';
 
 const permissions = shield(
@@ -22,7 +23,7 @@ const permissions = shield(
         },
         Mutation: {
             addParticipants: and(isAdminOfMeetingId),
-            castVote: and(isParticipantOfVotation),
+            castVote: and(userCanVote),
             createVotations: and(isAdminOfMeetingId),
             updateMeeting: and(isAdminOfMeetingByObject),
             updateVotations: and(isAdminOfVotationsByObjects),

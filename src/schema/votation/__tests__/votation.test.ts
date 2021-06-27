@@ -73,7 +73,7 @@ const alternative1Text = 'alternative1 text';
 
 const alternative2Text = 'alternative2 text';
 
-const createMeeting = async (ownerId: string, role: Role) => {
+const createMeeting = async (ownerId: string, role: Role, isVotingEligible: boolean) => {
     return await ctx.prisma.meeting.create({
         data: {
             ...staticMeetingData,
@@ -82,7 +82,7 @@ const createMeeting = async (ownerId: string, role: Role) => {
                 create: {
                     userId: ownerId,
                     role: role,
-                    isVotingEligible: true,
+                    isVotingEligible: isVotingEligible,
                 },
             },
         },
@@ -123,7 +123,7 @@ const formatVotationToCompare = (votation: any) => {
 };
 
 it('should return votation by id', async () => {
-    const meeting = await createMeeting(ctx.userId, Role.COUNTER);
+    const meeting = await createMeeting(ctx.userId, Role.COUNTER, true);
     const votation = await createVotation(meeting.id, Status.UPCOMING, 1);
     const votationId = votation.id;
     const getVotation = await ctx.client.request(
@@ -154,7 +154,7 @@ it('should return votation by id', async () => {
 });
 
 it('should throw error from votation by id', async () => {
-    const meeting = await createMeeting(ctx.userId, Role.COUNTER);
+    const meeting = await createMeeting(ctx.userId, Role.COUNTER, true);
     await createVotation(meeting.id, Status.UPCOMING, 1);
     try {
         await ctx.client.request(
@@ -182,7 +182,7 @@ it('should throw error from votation by id', async () => {
 });
 
 it('should return alternatives by votation successfully', async () => {
-    const meeting = await createMeeting(ctx.userId, Role.COUNTER);
+    const meeting = await createMeeting(ctx.userId, Role.COUNTER, true);
     const votation = await createVotation(meeting.id, Status.UPCOMING, 1);
     const alternative1 = await createAlternative(votation.id, alternative1Text);
     const alternative2 = await createAlternative(votation.id, alternative2Text);
@@ -213,7 +213,7 @@ it('should return not authorized', async () => {
             password: 'hash',
         },
     });
-    const meeting = await createMeeting(otherUser.id, Role.COUNTER);
+    const meeting = await createMeeting(otherUser.id, Role.COUNTER, true);
     const votation = await createVotation(meeting.id, Status.UPCOMING, 1);
     await createAlternative(votation.id, alternative1Text);
     await createAlternative(votation.id, alternative2Text);
@@ -238,7 +238,7 @@ it('should return not authorized', async () => {
 });
 
 it('should create votations successfully', async () => {
-    const meeting = await createMeeting(ctx.userId, Role.ADMIN);
+    const meeting = await createMeeting(ctx.userId, Role.ADMIN, true);
     const variables = {
         meetingId: meeting.id,
         votations: [
@@ -312,7 +312,7 @@ it('should update votations successfully', async () => {
     const alternative2UpdatedText = 'alternative2Updated';
     const alternative3UpdatedText = 'alternative3Updated';
     const alternative4UpdatedText = 'alternative4Updated';
-    const meeting = await createMeeting(ctx.userId, Role.ADMIN);
+    const meeting = await createMeeting(ctx.userId, Role.ADMIN, true);
     const votation1 = await createVotation(meeting.id, Status.UPCOMING, 1);
     const alternative1 = await createAlternative(votation1.id, 'alternative1');
     const alternative2 = await createAlternative(votation1.id, 'alternative2');
@@ -402,7 +402,6 @@ it('should update votations successfully', async () => {
     if (!votation1Updated || !votation2Updated || !alternative1Updated || !alternativeToVotation2Count) {
         expect(false).toBeTruthy();
     } else {
-        console.log(votation1Updated);
         expect(formatVotationToCompare(votation1Updated)).toEqual(formatVotationToCompare(variables.votations[0]));
         expect(formatVotationToCompare(votation2Updated)).toEqual(formatVotationToCompare(variables.votations[1]));
         expect(alternative1Updated?.text).toEqual(alternative1UpdatedText);
@@ -410,12 +409,12 @@ it('should update votations successfully', async () => {
     }
 });
 
-it('should not update votation successfully', async () => {
+it('should not update votations successfully', async () => {
     const alternative1UpdatedText = 'alternative1Updated';
     const alternative2UpdatedText = 'alternative2Updated';
     const alternative3UpdatedText = 'alternative3Updated';
     const alternative4UpdatedText = 'alternative4Updated';
-    const meeting = await createMeeting(ctx.userId, Role.COUNTER);
+    const meeting = await createMeeting(ctx.userId, Role.COUNTER, true);
     const votation1 = await createVotation(meeting.id, Status.UPCOMING, 1);
     const alternative1 = await createAlternative(votation1.id, 'alternative1');
     const alternative2 = await createAlternative(votation1.id, 'alternative2');
@@ -486,7 +485,7 @@ it('should not update votation successfully', async () => {
 });
 
 it('should not create votations successfully', async () => {
-    const meeting = await createMeeting(ctx.userId, Role.COUNTER);
+    const meeting = await createMeeting(ctx.userId, Role.COUNTER, true);
     const variables = {
         meetingId: meeting.id,
         votations: [
@@ -531,7 +530,7 @@ it('should not create votations successfully', async () => {
 });
 
 it('should create alterative successfully', async () => {
-    const meeting = await createMeeting(ctx.userId, Role.ADMIN);
+    const meeting = await createMeeting(ctx.userId, Role.ADMIN, true);
     const votation = await createVotation(meeting.id, Status.UPCOMING, 1);
     const variables = {
         text: alternative1Text,
@@ -552,7 +551,7 @@ it('should create alterative successfully', async () => {
 });
 
 it('should not create alternative successfully', async () => {
-    const meeting = await createMeeting(ctx.userId, Role.COUNTER);
+    const meeting = await createMeeting(ctx.userId, Role.COUNTER, true);
     const votation = await createVotation(meeting.id, Status.UPCOMING, 1);
     const variables = {
         text: alternative1Text,
@@ -575,7 +574,7 @@ it('should not create alternative successfully', async () => {
 });
 
 it('should delete alternative successfully', async () => {
-    const meeting = await createMeeting(ctx.userId, Role.ADMIN);
+    const meeting = await createMeeting(ctx.userId, Role.ADMIN, true);
     const votation = await createVotation(meeting.id, Status.UPCOMING, 1);
     const alternative1 = await createAlternative(votation.id, alternative1Text);
     const alternative2 = await createAlternative(votation.id, alternative2Text);
@@ -630,8 +629,8 @@ it('should delete votation successfully', async () => {
 });
 
 it('should not delete alternative successfully', async () => {
-    const meeting1 = await createMeeting(ctx.userId, Role.COUNTER);
-    const meeting2 = await createMeeting(ctx.userId, Role.ADMIN);
+    const meeting1 = await createMeeting(ctx.userId, Role.COUNTER, true);
+    const meeting2 = await createMeeting(ctx.userId, Role.ADMIN, true);
     const votation1 = await createVotation(meeting1.id, Status.UPCOMING, 1);
     const votation2 = await createVotation(meeting2.id, Status.UPCOMING, 1);
     await createAlternative(votation1.id, alternative1Text);
@@ -653,8 +652,8 @@ it('should not delete alternative successfully', async () => {
 });
 
 it('should not delete votation successfully', async () => {
-    const meeting1 = await createMeeting(ctx.userId, Role.COUNTER);
-    const meeting2 = await createMeeting(ctx.userId, Role.ADMIN);
+    const meeting1 = await createMeeting(ctx.userId, Role.COUNTER, true);
+    const meeting2 = await createMeeting(ctx.userId, Role.ADMIN, true);
     const votation1 = await createVotation(meeting1.id, Status.UPCOMING, 1);
     const votation2 = await createVotation(meeting2.id, Status.UPCOMING, 1);
     await createAlternative(votation1.id, alternative1Text);
@@ -672,5 +671,183 @@ it('should not delete votation successfully', async () => {
         expect(false).toBeTruthy();
     } catch (error) {
         expect(error.message).toContain('Not Authorised!');
+    }
+});
+
+it('should cast vote successfully', async () => {
+    const meeting = await createMeeting(ctx.userId, Role.PARTICIPANT, true);
+    const votation = await createVotation(meeting.id, Status.ONGOING, 1);
+    const alternative = await createAlternative(votation.id, alternative1Text);
+    await ctx.client.request(
+        gql`
+            mutation CastVote($alternativeId: String!) {
+                castVote(alternativeId: $alternativeId) {
+                    alternative {
+                        id
+                        text
+                    }
+                }
+            }
+        `,
+        {
+            alternativeId: alternative.id,
+        }
+    );
+    const hasVoted = await ctx.prisma.hasVoted.count({
+        where: {
+            userId: ctx.userId,
+            votationId: votation.id,
+        },
+    });
+    expect(hasVoted).toBe(1);
+});
+
+it('should not cast vote successfully since votation is not ongoing', async () => {
+    const meeting = await createMeeting(ctx.userId, Role.PARTICIPANT, true);
+    const votation = await createVotation(meeting.id, 'ENDED', 1);
+    const alternative = await createAlternative(votation.id, alternative1Text);
+    try {
+        await ctx.client.request(
+            gql`
+                mutation CastVote($alternativeId: String!) {
+                    castVote(alternativeId: $alternativeId) {
+                        alternative {
+                            id
+                            text
+                        }
+                    }
+                }
+            `,
+            {
+                alternativeId: alternative.id,
+            }
+        );
+        expect(false).toBeTruthy();
+    } catch (error) {
+        // TODO: Check for correct error message
+        const hasVoted = await ctx.prisma.hasVoted.count({
+            where: {
+                userId: ctx.userId,
+                votationId: votation.id,
+            },
+        });
+        expect(hasVoted).toBe(0);
+    }
+});
+
+it('should not cast vote successfully since user is not participant', async () => {
+    const meetingOwner = await ctx.prisma.user.create({
+        data: {
+            email: 'e@mail.com',
+            password: 'password',
+        },
+    });
+    const meeting = await createMeeting(meetingOwner.id, Role.ADMIN, true);
+    const votation = await createVotation(meeting.id, Status.ONGOING, 1);
+    const alternative = await createAlternative(votation.id, alternative1Text);
+    try {
+        await ctx.client.request(
+            gql`
+                mutation CastVote($alternativeId: String!) {
+                    castVote(alternativeId: $alternativeId) {
+                        alternative {
+                            id
+                            text
+                        }
+                    }
+                }
+            `,
+            {
+                alternativeId: alternative.id,
+            }
+        );
+        expect(false).toBeTruthy();
+    } catch (error) {
+        // TODO: Check for correct error message
+        const hasVoted = await ctx.prisma.hasVoted.count({
+            where: {
+                userId: ctx.userId,
+                votationId: votation.id,
+            },
+        });
+        expect(hasVoted).toBe(0);
+    }
+});
+
+it('should not cast vote successfully since user has already voted', async () => {
+    const meeting = await createMeeting(ctx.userId, Role.ADMIN, true);
+    const votation = await createVotation(meeting.id, Status.ONGOING, 1);
+    const alternative = await createAlternative(votation.id, alternative1Text);
+    await ctx.prisma.hasVoted.create({
+        data: {
+            votationId: votation.id,
+            userId: ctx.userId,
+        },
+    });
+    try {
+        await ctx.client.request(
+            gql`
+                mutation CastVote($alternativeId: String!) {
+                    castVote(alternativeId: $alternativeId) {
+                        alternative {
+                            id
+                            text
+                        }
+                    }
+                }
+            `,
+            {
+                alternativeId: alternative.id,
+            }
+        );
+        expect(false).toBeTruthy();
+    } catch (error) {
+        // TODO: Check for correct error message
+        const hasVoted = await ctx.prisma.hasVoted.count({
+            where: {
+                userId: ctx.userId,
+                votationId: votation.id,
+            },
+        });
+        expect(hasVoted).toBe(1);
+    }
+});
+
+it('should not cast vote successfully since the participant is not votingEligible', async () => {
+    const meeting = await createMeeting(ctx.userId, Role.ADMIN, false);
+    const votation = await createVotation(meeting.id, Status.ONGOING, 1);
+    const alternative = await createAlternative(votation.id, alternative1Text);
+    await ctx.prisma.hasVoted.create({
+        data: {
+            votationId: votation.id,
+            userId: ctx.userId,
+        },
+    });
+    try {
+        await ctx.client.request(
+            gql`
+                mutation CastVote($alternativeId: String!) {
+                    castVote(alternativeId: $alternativeId) {
+                        alternative {
+                            id
+                            text
+                        }
+                    }
+                }
+            `,
+            {
+                alternativeId: alternative.id,
+            }
+        );
+        expect(false).toBeTruthy();
+    } catch (error) {
+        // TODO: Check for correct error message
+        const hasVoted = await ctx.prisma.hasVoted.count({
+            where: {
+                userId: ctx.userId,
+                votationId: votation.id,
+            },
+        });
+        expect(hasVoted).toBe(1);
     }
 });

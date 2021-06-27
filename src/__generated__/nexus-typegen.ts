@@ -327,7 +327,6 @@ export interface NexusGenArgTypes {
     }
     castVote: { // args
       alternativeId: string; // String!
-      votationId: string; // String!
     }
     createAlternative: { // args
       text: string; // String!
