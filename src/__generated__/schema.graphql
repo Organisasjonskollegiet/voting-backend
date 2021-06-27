@@ -87,6 +87,11 @@ type Mutation {
   updateVotation(votation: UpdateVotationInput!): Votation
 }
 
+"""The payload of newVoteRegistered subscription"""
+type NewVoteRegistered {
+  numberOfVotes: Int!
+}
+
 type OwnerCannotBeRemovedFromParticipantError {
   message: String!
 }

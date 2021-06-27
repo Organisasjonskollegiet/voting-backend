@@ -2,6 +2,7 @@ import { inputObjectType, intArg, list, mutationField, nonNull, stringArg } from
 import { Vote } from './';
 import { Alternative, Votation } from './typedefs';
 import { MajorityType } from '../enums';
+import { pubsub } from '../../lib/pubsub';
 
 export const UpdateVotationInput = inputObjectType({
     name: 'UpdateVotationInput',
@@ -183,6 +184,7 @@ export const CastVoteMutation = mutationField('castVote', {
                 },
             }),
         ]);
+        await pubsub.publish('NEW_VOTE_REGISTERED', alternative.votationId);
         return vote;
     },
 });

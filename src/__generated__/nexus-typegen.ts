@@ -103,6 +103,9 @@ export interface NexusGenObjects {
     title: string; // String!
   }
   Mutation: {};
+  NewVoteRegistered: { // root type
+    numberOfVotes: number; // Int!
+  }
   OwnerCannotBeRemovedFromParticipantError: { // root type
     message: string; // String!
   }
@@ -189,6 +192,9 @@ export interface NexusGenFieldTypes {
     updateAlternative: NexusGenRootTypes['Alternative'] | null; // Alternative
     updateMeeting: NexusGenRootTypes['Meeting'] | null; // Meeting
     updateVotation: NexusGenRootTypes['Votation'] | null; // Votation
+  }
+  NewVoteRegistered: { // field return type
+    numberOfVotes: number; // Int!
   }
   OwnerCannotBeRemovedFromParticipantError: { // field return type
     message: string; // String!
@@ -277,6 +283,9 @@ export interface NexusGenFieldTypeNames {
     updateAlternative: 'Alternative'
     updateMeeting: 'Meeting'
     updateVotation: 'Votation'
+  }
+  NewVoteRegistered: { // field return type name
+    numberOfVotes: 'Int'
   }
   OwnerCannotBeRemovedFromParticipantError: { // field return type name
     message: 'String'
