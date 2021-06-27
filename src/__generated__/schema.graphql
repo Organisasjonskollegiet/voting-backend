@@ -9,6 +9,11 @@ type Alternative {
   votes: Int
 }
 
+input AlternativeInput {
+  id: String!
+  text: String!
+}
+
 input CreateMeetingInput {
   description: String! = "Ingen beskrivelse satt."
   organization: String!
@@ -65,7 +70,7 @@ type Mutation {
   createVotations(meetingId: String!, votations: [CreateVotationInput!]!): [Votation]
 
   """"""
-  deleteAlternative(id: String!): Alternative
+  deleteAlternatives(ids: [String!]!): [String]
 
   """"""
   deleteMeeting(id: String!): Meeting
@@ -74,7 +79,7 @@ type Mutation {
   deleteParticipant(meetingId: String!, userId: String!): DeleteParticipantResult
 
   """"""
-  deleteVotation(id: String!): Votation
+  deleteVotations(ids: [String!]!): [String]
 
   """"""
   updateAlternative(id: String!, text: String!): Alternative
@@ -83,7 +88,7 @@ type Mutation {
   updateMeeting(meeting: UpdateMeetingInput!): Meeting
 
   """"""
-  updateVotation(votation: UpdateVotationInput!): Votation
+  updateVotations(votations: [UpdateVotationInput!]!): [Votation]
 }
 
 type OwnerCannotBeRemovedFromParticipantError {
@@ -136,6 +141,7 @@ input UpdateMeetingInput {
 }
 
 input UpdateVotationInput {
+  alternatives: [AlternativeInput!]
   blankVotes: Boolean!
   description: String!
   hiddenVotes: Boolean!

@@ -1,7 +1,15 @@
-import { inputObjectType, intArg, list, mutationField, nonNull, stringArg } from 'nexus';
+import { inputObjectType, list, mutationField, nonNull, stringArg } from 'nexus';
 import { Vote } from './';
 import { Alternative, Votation } from './typedefs';
 import { MajorityType } from '../enums';
+
+export const AlternativeInput = inputObjectType({
+    name: 'AlternativeInput',
+    definition(t) {
+        t.nonNull.string('id');
+        t.nonNull.string('text');
+    },
+});
 
 export const UpdateVotationInput = inputObjectType({
     name: 'UpdateVotationInput',
@@ -15,6 +23,7 @@ export const UpdateVotationInput = inputObjectType({
         t.nonNull.field('majorityType', { type: MajorityType });
         t.nonNull.int('majorityThreshold');
         t.nonNull.int('index');
+        t.list.nonNull.field('alternatives', { type: AlternativeInput });
     },
 });
 
@@ -33,7 +42,7 @@ export const CreateVotationInput = inputObjectType({
     },
 });
 
-export const CreateVotationsMutatioon = mutationField('createVotations', {
+export const CreateVotationsMutation = mutationField('createVotations', {
     type: list(Votation),
     args: {
         meetingId: nonNull(stringArg()),
@@ -69,39 +78,81 @@ export const CreateVotationsMutatioon = mutationField('createVotations', {
     },
 });
 
-export const UpdateVotationMutation = mutationField('updateVotation', {
-    type: Votation,
+export const UpdateVotationsMutation = mutationField('updateVotations', {
+    type: list(Votation),
     description: '',
     args: {
-        votation: nonNull(UpdateVotationInput),
+        votations: nonNull(list(nonNull(UpdateVotationInput))),
     },
-    resolve: async (_, { votation }, ctx) => {
-        const updatedVotation = await ctx.prisma.votation.update({
-            data: {
-                ...votation,
-            },
-            where: {
-                id: votation.id,
-            },
-        });
-        return updatedVotation;
+    resolve: async (_, { votations }, ctx) => {
+        const promises = [];
+        const alternativePromises = [];
+        for (const votation of votations) {
+            if (votation.alternatives) {
+                for (const alternative of votation.alternatives) {
+                    alternativePromises.push(
+                        ctx.prisma.alternative.upsert({
+                            where: {
+                                id: alternative.id,
+                            },
+                            create: {
+                                text: alternative.text,
+                                votationId: votation.id,
+                            },
+                            update: {
+                                text: alternative.text,
+                            },
+                        })
+                    );
+                }
+            }
+            promises.push(
+                ctx.prisma.votation.update({
+                    where: {
+                        id: votation.id,
+                    },
+                    data: {
+                        title: votation.title,
+                        description: votation.description,
+                        index: votation.index,
+                        blankVotes: votation.blankVotes,
+                        hiddenVotes: votation.hiddenVotes,
+                        severalVotes: votation.severalVotes,
+                        majorityType: votation.majorityType,
+                        majorityThreshold: votation.majorityThreshold,
+                    },
+                })
+            );
+        }
+        await Promise.all(alternativePromises);
+        const resolved = await Promise.all(promises);
+        return resolved;
     },
 });
 
-export const DeleteVotationMutation = mutationField('deleteVotation', {
-    type: Votation,
+export const DeleteVotationsMutation = mutationField('deleteVotations', {
+    type: list('String'),
     description: '',
     args: {
-        id: nonNull(stringArg()),
+        ids: nonNull(list(nonNull(stringArg()))),
     },
-    resolve: async (_, { id }, ctx) => {
-        await ctx.prisma.alternative.deleteMany({ where: { votationId: id } });
-        const deletedVotation = await ctx.prisma.votation.delete({
-            where: {
-                id,
-            },
-        });
-        return deletedVotation;
+    resolve: async (_, { ids }, ctx) => {
+        const promises = [];
+        for (const id of ids) {
+            promises.push(
+                new Promise(async (resolve) => {
+                    await ctx.prisma.alternative.deleteMany({ where: { votationId: id } });
+                    const votation = await ctx.prisma.votation.delete({
+                        where: {
+                            id,
+                        },
+                    });
+                    resolve(votation.id);
+                })
+            );
+        }
+        const resolved = (await Promise.all(promises)) as string[];
+        return resolved;
     },
 });
 
@@ -139,19 +190,25 @@ export const UpdateAlternativeMutation = mutationField('updateAlternative', {
     },
 });
 
-export const DeleteAlternativeMutation = mutationField('deleteAlternative', {
-    type: Alternative,
+export const DeleteAlternativesMutation = mutationField('deleteAlternatives', {
+    type: list('String'),
     description: '',
     args: {
-        id: nonNull(stringArg()),
+        ids: nonNull(list(nonNull(stringArg()))),
     },
-    resolve: async (_, { id }, ctx) => {
-        const deletedAlternative = await ctx.prisma.alternative.delete({
-            where: {
-                id,
-            },
-        });
-        return deletedAlternative;
+    resolve: async (_, { ids }, ctx) => {
+        const promises = [];
+        for (const id of ids) {
+            promises.push(
+                ctx.prisma.alternative.delete({
+                    where: {
+                        id,
+                    },
+                })
+            );
+        }
+        const alternatives = await Promise.all(promises);
+        return alternatives.map((alternative) => alternative.id);
     },
 });
 
