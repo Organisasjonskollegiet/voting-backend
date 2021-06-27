@@ -1,13 +1,21 @@
 import { subscriptionField } from 'nexus';
 import { pubsub } from '../../lib/pubsub';
-import { NexusGenObjects } from '../../__generated__/nexus-typegen';
+import { NexusGenEnums } from '../../__generated__/nexus-typegen';
 
-// type NewVoteRegisteredPayload = NexusGenObjects['NewVoteRegisteredPayload'];
+type VotationStatus = NexusGenEnums['VotationStatus'];
 
 export const NewVoteRegistered = subscriptionField('newVoteRegistered', {
     type: 'Int',
     subscribe: () => pubsub.asyncIterator(['NEW_VOTE_REGISTERED']),
     resolve: async (voteCount: number, __, ___) => {
         return voteCount;
+    },
+});
+
+export const VotationStatusUpdated = subscriptionField('votationStatusUpdated', {
+    type: 'VotationStatus',
+    subscribe: () => pubsub.asyncIterator(['VOTATION_STATUS_UPDATED']),
+    resolve: async (status: VotationStatus, __, ___) => {
+        return status;
     },
 });

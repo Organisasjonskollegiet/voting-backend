@@ -222,6 +222,7 @@ export interface NexusGenFieldTypes {
   Subscription: { // field return type
     newVoteRegistered: number | null; // Int
     viewChanged: NexusGenEnums['ViewState'] | null; // ViewState
+    votationStatusUpdated: NexusGenEnums['VotationStatus'] | null; // VotationStatus
   }
   User: { // field return type
     email: string; // String!
@@ -315,6 +316,7 @@ export interface NexusGenFieldTypeNames {
   Subscription: { // field return type name
     newVoteRegistered: 'Int'
     viewChanged: 'ViewState'
+    votationStatusUpdated: 'VotationStatus'
   }
   User: { // field return type name
     email: 'String'
