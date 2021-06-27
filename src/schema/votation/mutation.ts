@@ -170,17 +170,19 @@ export const CastVoteMutation = mutationField('castVote', {
             },
         });
         if (!alternative) throw new Error();
-        await ctx.prisma.hasVoted.create({
-            data: {
-                userId: ctx.userId,
-                votationId: alternative.votationId,
-            },
-        });
-        const vote = await ctx.prisma.vote.create({
-            data: {
-                alternativeId,
-            },
-        });
+        const [__, vote] = await ctx.prisma.$transaction([
+            ctx.prisma.hasVoted.create({
+                data: {
+                    userId: ctx.userId,
+                    votationId: alternative.votationId,
+                },
+            }),
+            ctx.prisma.vote.create({
+                data: {
+                    alternativeId,
+                },
+            }),
+        ]);
         return vote;
     },
 });
