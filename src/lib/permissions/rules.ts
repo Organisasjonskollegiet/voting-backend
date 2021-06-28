@@ -46,6 +46,13 @@ export const isParticipantOfVotation = rule({ cache: 'contextual' })(async (_, {
 });
 
 /**
+ * Rule: The user is participant of the meeting the alternative is related to
+ */
+// export const isParticipantOfAlternativeId = rule({ cache: 'contextual' })(async (_, { alternativeId }, ctx: Context) => {
+
+// });
+
+/**
  * Rule: The user is an Counter of the meeting
  */
 export const isCounterOfMeeting = rule({ cache: 'strict' })(async (_, { meetingId }, ctx: Context) => {

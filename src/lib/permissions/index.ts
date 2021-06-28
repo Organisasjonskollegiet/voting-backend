@@ -3,6 +3,7 @@ import {
     isAuthenticated,
     isParticipantOfMeeting,
     isParticipantOfVotation,
+    // isParticipantOfAlternativeId,
     isCounterOfMeeting,
     isAdminOfMeetingId,
     isAdminOfMeetingByObject,
@@ -35,7 +36,7 @@ const permissions = shield(
         },
         Subscription: {
             viewChanged: allow,
-            newVoteRegistered: allow,
+            newVoteRegistered: allow /*and(isParticipantOfAlternativeId)*/,
         },
         Alternative: {
             votes: or(isAdminOfMeetingId, isCounterOfMeeting),

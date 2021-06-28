@@ -139,9 +139,9 @@ enum Role {
 }
 
 type Subscription {
-  newVoteRegistered: Int
+  newVoteRegistered(votationId: String!): Int
   viewChanged: ViewState
-  votationStatusUpdated: VotationStatus
+  votationStatusUpdated(id: String!): VotationStatus
 }
 
 input UpdateMeetingInput {

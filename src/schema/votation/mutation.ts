@@ -246,7 +246,7 @@ export const CastVoteMutation = mutationField('castVote', {
                 votationId: alternative.votationId,
             },
         });
-        await pubsub.publish('NEW_VOTE_REGISTERED', voteCount);
+        await pubsub.publish(`NEW_VOTE_REGISTERED_FOR_${alternative.votationId}`, voteCount);
         return vote;
     },
 });
