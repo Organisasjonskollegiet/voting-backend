@@ -1,4 +1,4 @@
-import { subscriptionField } from 'nexus';
+import { subscriptionField, nonNull, stringArg } from 'nexus';
 import { pubsub } from '../../lib/pubsub';
 import { NexusGenObjects } from '../../__generated__/nexus-typegen';
 
@@ -6,7 +6,12 @@ import { NexusGenObjects } from '../../__generated__/nexus-typegen';
 
 export const NewVoteRegistered = subscriptionField('newVoteRegistered', {
     type: 'Int',
-    subscribe: () => pubsub.asyncIterator(['NEW_VOTE_REGISTERED']),
+    args: {
+        votationId: nonNull(stringArg()),
+    },
+    subscribe: async (_, { votationId }, ___) => {
+        return pubsub.asyncIterator([`NEW_VOTE_REGISTERED_FOR_${votationId}`]);
+    },
     resolve: async (voteCount: number, __, ___) => {
         return voteCount;
     },

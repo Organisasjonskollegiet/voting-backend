@@ -139,7 +139,7 @@ enum Role {
 }
 
 type Subscription {
-  newVoteRegistered: Int
+  newVoteRegistered(votationId: String!): Int
   viewChanged: ViewState
 }
 

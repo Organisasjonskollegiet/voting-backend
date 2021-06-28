@@ -411,6 +411,11 @@ export interface NexusGenArgTypes {
       votationId: string; // ID!
     }
   }
+  Subscription: {
+    newVoteRegistered: { // args
+      votationId: string; // String!
+    }
+  }
 }
 
 export interface NexusGenAbstractTypeMembers {
