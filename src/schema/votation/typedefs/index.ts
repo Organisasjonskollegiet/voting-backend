@@ -92,3 +92,5 @@ export const NewVoteRegisteredPayload = objectType({
         t.nonNull.int('votingEligibleCount');
     },
 });
+
+export * from './results';

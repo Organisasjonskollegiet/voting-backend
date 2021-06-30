@@ -33,6 +33,8 @@ const simpleMock = {
         order: () => casual.integer,
         status: () => votationStatusArray[casual.integer(0, 2)],
         alternatives: () => new Array(casual.integer(2, 6)).fill({ __typename: 'Alternative' }),
+        hiddenVotes: () => casual.boolean,
+        severalVotes: () => casual.boolean,
     }),
     Alternative: () => ({
         id: () => casual.uuid,

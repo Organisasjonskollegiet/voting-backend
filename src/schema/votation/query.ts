@@ -4,7 +4,7 @@ import { Alternative, Votation } from './typedefs';
 export const GetVotationById = queryField('votationById', {
     type: Votation,
     args: {
-        votationId: nonNull(idArg()),
+        votationId: nonNull(stringArg()),
     },
     resolve: async (_, { votationId }, ctx) => {
         const votation = await ctx.prisma.votation.findUnique({ where: { id: votationId } });
