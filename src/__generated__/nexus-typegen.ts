@@ -75,10 +75,6 @@ export interface NexusGenInputs {
     severalVotes: boolean; // Boolean!
     title: string; // String!
   }
-  UpdateVotationStatusInput: { // input type
-    id: string; // String!
-    status: NexusGenEnums['VotationStatus']; // VotationStatus!
-  }
 }
 
 export interface NexusGenEnums {
@@ -367,7 +363,8 @@ export interface NexusGenArgTypes {
       meeting: NexusGenInputs['UpdateMeetingInput']; // UpdateMeetingInput!
     }
     updateVotationStatus: { // args
-      votation: NexusGenInputs['UpdateVotationStatusInput']; // UpdateVotationStatusInput!
+      id: string; // String!
+      status: NexusGenEnums['VotationStatus']; // VotationStatus!
     }
     updateVotations: { // args
       votations: NexusGenInputs['UpdateVotationInput'][]; // [UpdateVotationInput!]!

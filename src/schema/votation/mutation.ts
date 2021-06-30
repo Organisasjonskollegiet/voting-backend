@@ -27,14 +27,6 @@ export const UpdateVotationInput = inputObjectType({
     },
 });
 
-export const UpdateVotationStatusInput = inputObjectType({
-    name: 'UpdateVotationStatusInput',
-    definition(t) {
-        t.nonNull.string('id');
-        t.nonNull.field('status', { type: VotationStatus });
-    },
-});
-
 export const CreateVotationInput = inputObjectType({
     name: 'CreateVotationInput',
     definition(t) {
@@ -142,15 +134,16 @@ export const UpdateVotationStatusMutation = mutationField('updateVotationStatus'
     type: Votation,
     description: '',
     args: {
-        votation: nonNull(UpdateVotationStatusInput),
+        id: nonNull(stringArg()),
+        status: nonNull(VotationStatus),
     },
-    resolve: async (_, { votation }, ctx) => {
+    resolve: async (_, { id, status }, ctx) => {
         const updatedVotation = await ctx.prisma.votation.update({
             data: {
-                ...votation,
+                status,
             },
             where: {
-                id: votation.id,
+                id,
             },
         });
         return updatedVotation;

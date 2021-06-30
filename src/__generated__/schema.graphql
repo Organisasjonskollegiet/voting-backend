@@ -94,7 +94,7 @@ type Mutation {
   updateMeeting(meeting: UpdateMeetingInput!): Meeting
 
   """"""
-  updateVotationStatus(votation: UpdateVotationStatusInput!): Votation
+  updateVotationStatus(id: String!, status: VotationStatus!): Votation
 
   """"""
   updateVotations(votations: [UpdateVotationInput!]!): [Votation]
@@ -154,11 +154,6 @@ input UpdateVotationInput {
   majorityType: MajorityType!
   severalVotes: Boolean!
   title: String!
-}
-
-input UpdateVotationStatusInput {
-  id: String!
-  status: VotationStatus!
 }
 
 type User {
