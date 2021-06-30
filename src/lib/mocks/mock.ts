@@ -1,5 +1,9 @@
-import { Role, Status } from '@prisma/client';
+import { Role, VotationStatus, MeetingStatus } from '@prisma/client';
 import casual from 'casual';
+
+const meetingStatusArray = [MeetingStatus.ENDED, MeetingStatus.ONGOING, MeetingStatus.UPCOMING];
+
+const votationStatusArray = [MeetingStatus.ENDED, MeetingStatus.ONGOING, MeetingStatus.UPCOMING];
 
 const simpleMock = {
     User: () => ({
@@ -15,7 +19,7 @@ const simpleMock = {
         owner: () => ({ __typename: 'User' }),
         participants: () => new Array(casual.integer(2, 6)).fill({ __typename: 'Participant' }),
         votations: () => new Array(casual.integer(2, 6)).fill({ __typename: 'Votation' }),
-        status: () => [Status.ENDED, Status.ONGOING, Status.UPCOMING][casual.integer(0, 2)],
+        status: () => meetingStatusArray[Math.floor(Math.random() * 3)],
         organization: () => casual._company_name(),
     }),
     Votation: () => ({
@@ -27,7 +31,7 @@ const simpleMock = {
         hasVoted: () => new Array(casual.integer(2, 6)).fill({ __typename: 'User' }),
         majorityThreshold: () => casual.integer(40, 80),
         order: () => casual.integer,
-        status: () => [Status.ONGOING, Status.UPCOMING, Status.ENDED][casual.integer(0, 2)],
+        status: () => votationStatusArray[casual.integer(0, 2)],
         alternatives: () => new Array(casual.integer(2, 6)).fill({ __typename: 'Alternative' }),
         hiddenVotes: () => casual.boolean,
         severalVotes: () => casual.boolean,

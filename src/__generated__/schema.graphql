@@ -9,6 +9,11 @@ type Alternative {
   votes: Int
 }
 
+input AlternativeInput {
+  id: String!
+  text: String!
+}
+
 input CreateMeetingInput {
   description: String! = "Ingen beskrivelse satt."
   organization: String!
@@ -49,15 +54,21 @@ type Meeting {
   owner: User
   participants: [Participant]!
   startTime: DateTime!
-  status: Status!
+  status: MeetingStatus!
   title: String!
   votations: [Votation]
+}
+
+enum MeetingStatus {
+  ENDED
+  ONGOING
+  UPCOMING
 }
 
 type Mutation {
   """"""
   addParticipants(meetingId: String!, participants: [ParticipantInput!]!): Int
-  castVote(alternativeId: String!, votationId: String!): Vote
+  castVote(alternativeId: String!): Vote
   createAlternative(text: String!, votationId: String!): Alternative
 
   """"""
@@ -65,7 +76,7 @@ type Mutation {
   createVotations(meetingId: String!, votations: [CreateVotationInput!]!): [Votation]
 
   """"""
-  deleteAlternative(id: String!): Alternative
+  deleteAlternatives(ids: [String!]!): [String]
 
   """"""
   deleteMeeting(id: String!): Meeting
@@ -74,7 +85,7 @@ type Mutation {
   deleteParticipant(meetingId: String!, userId: String!): DeleteParticipantResult
 
   """"""
-  deleteVotation(id: String!): Votation
+  deleteVotations(ids: [String!]!): [String]
 
   """"""
   updateAlternative(id: String!, text: String!): Alternative
@@ -83,10 +94,10 @@ type Mutation {
   updateMeeting(meeting: UpdateMeetingInput!): Meeting
 
   """"""
-  updateVotation(votation: UpdateVotationInput!): Votation
+  updateVotationStatus(votation: UpdateVotationStatusInput!): Votation
 
   """"""
-  updateVotationStatus(votation: UpdateVotationStatusInput!): Votation
+  updateVotations(votations: [UpdateVotationInput!]!): [Votation]
 }
 
 type OwnerCannotBeRemovedFromParticipantError {
@@ -123,22 +134,17 @@ enum Role {
   PARTICIPANT
 }
 
-enum Status {
-  ENDED
-  ONGOING
-  UPCOMING
-}
-
 input UpdateMeetingInput {
   description: String
   id: String!
   organization: String
   startTime: DateTime
-  status: Status
+  status: MeetingStatus
   title: String
 }
 
 input UpdateVotationInput {
+  alternatives: [AlternativeInput!]
   blankVotes: Boolean!
   description: String!
   hiddenVotes: Boolean!
@@ -152,7 +158,7 @@ input UpdateVotationInput {
 
 input UpdateVotationStatusInput {
   id: String!
-  status: Status!
+  status: VotationStatus!
 }
 
 type User {
@@ -178,8 +184,15 @@ type Votation {
   meetingId: String!
   order: Int
   severalVotes: Boolean!
-  status: Status!
+  status: VotationStatus!
   title: String!
+}
+
+enum VotationStatus {
+  CHECKING_RESULT
+  OPEN
+  PUBLISHED_RESULT
+  UPCOMING
 }
 
 type Vote {

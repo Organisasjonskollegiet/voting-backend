@@ -1,6 +1,6 @@
 import { createTestContext } from '../../../lib/tests/testContext';
 import { gql } from 'graphql-request';
-import { Role, Status } from '.prisma/client';
+import { Role, MeetingStatus } from '.prisma/client';
 import casual from 'casual';
 const ctx = createTestContext();
 
@@ -9,42 +9,32 @@ interface StaticMeetingDataType {
     organization: string;
     startTime: string;
     description: string;
-    status: Status;
+    status: MeetingStatus;
 }
 
-const meetingTitle = 'title';
-const meetingOrganization = 'Organisasjonskollegiet';
-const meetingStartTime = '2021-04-13T11:45:43.000Z';
-const meetingDescription = 'description';
-const meetingStatus = 'UPCOMING';
 const createMeetingVariables = {
     meeting: {
-        title: meetingTitle,
-        organization: meetingOrganization,
-        startTime: meetingStartTime,
-        description: meetingDescription,
+        title: 'title',
+        organization: 'Organisasjonskollegiet',
+        startTime: '2021-04-13T11:45:43.000Z',
+        description: 'description',
     },
 };
 
-const updatedMeetingTitle = 'new title';
-const updatedMeetingOrganization = 'OrgKoll';
-const updatedMeetingStartTime = '2021-05-13T14:06:30.000Z';
-const updatedMeetingDescription = 'New description';
-const updatedMeetingStatus = 'ONGOING';
 const updatedMeetingInfo = {
-    title: updatedMeetingTitle,
-    organization: updatedMeetingOrganization,
-    startTime: updatedMeetingStartTime,
-    description: updatedMeetingDescription,
-    status: updatedMeetingStatus,
+    title: 'new title',
+    organization: 'Junior Consulting AS',
+    startTime: '2021-05-13T14:06:30.000Z',
+    description: 'New description',
+    status: MeetingStatus.ONGOING,
 };
 
 const staticMeetingData: StaticMeetingDataType = {
-    title: meetingTitle,
-    organization: meetingOrganization,
-    startTime: meetingStartTime,
-    description: meetingDescription,
-    status: meetingStatus,
+    title: 'title',
+    organization: 'Organisasjonskollegiet',
+    startTime: '2021-05-13T14:06:30.000Z',
+    description: 'description',
+    status: MeetingStatus.UPCOMING,
 };
 
 const createMeeting = async (ownerId: string, role: Role) => {
@@ -148,7 +138,7 @@ it('should return meetings where you are admin successfully', async () => {
         id: meeting.id,
         title: meeting.title,
         organization: meeting.organization,
-        startTime: meetingStartTime,
+        startTime: staticMeetingData.startTime,
         status: meeting.status,
         description: meeting.description,
         owner: {
@@ -181,7 +171,7 @@ it('should return meetings where you are counter successfully', async () => {
         id: meeting.id,
         title: meeting.title,
         organization: meeting.organization,
-        startTime: meetingStartTime,
+        startTime: staticMeetingData.startTime,
         status: meeting.status,
         description: meeting.description,
         owner: {
@@ -214,7 +204,7 @@ it('should return meetings where you are participant successfully', async () => 
         id: meeting.id,
         title: meeting.title,
         organization: meeting.organization,
-        startTime: meetingStartTime,
+        startTime: staticMeetingData.startTime,
         status: meeting.status,
         description: meeting.description,
         owner: {
@@ -279,7 +269,7 @@ it('should return a meeting by id successfully', async () => {
         id: meeting.id,
         title: meeting.title,
         organization: meeting.organization,
-        startTime: meetingStartTime,
+        startTime: staticMeetingData.startTime,
         status: meeting.status,
         description: meeting.description,
         owner: {
