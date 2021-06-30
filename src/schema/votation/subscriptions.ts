@@ -9,7 +9,7 @@ export const NewVoteRegistered = subscriptionField('newVoteRegistered', {
     args: {
         votationId: nonNull(stringArg()),
     },
-    subscribe: async (_, { votationId }, ctx) => {
+    subscribe: async (_, { votationId }, ___) => {
         return pubsub.asyncIterator([`NEW_VOTE_REGISTERED_FOR_${votationId}`]);
     },
     resolve: async (voteCount: number, __, ___) => {
