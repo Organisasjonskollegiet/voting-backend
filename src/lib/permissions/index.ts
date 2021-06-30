@@ -1,4 +1,4 @@
-import { shield, and, or } from 'graphql-shield';
+import { shield, and, or, allow } from 'graphql-shield';
 import {
     isAuthenticated,
     isParticipantOfMeeting,
@@ -34,6 +34,10 @@ const permissions = shield(
             deleteAlternatives: and(isAdminOfAlternatives),
             deleteVotations: and(isAdminOfVotationsById),
             deleteMeeting: and(isOwnerOfMeeting),
+        },
+        Subscription: {
+            viewChanged: allow,
+            newVoteRegistered: allow,
         },
         Alternative: {
             votes: or(isAdminOfMeetingId, isCounterOfMeeting),

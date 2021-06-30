@@ -19,9 +19,6 @@ export const createApollo = (prisma: PrismaClient) => {
         schema: protectedSchema,
         mocks: process.env.MOCKING == 'true' && simpleMock,
         tracing: process.env.NODE_ENV == 'development',
-        subscriptions: {
-            path: '/subscriptions',
-        },
     });
     return server;
 };

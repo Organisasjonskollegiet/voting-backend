@@ -3269,7 +3269,7 @@ graphql-shield@^7.5.0:
     object-hash "^2.0.3"
     yup "^0.31.0"
 
-graphql-subscriptions@^1.0.0:
+graphql-subscriptions@^1.0.0, graphql-subscriptions@^1.2.1:
   version "1.2.1"
   resolved "https://registry.yarnpkg.com/graphql-subscriptions/-/graphql-subscriptions-1.2.1.tgz#2142b2d729661ddf967b7388f7cf1dd4cf2e061d"
   integrity sha512-95yD/tKi24q8xYa7Q9rhQN16AYj5wPbrb8tmHGM3WRc9EBmWrG/0kkMl+tQG8wcEuE9ibR4zyOM31p5Sdr2v4g==
@@ -3303,7 +3303,7 @@ graphql-upload@^11.0.0:
     isobject "^4.0.0"
     object-path "^0.11.4"
 
-graphql-ws@^4.3.2, graphql-ws@^4.4.1:
+graphql-ws@^4.4.1:
   version "4.4.2"
   resolved "https://registry.yarnpkg.com/graphql-ws/-/graphql-ws-4.4.2.tgz#f2d83f1863ba3069117199311d664fd28f4aaa8e"
   integrity sha512-Cz+t1w+8+tiHIKzcz45tMwrxJpPSQ7KNjQrfN8ADAELECkkBB7aSvAgpShWz0Tne8teH/UxzJsULObLVq5eMvQ==
@@ -6080,7 +6080,7 @@ strip-json-comments@^3.1.0, strip-json-comments@^3.1.1:
   resolved "https://registry.yarnpkg.com/strip-json-comments/-/strip-json-comments-3.1.1.tgz#31f1281b3832630434831c310c01cccda8cbe006"
   integrity sha512-6fPc+R4ihwqP6N/aIv2f1gMH8lOVtWQHoqC4yK6oSDVVocumAsfCqjkXnqiYMhmMwS/mEHLp7Vehlt3ql6lEig==
 
-subscriptions-transport-ws@^0.9.11, subscriptions-transport-ws@^0.9.16:
+subscriptions-transport-ws@^0.9.11, subscriptions-transport-ws@^0.9.16, subscriptions-transport-ws@^0.9.18:
   version "0.9.18"
   resolved "https://registry.yarnpkg.com/subscriptions-transport-ws/-/subscriptions-transport-ws-0.9.18.tgz#bcf02320c911fbadb054f7f928e51c6041a37b97"
   integrity sha512-tztzcBTNoEbuErsVQpTN2xUNN/efAZXyCyL5m3x4t6SKrEiTL2N8SaKWBFWM4u56pL79ULif3zjyeq+oV+nOaA==

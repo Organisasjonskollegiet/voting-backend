@@ -1,5 +1,6 @@
 import { inputObjectType, list, mutationField, nonNull, stringArg } from 'nexus';
 import { Vote } from './';
+import { pubsub } from '../../lib/pubsub';
 import { Alternative, UpdateVotationStatusResult, Votation, MaxOneOpenVotationError } from './typedefs';
 import { MajorityType, VotationStatus } from '../enums';
 
@@ -279,6 +280,12 @@ export const CastVoteMutation = mutationField('castVote', {
                 },
             }),
         ]);
+        const voteCount = await ctx.prisma.hasVoted.count({
+            where: {
+                votationId: alternative.votationId,
+            },
+        });
+        await pubsub.publish(`NEW_VOTE_REGISTERED_FOR_${alternative.votationId}`, voteCount);
         return vote;
     },
 });
