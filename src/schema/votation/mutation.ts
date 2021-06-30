@@ -1,8 +1,8 @@
 import { inputObjectType, list, mutationField, nonNull, stringArg } from 'nexus';
 import { Vote } from './';
-import { Alternative, Votation } from './typedefs';
-import { MajorityType } from '../enums';
 import { pubsub } from '../../lib/pubsub';
+import { Alternative, UpdateVotationStatusResult, Votation, MaxOneOpenVotationError } from './typedefs';
+import { MajorityType, VotationStatus } from '../enums';
 
 export const AlternativeInput = inputObjectType({
     name: 'AlternativeInput',
@@ -128,6 +128,45 @@ export const UpdateVotationsMutation = mutationField('updateVotations', {
         await Promise.all(alternativePromises);
         const resolved = await Promise.all(promises);
         return resolved;
+    },
+});
+
+export const UpdateVotationStatusMutation = mutationField('updateVotationStatus', {
+    type: UpdateVotationStatusResult,
+    description: '',
+    args: {
+        id: nonNull(stringArg()),
+        status: nonNull(VotationStatus),
+    },
+    resolve: async (_, { id, status }, ctx) => {
+        const votation = await ctx.prisma.votation.findUnique({
+            where: {
+                id,
+            },
+        });
+        if (status === 'OPEN') {
+            const openVotationsForMeeting = await ctx.prisma.votation.count({
+                where: {
+                    meetingId: votation?.meetingId,
+                    status: 'OPEN',
+                },
+            });
+            if (openVotationsForMeeting > 0) {
+                return {
+                    __typename: 'MaxOneOpenVotationError',
+                    message: 'Møtet kan kun ha en åpen votering om gangen',
+                };
+            }
+        }
+        const updatedVotation = await ctx.prisma.votation.update({
+            data: {
+                status,
+            },
+            where: {
+                id,
+            },
+        });
+        return { __typename: 'Votation', ...updatedVotation };
     },
 });
 

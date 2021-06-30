@@ -108,20 +108,6 @@ export const isAdminOfVotationsById = rule({ cache: 'strict' })(async (_, { ids 
 });
 
 /**
- * Rule: The user is an Admin of the meeting where meeting id is input parameter
- */
-export const isAdminOfMeetingId = rule({ cache: 'strict' })(async (_, { meetingId }, ctx: Context) => {
-    return await checkIsAdminOfMeetingId(meetingId, ctx);
-});
-
-/**
- * Rule: The user is an Admin of the meeting where meeting object is input parameter
- */
-export const isAdminOfMeetingByObject = rule({ cache: 'strict' })(async (_, { meeting }, ctx: Context) => {
-    return await checkIsAdminOfMeetingId(meeting.id, ctx);
-});
-
-/**
  * Rule: The user is an Admin of the meeting that the votation belongs to
  */
 export const isAdminOfVotationById = rule({ cache: 'strict' })(async (_, { id }, ctx: Context) => {
@@ -144,6 +130,20 @@ export const isAdminOfVotationByObject = rule({ cache: 'strict' })(async (_, { v
  */
 export const isAdminOfVotationByMeetingId = rule({ cache: 'strict' })(async (_, { votation }, ctx: Context) => {
     return await checkIsAdminOfMeetingId(votation.meetingId, ctx);
+});
+
+/**
+ * Rule: The user is an Admin of the meeting where meeting id is input parameter
+ */
+export const isAdminOfMeetingId = rule({ cache: 'strict' })(async (_, { meetingId }, ctx: Context) => {
+    return await checkIsAdminOfMeetingId(meetingId, ctx);
+});
+
+/**
+ * Rule: The user is an Admin of the meeting where meeting object is input parameter
+ */
+export const isAdminOfMeetingByObject = rule({ cache: 'strict' })(async (_, { meeting }, ctx: Context) => {
+    return await checkIsAdminOfMeetingId(meeting.id, ctx);
 });
 
 /**

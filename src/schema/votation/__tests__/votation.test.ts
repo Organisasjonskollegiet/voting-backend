@@ -23,51 +23,32 @@ interface StaticVotationDataType {
     majorityThreshold: number;
 }
 
-const organization = 'organization';
-const meetingTitle = 'test get votation';
-const meetingStartTime = '2021-04-13T11:29:58.000Z';
-const meetingDescription = 'test get meeting description';
-const meetingStatus = VotationStatus.UPCOMING;
 const staticMeetingData: StaticMeetingDataType = {
-    organization,
-    title: meetingTitle,
-    startTime: meetingStartTime,
-    description: meetingDescription,
-    status: meetingStatus,
+    organization: 'organization',
+    title: 'test title',
+    startTime: '2021-04-13T11:29:58.000Z',
+    description: 'test description',
+    status: MeetingStatus.UPCOMING,
 };
 
-const votationTitle = 'test votation title';
-const votationDescription = 'test votation description';
-const majorityType = 'SIMPLE';
-const blankVotes = true;
-const hiddenVotes = true;
-const severalVotes = true;
-const majorityThreshold = 50;
 const staticVotationData: StaticVotationDataType = {
-    title: votationTitle,
-    description: votationDescription,
-    blankVotes,
-    hiddenVotes,
-    severalVotes,
-    majorityType,
-    majorityThreshold,
+    title: 'test votation title',
+    description: 'test votation description',
+    blankVotes: true,
+    hiddenVotes: true,
+    severalVotes: true,
+    majorityType: MajorityType.SIMPLE,
+    majorityThreshold: 50,
 };
 
-const updatedVotationTitle = 'updated votation title';
-const updatedVotationDescription = 'updated votation description';
-const updatedMajorityType = 'QUALIFIED';
-const updatedBlankVotes = false;
-const updatedHiddenVotes = false;
-const updatedSeveralVotes = false;
-const updatedMajorityThreshold = 60;
 const updatedStaticVotationData: StaticVotationDataType = {
-    title: updatedVotationTitle,
-    description: updatedVotationDescription,
-    blankVotes: updatedBlankVotes,
-    hiddenVotes: updatedHiddenVotes,
-    severalVotes: updatedSeveralVotes,
-    majorityType: updatedMajorityType,
-    majorityThreshold: updatedMajorityThreshold,
+    title: 'updated votation title',
+    description: 'updated votation description',
+    blankVotes: false,
+    hiddenVotes: false,
+    severalVotes: false,
+    majorityType: MajorityType.QUALIFIED,
+    majorityThreshold: 67,
 };
 
 const alternative1Text = 'alternative1 text';
@@ -129,7 +110,7 @@ it('should return votation by id', async () => {
     const votationId = votation.id;
     const getVotation = await ctx.client.request(
         gql`
-            query GetVotationById($votationId: ID!) {
+            query GetVotationById($votationId: String!) {
                 votationById(votationId: $votationId) {
                     id
                     title
@@ -160,7 +141,7 @@ it('should throw error from votation by id', async () => {
     try {
         await ctx.client.request(
             gql`
-                query GetVotationById($votationId: ID!) {
+                query GetVotationById($votationId: String!) {
                     votationById(votationId: $votationId) {
                         id
                         title
@@ -478,6 +459,92 @@ it('should not update votations successfully', async () => {
                 }
             `,
             variables
+        );
+        expect(false).toBeTruthy();
+    } catch (error) {
+        expect(error.message).toContain('Not Authorised!');
+    }
+});
+
+it('should update votation status successfully', async () => {
+    const meeting = await createMeeting(ctx.userId, Role.ADMIN, true);
+    const votation = await createVotation(meeting.id, VotationStatus.UPCOMING, 1);
+    const newStatus = VotationStatus.OPEN;
+    const updateVotationStatus = await ctx.client.request(
+        gql`
+            mutation UpdateVotationStatus($id: String!, $status: VotationStatus!) {
+                updateVotationStatus(id: $id, status: $status) {
+                    __typename
+                    ... on Votation {
+                        id
+                        status
+                    }
+                    ... on MaxOneOpenVotationError {
+                        message
+                    }
+                }
+            }
+        `,
+        {
+            id: votation.id,
+            status: newStatus,
+        }
+    );
+    expect(updateVotationStatus.updateVotationStatus.__typename).toBe('Votation');
+    expect(updateVotationStatus.updateVotationStatus.status).toBe(newStatus);
+});
+
+it('should return MaxOneOpenVotationStatus trying to open votation', async () => {
+    const meeting = await createMeeting(ctx.userId, Role.ADMIN, true);
+    await createVotation(meeting.id, VotationStatus.OPEN, 1);
+    const votation = await createVotation(meeting.id, VotationStatus.UPCOMING, 2);
+    const updateVotationStatus = await ctx.client.request(
+        gql`
+            mutation UpdateVotationStatus($id: String!, $status: VotationStatus!) {
+                updateVotationStatus(id: $id, status: $status) {
+                    __typename
+                    ... on Votation {
+                        id
+                        status
+                    }
+                    ... on MaxOneOpenVotationError {
+                        message
+                    }
+                }
+            }
+        `,
+        {
+            id: votation.id,
+            status: VotationStatus.OPEN,
+        }
+    );
+    expect(updateVotationStatus.updateVotationStatus.__typename).toBe('MaxOneOpenVotationError');
+});
+
+it('should return Not Authorised trying to update votation status', async () => {
+    const meeting = await createMeeting(ctx.userId, Role.COUNTER, true);
+    const votation = await createVotation(meeting.id, VotationStatus.UPCOMING, 1);
+    const newStatus = VotationStatus.OPEN;
+    try {
+        await ctx.client.request(
+            gql`
+                mutation UpdateVotationStatus($id: String!, $status: VotationStatus!) {
+                    updateVotationStatus(id: $id, status: $status) {
+                        __typename
+                        ... on Votation {
+                            id
+                            status
+                        }
+                        ... on MaxOneOpenVotationError {
+                            message
+                        }
+                    }
+                }
+            `,
+            {
+                id: votation.id,
+                status: newStatus,
+            }
         );
         expect(false).toBeTruthy();
     } catch (error) {
