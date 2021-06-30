@@ -110,7 +110,7 @@ it('should return votation by id', async () => {
     const votationId = votation.id;
     const getVotation = await ctx.client.request(
         gql`
-            query GetVotationById($votationId: ID!) {
+            query GetVotationById($votationId: String!) {
                 votationById(votationId: $votationId) {
                     id
                     title
@@ -141,7 +141,7 @@ it('should throw error from votation by id', async () => {
     try {
         await ctx.client.request(
             gql`
-                query GetVotationById($votationId: ID!) {
+                query GetVotationById($votationId: String!) {
                     votationById(votationId: $votationId) {
                         id
                         title
@@ -459,6 +459,92 @@ it('should not update votations successfully', async () => {
                 }
             `,
             variables
+        );
+        expect(false).toBeTruthy();
+    } catch (error) {
+        expect(error.message).toContain('Not Authorised!');
+    }
+});
+
+it('should update votation status successfully', async () => {
+    const meeting = await createMeeting(ctx.userId, Role.ADMIN, true);
+    const votation = await createVotation(meeting.id, VotationStatus.UPCOMING, 1);
+    const newStatus = VotationStatus.OPEN;
+    const updateVotationStatus = await ctx.client.request(
+        gql`
+            mutation UpdateVotationStatus($id: String!, $status: VotationStatus!) {
+                updateVotationStatus(id: $id, status: $status) {
+                    __typename
+                    ... on Votation {
+                        id
+                        status
+                    }
+                    ... on MaxOneOpenVotationError {
+                        message
+                    }
+                }
+            }
+        `,
+        {
+            id: votation.id,
+            status: newStatus,
+        }
+    );
+    expect(updateVotationStatus.updateVotationStatus.__typename).toBe('Votation');
+    expect(updateVotationStatus.updateVotationStatus.status).toBe(newStatus);
+});
+
+it('should return MaxOneOpenVotationStatus trying to open votation', async () => {
+    const meeting = await createMeeting(ctx.userId, Role.ADMIN, true);
+    await createVotation(meeting.id, VotationStatus.OPEN, 1);
+    const votation = await createVotation(meeting.id, VotationStatus.UPCOMING, 2);
+    const updateVotationStatus = await ctx.client.request(
+        gql`
+            mutation UpdateVotationStatus($id: String!, $status: VotationStatus!) {
+                updateVotationStatus(id: $id, status: $status) {
+                    __typename
+                    ... on Votation {
+                        id
+                        status
+                    }
+                    ... on MaxOneOpenVotationError {
+                        message
+                    }
+                }
+            }
+        `,
+        {
+            id: votation.id,
+            status: VotationStatus.OPEN,
+        }
+    );
+    expect(updateVotationStatus.updateVotationStatus.__typename).toBe('MaxOneOpenVotationError');
+});
+
+it('should return Not Authorised trying to update votation status', async () => {
+    const meeting = await createMeeting(ctx.userId, Role.COUNTER, true);
+    const votation = await createVotation(meeting.id, VotationStatus.UPCOMING, 1);
+    const newStatus = VotationStatus.OPEN;
+    try {
+        await ctx.client.request(
+            gql`
+                mutation UpdateVotationStatus($id: String!, $status: VotationStatus!) {
+                    updateVotationStatus(id: $id, status: $status) {
+                        __typename
+                        ... on Votation {
+                            id
+                            status
+                        }
+                        ... on MaxOneOpenVotationError {
+                            message
+                        }
+                    }
+                }
+            `,
+            {
+                id: votation.id,
+                status: newStatus,
+            }
         );
         expect(false).toBeTruthy();
     } catch (error) {

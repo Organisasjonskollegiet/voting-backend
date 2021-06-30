@@ -83,3 +83,5 @@ export const Alternative = objectType({
         });
     },
 });
+
+export * from './results';
