@@ -38,7 +38,8 @@ const permissions = shield(
         },
         Subscription: {
             viewChanged: allow,
-            newVoteRegistered: allow /*and(isParticipantOfAlternativeId)*/,
+            newVoteRegistered: allow,
+            votationStatusUpdated: allow,
         },
         Alternative: {
             votes: or(isAdminOfMeetingId, isCounterOfMeeting),
