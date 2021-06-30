@@ -47,6 +47,10 @@ enum MajorityType {
   SIMPLE
 }
 
+type MaxOneOpenVotationError {
+  message: String!
+}
+
 type Meeting {
   description: String
   id: ID!
@@ -94,7 +98,7 @@ type Mutation {
   updateMeeting(meeting: UpdateMeetingInput!): Meeting
 
   """"""
-  updateVotationStatus(id: String!, status: VotationStatus!): Votation
+  updateVotationStatus(id: String!, status: VotationStatus!): UpdateVotationStatusResult
 
   """"""
   updateVotations(votations: [UpdateVotationInput!]!): [Votation]
@@ -155,6 +159,8 @@ input UpdateVotationInput {
   severalVotes: Boolean!
   title: String!
 }
+
+union UpdateVotationStatusResult = MaxOneOpenVotationError | Votation
 
 type User {
   email: String!

@@ -99,6 +99,9 @@ export interface NexusGenObjects {
     text: string; // String!
     votationId: string; // String!
   }
+  MaxOneOpenVotationError: { // root type
+    message: string; // String!
+  }
   Meeting: { // root type
     description?: string | null; // String
     id: string; // ID!
@@ -152,6 +155,7 @@ export interface NexusGenInterfaces {
 export interface NexusGenUnions {
   DeleteParticipantResult: core.Discriminate<'OwnerCannotBeRemovedFromParticipantError', 'required'> | core.Discriminate<'Participant', 'required'>;
   GetUserResult: core.Discriminate<'User', 'required'> | core.Discriminate<'UserNotFoundError', 'required'>;
+  UpdateVotationStatusResult: core.Discriminate<'MaxOneOpenVotationError', 'required'> | core.Discriminate<'Votation', 'required'>;
 }
 
 export type NexusGenRootTypes = NexusGenObjects & NexusGenUnions
@@ -164,6 +168,9 @@ export interface NexusGenFieldTypes {
     text: string; // String!
     votationId: string; // String!
     votes: number | null; // Int
+  }
+  MaxOneOpenVotationError: { // field return type
+    message: string; // String!
   }
   Meeting: { // field return type
     description: string | null; // String
@@ -188,7 +195,7 @@ export interface NexusGenFieldTypes {
     deleteVotations: Array<string | null> | null; // [String]
     updateAlternative: NexusGenRootTypes['Alternative'] | null; // Alternative
     updateMeeting: NexusGenRootTypes['Meeting'] | null; // Meeting
-    updateVotationStatus: NexusGenRootTypes['Votation'] | null; // Votation
+    updateVotationStatus: NexusGenRootTypes['UpdateVotationStatusResult'] | null; // UpdateVotationStatusResult
     updateVotations: Array<NexusGenRootTypes['Votation'] | null> | null; // [Votation]
   }
   OwnerCannotBeRemovedFromParticipantError: { // field return type
@@ -247,6 +254,9 @@ export interface NexusGenFieldTypeNames {
     votationId: 'String'
     votes: 'Int'
   }
+  MaxOneOpenVotationError: { // field return type name
+    message: 'String'
+  }
   Meeting: { // field return type name
     description: 'String'
     id: 'ID'
@@ -270,7 +280,7 @@ export interface NexusGenFieldTypeNames {
     deleteVotations: 'String'
     updateAlternative: 'Alternative'
     updateMeeting: 'Meeting'
-    updateVotationStatus: 'Votation'
+    updateVotationStatus: 'UpdateVotationStatusResult'
     updateVotations: 'Votation'
   }
   OwnerCannotBeRemovedFromParticipantError: { // field return type name
@@ -386,6 +396,7 @@ export interface NexusGenArgTypes {
 export interface NexusGenAbstractTypeMembers {
   DeleteParticipantResult: "OwnerCannotBeRemovedFromParticipantError" | "Participant"
   GetUserResult: "User" | "UserNotFoundError"
+  UpdateVotationStatusResult: "MaxOneOpenVotationError" | "Votation"
 }
 
 export interface NexusGenTypeInterfaces {
