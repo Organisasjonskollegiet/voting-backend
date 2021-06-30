@@ -435,12 +435,15 @@ export interface NexusGenArgTypes {
     newVoteRegistered: { // args
       votationId: string; // String!
     }
+<<<<<<< HEAD
     votationOpenedForMeeting: { // args
       meetingId: string; // String!
     }
     votationStatusUpdated: { // args
       id: string; // String!
     }
+=======
+>>>>>>> 5ea63a01abbf080753a221c7ec0f7b5d3f3e12ef
   }
 }
 
