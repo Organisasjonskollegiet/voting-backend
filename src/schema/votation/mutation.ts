@@ -157,6 +157,8 @@ export const UpdateVotationStatusMutation = mutationField('updateVotationStatus'
                     message: 'Møtet kan kun ha en åpen votering om gangen',
                 };
             }
+            console.log('here', votation?.meetingId);
+            await pubsub.publish(`VOTATION_OPENED_FOR_MEETING_${votation?.meetingId}`, id);
         }
         const updatedVotation = await ctx.prisma.votation.update({
             data: {

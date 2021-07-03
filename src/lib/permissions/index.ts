@@ -40,6 +40,7 @@ const permissions = shield(
             viewChanged: allow,
             newVoteRegistered: allow,
             votationStatusUpdated: allow,
+            votationOpenedForMeeting: allow,
         },
         Alternative: {
             votes: or(isAdminOfMeetingId, isCounterOfMeeting),

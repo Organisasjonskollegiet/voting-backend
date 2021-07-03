@@ -230,6 +230,7 @@ export interface NexusGenFieldTypes {
   Subscription: { // field return type
     newVoteRegistered: number | null; // Int
     viewChanged: NexusGenEnums['ViewState'] | null; // ViewState
+    votationOpenedForMeeting: string | null; // String
     votationStatusUpdated: NexusGenEnums['VotationStatus'] | null; // VotationStatus
   }
   User: { // field return type
@@ -328,6 +329,7 @@ export interface NexusGenFieldTypeNames {
   Subscription: { // field return type name
     newVoteRegistered: 'Int'
     viewChanged: 'ViewState'
+    votationOpenedForMeeting: 'String'
     votationStatusUpdated: 'VotationStatus'
   }
   User: { // field return type name
@@ -433,9 +435,15 @@ export interface NexusGenArgTypes {
     newVoteRegistered: { // args
       votationId: string; // String!
     }
+<<<<<<< HEAD
+    votationOpenedForMeeting: { // args
+      meetingId: string; // String!
+    }
     votationStatusUpdated: { // args
       id: string; // String!
     }
+=======
+>>>>>>> 5ea63a01abbf080753a221c7ec0f7b5d3f3e12ef
   }
 }
 
