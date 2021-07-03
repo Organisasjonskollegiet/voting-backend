@@ -151,7 +151,7 @@ export const UpdateVotationStatusMutation = mutationField('updateVotationStatus'
                     status: 'OPEN',
                 },
             });
-            if (openVotationsForMeeting > 0) {
+            if (openVotationsForMeeting > 0 && votation?.status !== 'OPEN') {
                 return {
                     __typename: 'MaxOneOpenVotationError',
                     message: 'Møtet kan kun ha en åpen votering om gangen',
@@ -166,6 +166,7 @@ export const UpdateVotationStatusMutation = mutationField('updateVotationStatus'
                 id,
             },
         });
+        await pubsub.publish(`VOTATION_STATUS_UPDATED_FOR_${id}`, status);
         return { __typename: 'Votation', ...updatedVotation };
     },
 });
