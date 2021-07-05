@@ -205,7 +205,6 @@ it('should return number of voting eligible participants by votation id', async 
             votationId: votation.id,
         }
     );
-    console.log(votingEligibleCount.votingEligibleCount);
     expect(votingEligibleCount.votingEligibleCount).toBe(2);
 });
 
