@@ -209,7 +209,13 @@ it('should return number of voting eligible participants by votation id', async 
 });
 
 it('should return not authorised trying to access votingEligibleCount', async () => {
-    const meeting = await createMeeting(ctx.userId, Role.PARTICIPANT, true);
+    const user = await ctx.prisma.user.create({
+        data: {
+            email: casual.email,
+            password: casual.password,
+        },
+    });
+    const meeting = await createMeeting(user.id, Role.PARTICIPANT, true);
     const votation = await createVotation(meeting.id, VotationStatus.OPEN, 1);
     try {
         await ctx.client.request(
