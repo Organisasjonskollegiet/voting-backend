@@ -211,7 +211,7 @@ type Votation {
   alternatives: [Alternative]
   blankVotes: Boolean!
   description: String!
-  hasVoted: [User]
+  hasVoted: [String]
   hiddenVotes: Boolean!
   id: ID!
   index: Int!

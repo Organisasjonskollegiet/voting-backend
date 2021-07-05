@@ -1,7 +1,6 @@
 import { objectType } from 'nexus';
 import { Alternative as AlternativeModel, Vote as VoteModel, Votation as VotationModel } from '@prisma/client';
 import { MajorityType, VotationStatus } from '../../enums';
-import { User } from '../../auth';
 
 export const Vote = objectType({
     name: 'Vote',
@@ -55,12 +54,26 @@ export const Votation = objectType({
         t.nonNull.int('majorityThreshold');
         t.nonNull.int('index');
         t.nonNull.string('meetingId');
-        t.list.field('hasVoted', { type: User });
+        t.list.field('hasVoted', {
+            type: 'String',
+            resolve: async (source, __, ctx) => {
+                const { id } = source as VotationModel;
+                const hasVoted = await ctx.prisma.hasVoted.findMany({
+                    where: {
+                        votationId: id,
+                    },
+                    select: {
+                        userId: true,
+                    },
+                });
+                return hasVoted.map((hasVoted) => hasVoted.userId);
+            },
+        });
         t.list.field('alternatives', {
             type: Alternative,
             resolve: async (source, __, ctx) => {
                 const { id } = source as VotationModel;
-                const alternatives = ctx.prisma.alternative.findMany({ where: { votationId: id } });
+                const alternatives = await ctx.prisma.alternative.findMany({ where: { votationId: id } });
                 return alternatives;
             },
         });
