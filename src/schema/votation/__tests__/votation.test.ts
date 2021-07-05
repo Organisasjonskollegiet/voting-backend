@@ -3,6 +3,7 @@ import { gql } from 'graphql-request';
 import { VotationStatus, MeetingStatus, MajorityType, Role } from '.prisma/client';
 import { uuid } from 'casual';
 import { Votation } from '../typedefs';
+import casual from 'casual';
 const ctx = createTestContext();
 
 interface StaticMeetingDataType {
@@ -155,6 +156,71 @@ it('should throw error from votation by id', async () => {
             `,
             {
                 votationId: '1',
+            }
+        );
+        expect(false).toBeTruthy();
+    } catch (error) {
+        expect(error.message).toContain('Not Authorised!');
+    }
+});
+
+it('should return number of voting eligible participants by votation id', async () => {
+    const meeting = await createMeeting(ctx.userId, Role.PARTICIPANT, true);
+    const user1 = await ctx.prisma.user.create({
+        data: {
+            password: casual.password,
+            email: casual.email,
+        },
+    });
+    const user2 = await ctx.prisma.user.create({
+        data: {
+            password: casual.password,
+            email: casual.email,
+        },
+    });
+    await ctx.prisma.participant.create({
+        data: {
+            userId: user1.id,
+            meetingId: meeting.id,
+            isVotingEligible: false,
+            role: Role.PARTICIPANT,
+        },
+    });
+    await ctx.prisma.participant.create({
+        data: {
+            userId: user2.id,
+            meetingId: meeting.id,
+            isVotingEligible: true,
+            role: Role.PARTICIPANT,
+        },
+    });
+    const votation = await createVotation(meeting.id, VotationStatus.OPEN, 1);
+    const votingEligibleCount = await ctx.client.request(
+        gql`
+            query VotingEligibleCount($votationId: String!) {
+                votingEligibleCount(votationId: $votationId)
+            }
+        `,
+        {
+            votationId: votation.id,
+        }
+    );
+    console.log(votingEligibleCount.votingEligibleCount);
+    expect(votingEligibleCount.votingEligibleCount).toBe(2);
+});
+
+it('should return not authorised trying to access votingEligibleCount', async () => {
+    const meeting = await createMeeting(ctx.userId, Role.PARTICIPANT, true);
+    const votation = await createVotation(meeting.id, VotationStatus.OPEN, 1);
+    try {
+        await ctx.client.request(
+            gql`
+                query VotingEligibleCount($votationId: String!) {
+                    votingEligibleCount(votationId: $votationId)
+                }
+            `,
+            {
+                votationId: votation.id,
             }
         );
         expect(false).toBeTruthy();
