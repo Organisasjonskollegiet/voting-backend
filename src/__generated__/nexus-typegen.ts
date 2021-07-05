@@ -139,7 +139,6 @@ export interface NexusGenObjects {
   Votation: { // root type
     blankVotes: boolean; // Boolean!
     description: string; // String!
-    hasVoted?: Array<NexusGenRootTypes['User'] | null> | null; // [User]
     hiddenVotes: boolean; // Boolean!
     id: string; // ID!
     index: number; // Int!
@@ -249,7 +248,7 @@ export interface NexusGenFieldTypes {
     alternatives: Array<NexusGenRootTypes['Alternative'] | null> | null; // [Alternative]
     blankVotes: boolean; // Boolean!
     description: string; // String!
-    hasVoted: Array<NexusGenRootTypes['User'] | null> | null; // [User]
+    hasVoted: Array<string | null> | null; // [String]
     hiddenVotes: boolean; // Boolean!
     id: string; // ID!
     index: number; // Int!
@@ -349,7 +348,7 @@ export interface NexusGenFieldTypeNames {
     alternatives: 'Alternative'
     blankVotes: 'Boolean'
     description: 'String'
-    hasVoted: 'User'
+    hasVoted: 'String'
     hiddenVotes: 'Boolean'
     id: 'ID'
     index: 'Int'
