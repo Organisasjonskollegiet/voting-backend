@@ -246,8 +246,8 @@ it('should return a meeting by id successfully', async () => {
     const meeting = await createMeeting(ctx.userId, 'ADMIN');
     const getMeeting = await ctx.client.request(
         gql`
-            query GetMeetingsById($meetingId: String!) {
-                meetingsById(meetingId: $meetingId) {
+            query GetMeetingById($meetingId: String!) {
+                meetingById(meetingId: $meetingId) {
                     id
                     title
                     organization
@@ -264,7 +264,7 @@ it('should return a meeting by id successfully', async () => {
             meetingId: meeting.id,
         }
     );
-    const meetingResult = getMeeting.meetingsById;
+    const meetingResult = getMeeting.meetingById;
     expect(meetingResult).toEqual({
         id: meeting.id,
         title: meeting.title,

@@ -130,11 +130,11 @@ input ParticipantInput {
 type Query {
   alternativesByVotation(votationId: String!): [Alternative]
 
+  """Find a meeting by id from meetings youre participating in"""
+  meetingById(meetingId: String!): Meeting
+
   """Find meetings you are participating in"""
   meetings: [Meeting]!
-
-  """Find a meeting by id from meetings youre participating in"""
-  meetingsById(meetingId: String!): Meeting
   user: GetUserResult
   votationById(votationId: String!): Votation
   votingEligibleCount(votationId: String!): Int

@@ -12,7 +12,7 @@ export const MeetingsQuery = queryField('meetings', {
     },
 });
 
-export const MeetingByIdQuery = queryField('meetingsById', {
+export const MeetingByIdQuery = queryField('meetingById', {
     type: Meeting,
     description: 'Find a meeting by id from meetings youre participating in',
     args: {

@@ -221,8 +221,8 @@ export interface NexusGenFieldTypes {
   }
   Query: { // field return type
     alternativesByVotation: Array<NexusGenRootTypes['Alternative'] | null> | null; // [Alternative]
+    meetingById: NexusGenRootTypes['Meeting'] | null; // Meeting
     meetings: Array<NexusGenRootTypes['Meeting'] | null>; // [Meeting]!
-    meetingsById: NexusGenRootTypes['Meeting'] | null; // Meeting
     user: NexusGenRootTypes['GetUserResult'] | null; // GetUserResult
     votationById: NexusGenRootTypes['Votation'] | null; // Votation
     votingEligibleCount: number | null; // Int
@@ -321,8 +321,8 @@ export interface NexusGenFieldTypeNames {
   }
   Query: { // field return type name
     alternativesByVotation: 'Alternative'
+    meetingById: 'Meeting'
     meetings: 'Meeting'
-    meetingsById: 'Meeting'
     user: 'GetUserResult'
     votationById: 'Votation'
     votingEligibleCount: 'Int'
@@ -425,7 +425,7 @@ export interface NexusGenArgTypes {
     alternativesByVotation: { // args
       votationId: string; // String!
     }
-    meetingsById: { // args
+    meetingById: { // args
       meetingId: string; // String!
     }
     votationById: { // args
