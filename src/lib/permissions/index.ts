@@ -19,7 +19,7 @@ import {
 const permissions = shield(
     {
         Query: {
-            meetingsById: and(isParticipantOfMeeting),
+            meetingById: and(isParticipantOfMeeting),
             alternativesByVotation: and(isParticipantOfVotation),
             votationById: and(isParticipantOfVotation),
             votingEligibleCount: and(isParticipantOfVotation),

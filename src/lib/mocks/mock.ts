@@ -50,7 +50,7 @@ const simpleMock = {
     Query: () => ({
         user: () => ({ __typename: 'User' }),
         meetings: () => new Array(casual.integer(2, 6)).fill({ __typename: 'Meeting' }),
-        meetingsById: () => ({ __typename: 'Meeting' }),
+        meetingById: () => ({ __typename: 'Meeting' }),
         alternativesByVotation: () => new Array(casual.integer(2, 6)).fill({ __typename: 'Alternative' }),
     }),
 };
