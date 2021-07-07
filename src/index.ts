@@ -23,7 +23,7 @@ app.then((expressApp) => {
             },
             {
                 server: server,
-                path: '/graphql',
+                path: '/subscriptions',
             }
         );
     });
