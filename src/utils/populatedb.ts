@@ -25,6 +25,7 @@ export const populatedb = async () => {
             startTime: new Date(),
             description: casual.sentence,
             status: 'ONGOING',
+            organization: casual.company_name,
         },
     });
 
