@@ -5,7 +5,10 @@ CREATE TYPE "Role" AS ENUM ('ADMIN', 'PARTICIPANT', 'COUNTER');
 CREATE TYPE "MajorityType" AS ENUM ('QUALIFIED', 'SIMPLE');
 
 -- CreateEnum
-CREATE TYPE "Status" AS ENUM ('UPCOMING', 'ONGOING', 'ENDED');
+CREATE TYPE "MeetingStatus" AS ENUM ('UPCOMING', 'ONGOING', 'ENDED');
+
+-- CreateEnum
+CREATE TYPE "VotationStatus" AS ENUM ('UPCOMING', 'OPEN', 'CHECKING_RESULT', 'PUBLISHED_RESULT');
 
 -- CreateTable
 CREATE TABLE "User" (
@@ -25,7 +28,7 @@ CREATE TABLE "Meeting" (
     "startTime" TIMESTAMP(3) NOT NULL,
     "description" TEXT NOT NULL,
     "ownerId" UUID NOT NULL,
-    "status" "Status" NOT NULL,
+    "status" "MeetingStatus" NOT NULL,
 
     PRIMARY KEY ("id")
 );
@@ -54,12 +57,13 @@ CREATE TABLE "Votation" (
     "id" UUID NOT NULL,
     "title" VARCHAR(255) NOT NULL,
     "description" TEXT NOT NULL,
-    "status" "Status" NOT NULL DEFAULT E'UPCOMING',
+    "status" "VotationStatus" NOT NULL DEFAULT E'UPCOMING',
     "blankVotes" BOOLEAN NOT NULL,
     "hiddenVotes" BOOLEAN NOT NULL,
     "severalVotes" BOOLEAN NOT NULL,
     "majorityType" "MajorityType" NOT NULL,
     "majorityThreshold" INTEGER NOT NULL,
+    "index" INTEGER NOT NULL,
     "meetingId" UUID NOT NULL,
 
     PRIMARY KEY ("id")
