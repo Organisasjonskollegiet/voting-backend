@@ -105,12 +105,6 @@ type Mutation {
   updateVotations(votations: [UpdateVotationInput!]!): [Votation]
 }
 
-"""The payload of newVoteRegistered subscription"""
-type NewVoteRegisteredPayload {
-  voteCount: Int!
-  votingEligibleCount: Int!
-}
-
 type OwnerCannotBeRemovedFromParticipantError {
   message: String!
 }
@@ -129,6 +123,7 @@ input ParticipantInput {
 
 type Query {
   alternativesByVotation(votationId: String!): [Alternative]
+  getVoteCount(votationId: String!): VoteCountResult
 
   """Find a meeting by id from meetings youre participating in"""
   meetingById(meetingId: String!): Meeting
@@ -238,4 +233,10 @@ type Vote {
   nextVote: Vote
   nextVoteId: String
   prevVote: Vote
+}
+
+"""The result of getVoteCount"""
+type VoteCountResult {
+  voteCount: Int!
+  votingEligibleCount: Int!
 }

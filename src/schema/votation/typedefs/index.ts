@@ -97,9 +97,9 @@ export const Alternative = objectType({
     },
 });
 
-export const NewVoteRegisteredPayload = objectType({
-    name: 'NewVoteRegisteredPayload',
-    description: 'The payload of newVoteRegistered subscription',
+export const VoteCountResult = objectType({
+    name: 'VoteCountResult',
+    description: 'The result of getVoteCount',
     definition(t) {
         t.nonNull.int('voteCount');
         t.nonNull.int('votingEligibleCount');
