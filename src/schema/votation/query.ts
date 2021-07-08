@@ -26,6 +26,36 @@ export const AlternativesByVotation = queryField('alternativesByVotation', {
     },
 });
 
+export const GetVoteCount = queryField('getVoteCount', {
+    type: 'VoteCountResult',
+    args: {
+        votationId: nonNull(stringArg()),
+    },
+    resolve: async (_, { votationId }, ctx) => {
+        const meeting = await ctx.prisma.meeting.findFirst({
+            where: {
+                votations: {
+                    some: {
+                        id: votationId,
+                    },
+                },
+            },
+        });
+        const votingEligibleCount = await ctx.prisma.participant.count({
+            where: {
+                meetingId: meeting?.id,
+                isVotingEligible: true,
+            },
+        });
+        const voteCount = await ctx.prisma.hasVoted.count({
+            where: {
+                votationId,
+            },
+        });
+        return { votingEligibleCount, voteCount };
+    },
+});
+
 export const votingEligibleCount = queryField('votingEligibleCount', {
     type: 'Int',
     args: {

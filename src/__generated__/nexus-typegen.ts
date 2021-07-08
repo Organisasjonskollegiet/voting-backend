@@ -112,10 +112,6 @@ export interface NexusGenObjects {
     title: string; // String!
   }
   Mutation: {};
-  NewVoteRegisteredPayload: { // root type
-    voteCount: number; // Int!
-    votingEligibleCount: number; // Int!
-  }
   OwnerCannotBeRemovedFromParticipantError: { // root type
     message: string; // String!
   }
@@ -154,6 +150,10 @@ export interface NexusGenObjects {
     alternativeId: string; // String!
     id: string; // ID!
     nextVoteId?: string | null; // String
+  }
+  VoteCountResult: { // root type
+    voteCount: number; // Int!
+    votingEligibleCount: number; // Int!
   }
 }
 
@@ -207,10 +207,6 @@ export interface NexusGenFieldTypes {
     updateVotationStatus: NexusGenRootTypes['UpdateVotationStatusResult'] | null; // UpdateVotationStatusResult
     updateVotations: Array<NexusGenRootTypes['Votation'] | null> | null; // [Votation]
   }
-  NewVoteRegisteredPayload: { // field return type
-    voteCount: number; // Int!
-    votingEligibleCount: number; // Int!
-  }
   OwnerCannotBeRemovedFromParticipantError: { // field return type
     message: string; // String!
   }
@@ -221,6 +217,7 @@ export interface NexusGenFieldTypes {
   }
   Query: { // field return type
     alternativesByVotation: Array<NexusGenRootTypes['Alternative'] | null> | null; // [Alternative]
+    getVoteCount: NexusGenRootTypes['VoteCountResult'] | null; // VoteCountResult
     meetingById: NexusGenRootTypes['Meeting'] | null; // Meeting
     meetings: Array<NexusGenRootTypes['Meeting'] | null>; // [Meeting]!
     user: NexusGenRootTypes['GetUserResult'] | null; // GetUserResult
@@ -268,6 +265,10 @@ export interface NexusGenFieldTypes {
     nextVoteId: string | null; // String
     prevVote: NexusGenRootTypes['Vote'] | null; // Vote
   }
+  VoteCountResult: { // field return type
+    voteCount: number; // Int!
+    votingEligibleCount: number; // Int!
+  }
 }
 
 export interface NexusGenFieldTypeNames {
@@ -307,10 +308,6 @@ export interface NexusGenFieldTypeNames {
     updateVotationStatus: 'UpdateVotationStatusResult'
     updateVotations: 'Votation'
   }
-  NewVoteRegisteredPayload: { // field return type name
-    voteCount: 'Int'
-    votingEligibleCount: 'Int'
-  }
   OwnerCannotBeRemovedFromParticipantError: { // field return type name
     message: 'String'
   }
@@ -321,6 +318,7 @@ export interface NexusGenFieldTypeNames {
   }
   Query: { // field return type name
     alternativesByVotation: 'Alternative'
+    getVoteCount: 'VoteCountResult'
     meetingById: 'Meeting'
     meetings: 'Meeting'
     user: 'GetUserResult'
@@ -367,6 +365,10 @@ export interface NexusGenFieldTypeNames {
     nextVote: 'Vote'
     nextVoteId: 'String'
     prevVote: 'Vote'
+  }
+  VoteCountResult: { // field return type name
+    voteCount: 'Int'
+    votingEligibleCount: 'Int'
   }
 }
 
@@ -423,6 +425,9 @@ export interface NexusGenArgTypes {
   }
   Query: {
     alternativesByVotation: { // args
+      votationId: string; // String!
+    }
+    getVoteCount: { // args
       votationId: string; // String!
     }
     meetingById: { // args
