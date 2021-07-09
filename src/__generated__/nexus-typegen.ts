@@ -188,7 +188,7 @@ export interface NexusGenFieldTypes {
     isWinner: boolean; // Boolean!
     text: string; // String!
     votationId: string; // String!
-    votes: number | null; // Int
+    votes: number; // Int!
   }
   MaxOneOpenVotationError: { // field return type
     message: string; // String!

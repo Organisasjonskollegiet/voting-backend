@@ -18,7 +18,7 @@ type AlternativeResult {
   isWinner: Boolean!
   text: String!
   votationId: String!
-  votes: Int
+  votes: Int!
 }
 
 input CreateMeetingInput {

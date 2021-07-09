@@ -97,7 +97,7 @@ export const AlternativeResult = objectType({
         t.nonNull.string('votationId');
         // must only be visible to participants when votation status is published_result
         t.nonNull.boolean('isWinner');
-        t.field('votes', {
+        t.nonNull.field('votes', {
             type: 'Int',
             resolve: async (source, __, ctx) => {
                 const { id } = source as AlternativeModel;
