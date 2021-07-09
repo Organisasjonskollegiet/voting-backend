@@ -183,3 +183,12 @@ export const userCanVote = rule({ cache: 'contextual' })(async (_, { alternative
         })) > 0;
     return !!participant && votation.status === 'OPEN' && !hasVoted && participant.isVotingEligible;
 });
+
+/**
+ * Rule: The user is an Admin of the meeting that the votation belongs to
+ */
+export const resultIsPublished = rule({ cache: 'strict' })(async (_, { id }, ctx: Context) => {
+    const votationFromDB = await ctx.prisma.votation.findUnique({ where: { id } });
+    if (!votationFromDB) return false;
+    return votationFromDB.status === 'PUBLISHED_RESULT';
+});

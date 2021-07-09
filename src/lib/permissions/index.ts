@@ -14,6 +14,7 @@ import {
     isOwnerOfMeeting,
     userCanVote,
     isAdminOfVotationById,
+    resultIsPublished,
 } from './rules';
 
 const permissions = shield(
@@ -43,6 +44,9 @@ const permissions = shield(
             newVoteRegistered: allow,
             votationStatusUpdated: allow,
             votationOpenedForMeeting: allow,
+        },
+        Alternative: {
+            isWinner: and(isAdminOfVotationsById, isCounterOfVotationById, resultIsPublished),
         },
     },
     // If rule is not defined, use isAuthenticated rule
