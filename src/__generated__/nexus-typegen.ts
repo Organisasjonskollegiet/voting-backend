@@ -232,6 +232,7 @@ export interface NexusGenFieldTypes {
     alternativesByVotation: Array<NexusGenRootTypes['Alternative'] | null> | null; // [Alternative]
     getVotationResults: NexusGenRootTypes['VotationResults'] | null; // VotationResults
     getVoteCount: NexusGenRootTypes['VoteCountResult'] | null; // VoteCountResult
+    getWinnerOfVotation: NexusGenRootTypes['Alternative'] | null; // Alternative
     meetingById: NexusGenRootTypes['Meeting'] | null; // Meeting
     meetings: Array<NexusGenRootTypes['Meeting'] | null>; // [Meeting]!
     user: NexusGenRootTypes['GetUserResult'] | null; // GetUserResult
@@ -345,6 +346,7 @@ export interface NexusGenFieldTypeNames {
     alternativesByVotation: 'Alternative'
     getVotationResults: 'VotationResults'
     getVoteCount: 'VoteCountResult'
+    getWinnerOfVotation: 'Alternative'
     meetingById: 'Meeting'
     meetings: 'Meeting'
     user: 'GetUserResult'
@@ -463,6 +465,9 @@ export interface NexusGenArgTypes {
     }
     getVoteCount: { // args
       votationId: string; // String!
+    }
+    getWinnerOfVotation: { // args
+      id: string; // String!
     }
     meetingById: { // args
       meetingId: string; // String!
