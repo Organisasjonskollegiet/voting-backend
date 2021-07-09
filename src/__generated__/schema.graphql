@@ -6,12 +6,19 @@ type Alternative {
   id: ID!
   text: String!
   votationId: String!
-  votes: Int
 }
 
 input AlternativeInput {
   id: String!
   text: String!
+}
+
+type AlternativeResult {
+  id: ID!
+  isWinner: Boolean!
+  text: String!
+  votationId: String!
+  votes: Int
 }
 
 input CreateMeetingInput {
@@ -123,6 +130,9 @@ input ParticipantInput {
 
 type Query {
   alternativesByVotation(votationId: String!): [Alternative]
+
+  """"""
+  getVotationResults(id: String!): VotationResults
   getVoteCount(votationId: String!): VoteCountResult
 
   """Find a meeting by id from meetings youre participating in"""
@@ -217,6 +227,13 @@ type Votation {
   severalVotes: Boolean!
   status: VotationStatus!
   title: String!
+}
+
+"""The results of a votation"""
+type VotationResults {
+  alternatives: [AlternativeResult]
+  voteCount: Int!
+  votingEligibleCount: Int!
 }
 
 enum VotationStatus {

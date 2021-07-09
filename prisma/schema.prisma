@@ -112,6 +112,7 @@ model Alternative {
   text       String   @db.VarChar(120)
   votationId String   @db.Uuid
   votation   Votation @relation(fields: [votationId], references: [id])
+  isWinner   Boolean @default(false)
   votes      Vote[]
 }
 

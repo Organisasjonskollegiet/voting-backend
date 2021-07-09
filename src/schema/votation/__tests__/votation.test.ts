@@ -4,6 +4,8 @@ import { VotationStatus, MeetingStatus, MajorityType, Role } from '.prisma/clien
 import { uuid } from 'casual';
 import { Votation } from '../typedefs';
 import casual from 'casual';
+import { computeResult } from '../utils';
+import { CreateAlternativeMutation } from '../mutation';
 const ctx = createTestContext();
 
 interface StaticMeetingDataType {
@@ -990,3 +992,17 @@ it('should not cast vote successfully since the participant is not votingEligibl
         expect(hasVoted).toBe(1);
     }
 });
+
+// it('should return correct winner', async () => {
+//     const meeting = await createMeeting(ctx.userId, Role.ADMIN, false)
+//     const votation = await createVotation(meeting.id, VotationStatus.OPEN, 1)
+//     const alternative1 = await createAlternative(votation.id, alternative1Text);
+//     const alternative2 = await createAlternative(votation.id, alternative2Text);
+//     [1, 2, 3].forEach(() => {
+//         ctx.prisma.vote.create({
+//             data: {
+//                 alternativeId: alternative1.id
+//             }
+//         })
+//     })
+// });

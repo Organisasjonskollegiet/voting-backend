@@ -2,7 +2,7 @@ import { Context } from '../../context';
 import { votingEligibleCount } from './query';
 
 type VotationResult = {
-    id: string | null;
+    id: string;
     count: number;
 };
 
@@ -31,14 +31,14 @@ export const computeResult = async (ctx: Context, votationId: string) => {
     });
     switch (votation?.majorityType) {
         case 'SIMPLE':
-            let tempWinners: VotationResult[] = [{ id: null, count: 0 }];
+            let tempWinners: VotationResult[] = [];
             for (const alternative of alternatives) {
                 const voteCount = await ctx.prisma.vote.count({
                     where: {
                         alternativeId: alternative.id,
                     },
                 });
-                if (voteCount > tempWinners[0].count) {
+                if (tempWinners.length === 0 || voteCount > tempWinners[0].count) {
                     tempWinners = [{ id: alternative.id, count: voteCount }];
                 } else if (voteCount === tempWinners[0].count) {
                     tempWinners.push({ id: alternative.id, count: voteCount });
@@ -62,6 +62,8 @@ export const computeResult = async (ctx: Context, votationId: string) => {
                     return [{ id: alternative.id, count: voteCount }];
                 }
             }
-            return { id: null, count: 0 };
+            return [];
+        default:
+            return [];
     }
 };
