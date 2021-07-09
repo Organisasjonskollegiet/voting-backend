@@ -272,7 +272,7 @@ export interface NexusGenFieldTypes {
     title: string; // String!
   }
   VotationResults: { // field return type
-    alternatives: Array<NexusGenRootTypes['AlternativeResult'] | null> | null; // [AlternativeResult]
+    alternatives: Array<NexusGenRootTypes['AlternativeResult'] | null>; // [AlternativeResult]!
     voteCount: number; // Int!
     votingEligibleCount: number; // Int!
   }

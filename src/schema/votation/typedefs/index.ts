@@ -121,7 +121,7 @@ export const VotationResults = objectType({
     name: 'VotationResults',
     description: 'The results of a votation',
     definition(t) {
-        t.list.field('alternatives', {
+        t.nonNull.list.field('alternatives', {
             type: AlternativeResult,
             resolve: async (source, __, ctx) => {
                 const { id } = source as VotationModel;
