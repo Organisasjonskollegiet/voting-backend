@@ -45,9 +45,6 @@ const permissions = shield(
             votationStatusUpdated: allow,
             votationOpenedForMeeting: allow,
         },
-        Alternative: {
-            isWinner: and(isAdminOfVotationsById, isCounterOfVotationById, resultIsPublished),
-        },
     },
     // If rule is not defined, use isAuthenticated rule
     { allowExternalErrors: true, fallbackRule: isAuthenticated }

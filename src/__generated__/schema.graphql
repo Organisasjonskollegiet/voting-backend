@@ -4,7 +4,6 @@
 
 type Alternative {
   id: ID!
-  isWinner: Boolean
   text: String!
   votationId: String!
 }
