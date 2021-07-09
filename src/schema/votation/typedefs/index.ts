@@ -86,7 +86,6 @@ export const Alternative = objectType({
         t.nonNull.id('id');
         t.nonNull.string('text');
         t.nonNull.string('votationId');
-        t.nonNull.boolean('isWinner');
     },
 });
 

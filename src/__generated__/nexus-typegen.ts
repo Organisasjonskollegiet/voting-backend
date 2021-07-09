@@ -97,7 +97,7 @@ export interface NexusGenScalars {
 export interface NexusGenObjects {
   Alternative: { // root type
     id: string; // ID!
-    isWinner: boolean; // Boolean!
+    isWinner?: boolean | null; // Boolean
     text: string; // String!
     votationId: string; // String!
   }
@@ -181,7 +181,7 @@ export type NexusGenAllTypes = NexusGenRootTypes & NexusGenScalars & NexusGenEnu
 export interface NexusGenFieldTypes {
   Alternative: { // field return type
     id: string; // ID!
-    isWinner: boolean; // Boolean!
+    isWinner: boolean | null; // Boolean
     text: string; // String!
     votationId: string; // String!
   }
