@@ -196,6 +196,8 @@ export const DeleteVotationsMutation = mutationField('deleteVotations', {
         for (const id of ids) {
             promises.push(
                 new Promise(async (resolve) => {
+                    await ctx.prisma.hasVoted.deleteMany({ where: { votationId: id } });
+                    await ctx.prisma.vote.deleteMany({ where: { alternative: { votationId: id } } });
                     await ctx.prisma.alternative.deleteMany({ where: { votationId: id } });
                     const votation = await ctx.prisma.votation.delete({
                         where: {
@@ -252,18 +254,21 @@ export const DeleteAlternativesMutation = mutationField('deleteAlternatives', {
         ids: nonNull(list(nonNull(stringArg()))),
     },
     resolve: async (_, { ids }, ctx) => {
-        const promises = [];
+        const promises: Promise<string>[] = [];
         for (const id of ids) {
             promises.push(
-                ctx.prisma.alternative.delete({
-                    where: {
-                        id,
-                    },
+                new Promise(async (resolve) => {
+                    await ctx.prisma.alternative.delete({
+                        where: {
+                            id,
+                        },
+                    });
+                    resolve(id);
                 })
             );
         }
         const alternatives = await Promise.all(promises);
-        return alternatives.map((alternative) => alternative.id);
+        return alternatives;
     },
 });
 
