@@ -83,6 +83,7 @@ CREATE TABLE "Alternative" (
     "id" UUID NOT NULL,
     "text" VARCHAR(120) NOT NULL,
     "votationId" UUID NOT NULL,
+    "isWinner" BOOLEAN NOT NULL DEFAULT false,
 
     PRIMARY KEY ("id")
 );
