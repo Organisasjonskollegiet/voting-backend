@@ -1,5 +1,5 @@
 import { idArg, list, nonNull, queryField, stringArg } from 'nexus';
-import { Alternative, Votation } from './typedefs';
+import { Alternative, Votation, VotationResults } from './typedefs';
 
 export const GetVotationById = queryField('votationById', {
     type: Votation,
@@ -53,6 +53,38 @@ export const GetVoteCount = queryField('getVoteCount', {
             },
         });
         return { votingEligibleCount, voteCount };
+    },
+});
+
+export const GetWinnerOfVotation = queryField('getWinnerOfVotation', {
+    type: Alternative,
+    description: '',
+    args: {
+        id: nonNull(stringArg()),
+    },
+    resolve: async (_, { id }, ctx) => {
+        return await ctx.prisma.alternative.findFirst({
+            where: {
+                votationId: id,
+                isWinner: true,
+            },
+        });
+    },
+});
+
+export const GetVotationResults = queryField('getVotationResults', {
+    type: VotationResults,
+    description: '',
+    args: {
+        id: nonNull(stringArg()),
+    },
+    resolve: async (_, { id }, ctx) => {
+        const votation = await ctx.prisma.votation.findUnique({
+            where: {
+                id,
+            },
+        });
+        return votation;
     },
 });
 

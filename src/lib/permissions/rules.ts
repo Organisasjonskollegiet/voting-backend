@@ -1,3 +1,4 @@
+import { Role } from '.prisma/client';
 import { AuthenticationError } from 'apollo-server-express';
 import { rule } from 'graphql-shield';
 import { Context } from '../../context';
@@ -5,11 +6,11 @@ import { Context } from '../../context';
 /**
  * Helper function for checking if person is admin of meeting
  */
-const checkIsAdminOfMeetingId = async (meetingId: string, ctx: Context) => {
+const checkIsRoleOfMeetingId = async (meetingId: string, role: Role, ctx: Context) => {
     const particpant = await ctx.prisma.participant.findUnique({
         where: { userId_meetingId: { userId: ctx.userId, meetingId: meetingId } },
     });
-    return particpant ? particpant.role === 'ADMIN' : false;
+    return particpant ? particpant.role === role : false;
 };
 
 const checkIsAdminOfAlternative = async (id: string, ctx: Context) => {
@@ -19,7 +20,7 @@ const checkIsAdminOfAlternative = async (id: string, ctx: Context) => {
         },
     });
     if (!votation) return false;
-    return await checkIsAdminOfMeetingId(votation.meetingId, ctx);
+    return await checkIsRoleOfMeetingId(votation.meetingId, Role.ADMIN, ctx);
 };
 
 export const isAuthenticated = rule({ cache: 'contextual' })(async (_, __, ctx: Context) => {
@@ -55,11 +56,11 @@ export const isParticipantOfVotation = rule({ cache: 'contextual' })(async (_, {
 /**
  * Rule: The user is an Counter of the meeting
  */
-export const isCounterOfMeeting = rule({ cache: 'strict' })(async (_, { meetingId }, ctx: Context) => {
-    const particpant = await ctx.prisma.participant.findUnique({
-        where: { userId_meetingId: { userId: ctx.userId, meetingId } },
-    });
-    return particpant ? particpant.role === 'COUNTER' : false;
+export const isCounterOfVotationById = rule({ cache: 'strict' })(async (_, { id }, ctx: Context) => {
+    const votationFromDB = await ctx.prisma.votation.findUnique({ where: { id } });
+    if (!votationFromDB) return false;
+    const isCounter = await checkIsRoleOfMeetingId(votationFromDB.meetingId, Role.COUNTER, ctx);
+    return isCounter;
 });
 
 /**
@@ -88,7 +89,8 @@ export const isAdminOfVotationsByObjects = rule({ cache: 'strict' })(async (_, {
     for (const votation of votations) {
         const votationFromDB = await ctx.prisma.votation.findUnique({ where: { id: votation.id } });
         if (!votationFromDB) return false;
-        isAdminOfAllVotations = isAdminOfAllVotations && (await checkIsAdminOfMeetingId(votationFromDB.meetingId, ctx));
+        isAdminOfAllVotations =
+            isAdminOfAllVotations && (await checkIsRoleOfMeetingId(votationFromDB.meetingId, Role.ADMIN, ctx));
     }
     return isAdminOfAllVotations;
 });
@@ -102,7 +104,8 @@ export const isAdminOfVotationsById = rule({ cache: 'strict' })(async (_, { ids 
     for (const id of ids) {
         const votationFromDB = await ctx.prisma.votation.findUnique({ where: { id } });
         if (!votationFromDB) return false;
-        isAdminOfAllVotations = isAdminOfAllVotations && (await checkIsAdminOfMeetingId(votationFromDB.meetingId, ctx));
+        isAdminOfAllVotations =
+            isAdminOfAllVotations && (await checkIsRoleOfMeetingId(votationFromDB.meetingId, Role.ADMIN, ctx));
     }
     return isAdminOfAllVotations;
 });
@@ -113,7 +116,7 @@ export const isAdminOfVotationsById = rule({ cache: 'strict' })(async (_, { ids 
 export const isAdminOfVotationById = rule({ cache: 'strict' })(async (_, { id }, ctx: Context) => {
     const votationFromDB = await ctx.prisma.votation.findUnique({ where: { id } });
     if (!votationFromDB) return false;
-    return await checkIsAdminOfMeetingId(votationFromDB.meetingId, ctx);
+    return await checkIsRoleOfMeetingId(votationFromDB.meetingId, Role.ADMIN, ctx);
 });
 
 /**
@@ -122,28 +125,21 @@ export const isAdminOfVotationById = rule({ cache: 'strict' })(async (_, { id },
 export const isAdminOfVotationByObject = rule({ cache: 'strict' })(async (_, { votation }, ctx: Context) => {
     const votationFromDB = await ctx.prisma.votation.findUnique({ where: { id: votation.id } });
     if (!votationFromDB) return false;
-    return await checkIsAdminOfMeetingId(votationFromDB.meetingId, ctx);
-});
-
-/**
- * Rule: The user is an Admin of the meeting that the votation belongs to
- */
-export const isAdminOfVotationByMeetingId = rule({ cache: 'strict' })(async (_, { votation }, ctx: Context) => {
-    return await checkIsAdminOfMeetingId(votation.meetingId, ctx);
+    return await checkIsRoleOfMeetingId(votationFromDB.meetingId, Role.ADMIN, ctx);
 });
 
 /**
  * Rule: The user is an Admin of the meeting where meeting id is input parameter
  */
 export const isAdminOfMeetingId = rule({ cache: 'strict' })(async (_, { meetingId }, ctx: Context) => {
-    return await checkIsAdminOfMeetingId(meetingId, ctx);
+    return await checkIsRoleOfMeetingId(meetingId, Role.ADMIN, ctx);
 });
 
 /**
  * Rule: The user is an Admin of the meeting where meeting object is input parameter
  */
 export const isAdminOfMeetingByObject = rule({ cache: 'strict' })(async (_, { meeting }, ctx: Context) => {
-    return await checkIsAdminOfMeetingId(meeting.id, ctx);
+    return await checkIsRoleOfMeetingId(meeting.id, Role.ADMIN, ctx);
 });
 
 /**
@@ -186,4 +182,13 @@ export const userCanVote = rule({ cache: 'contextual' })(async (_, { alternative
             },
         })) > 0;
     return !!participant && votation.status === 'OPEN' && !hasVoted && participant.isVotingEligible;
+});
+
+/**
+ * Rule: The user is an Admin of the meeting that the votation belongs to
+ */
+export const resultIsPublished = rule({ cache: 'strict' })(async (_, { id }, ctx: Context) => {
+    const votationFromDB = await ctx.prisma.votation.findUnique({ where: { id } });
+    if (!votationFromDB) return false;
+    return votationFromDB.status === 'PUBLISHED_RESULT';
 });

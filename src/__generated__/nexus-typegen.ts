@@ -100,6 +100,12 @@ export interface NexusGenObjects {
     text: string; // String!
     votationId: string; // String!
   }
+  AlternativeResult: { // root type
+    id: string; // ID!
+    isWinner: boolean; // Boolean!
+    text: string; // String!
+    votationId: string; // String!
+  }
   MaxOneOpenVotationError: { // root type
     message: string; // String!
   }
@@ -146,6 +152,7 @@ export interface NexusGenObjects {
     status: NexusGenEnums['VotationStatus']; // VotationStatus!
     title: string; // String!
   }
+  VotationResults: {};
   Vote: { // root type
     alternativeId: string; // String!
     id: string; // ID!
@@ -175,7 +182,13 @@ export interface NexusGenFieldTypes {
     id: string; // ID!
     text: string; // String!
     votationId: string; // String!
-    votes: number | null; // Int
+  }
+  AlternativeResult: { // field return type
+    id: string; // ID!
+    isWinner: boolean; // Boolean!
+    text: string; // String!
+    votationId: string; // String!
+    votes: number; // Int!
   }
   MaxOneOpenVotationError: { // field return type
     message: string; // String!
@@ -217,7 +230,9 @@ export interface NexusGenFieldTypes {
   }
   Query: { // field return type
     alternativesByVotation: Array<NexusGenRootTypes['Alternative'] | null> | null; // [Alternative]
+    getVotationResults: NexusGenRootTypes['VotationResults'] | null; // VotationResults
     getVoteCount: NexusGenRootTypes['VoteCountResult'] | null; // VoteCountResult
+    getWinnerOfVotation: NexusGenRootTypes['Alternative'] | null; // Alternative
     meetingById: NexusGenRootTypes['Meeting'] | null; // Meeting
     meetings: Array<NexusGenRootTypes['Meeting'] | null>; // [Meeting]!
     user: NexusGenRootTypes['GetUserResult'] | null; // GetUserResult
@@ -257,6 +272,11 @@ export interface NexusGenFieldTypes {
     status: NexusGenEnums['VotationStatus']; // VotationStatus!
     title: string; // String!
   }
+  VotationResults: { // field return type
+    alternatives: Array<NexusGenRootTypes['AlternativeResult'] | null>; // [AlternativeResult]!
+    voteCount: number; // Int!
+    votingEligibleCount: number; // Int!
+  }
   Vote: { // field return type
     alternative: NexusGenRootTypes['Alternative'] | null; // Alternative
     alternativeId: string; // String!
@@ -274,6 +294,12 @@ export interface NexusGenFieldTypes {
 export interface NexusGenFieldTypeNames {
   Alternative: { // field return type name
     id: 'ID'
+    text: 'String'
+    votationId: 'String'
+  }
+  AlternativeResult: { // field return type name
+    id: 'ID'
+    isWinner: 'Boolean'
     text: 'String'
     votationId: 'String'
     votes: 'Int'
@@ -318,7 +344,9 @@ export interface NexusGenFieldTypeNames {
   }
   Query: { // field return type name
     alternativesByVotation: 'Alternative'
+    getVotationResults: 'VotationResults'
     getVoteCount: 'VoteCountResult'
+    getWinnerOfVotation: 'Alternative'
     meetingById: 'Meeting'
     meetings: 'Meeting'
     user: 'GetUserResult'
@@ -357,6 +385,11 @@ export interface NexusGenFieldTypeNames {
     severalVotes: 'Boolean'
     status: 'VotationStatus'
     title: 'String'
+  }
+  VotationResults: { // field return type name
+    alternatives: 'AlternativeResult'
+    voteCount: 'Int'
+    votingEligibleCount: 'Int'
   }
   Vote: { // field return type name
     alternative: 'Alternative'
@@ -427,8 +460,14 @@ export interface NexusGenArgTypes {
     alternativesByVotation: { // args
       votationId: string; // String!
     }
+    getVotationResults: { // args
+      id: string; // String!
+    }
     getVoteCount: { // args
       votationId: string; // String!
+    }
+    getWinnerOfVotation: { // args
+      id: string; // String!
     }
     meetingById: { // args
       meetingId: string; // String!

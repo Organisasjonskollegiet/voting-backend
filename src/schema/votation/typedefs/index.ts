@@ -86,7 +86,18 @@ export const Alternative = objectType({
         t.nonNull.id('id');
         t.nonNull.string('text');
         t.nonNull.string('votationId');
-        t.field('votes', {
+    },
+});
+
+export const AlternativeResult = objectType({
+    name: 'AlternativeResult',
+    definition: (t) => {
+        t.nonNull.id('id');
+        t.nonNull.string('text');
+        t.nonNull.string('votationId');
+        // must only be visible to participants when votation status is published_result
+        t.nonNull.boolean('isWinner');
+        t.nonNull.field('votes', {
             type: 'Int',
             resolve: async (source, __, ctx) => {
                 const { id } = source as AlternativeModel;
@@ -103,6 +114,49 @@ export const VoteCountResult = objectType({
     definition(t) {
         t.nonNull.int('voteCount');
         t.nonNull.int('votingEligibleCount');
+    },
+});
+
+export const VotationResults = objectType({
+    name: 'VotationResults',
+    description: 'The results of a votation',
+    definition(t) {
+        t.nonNull.list.field('alternatives', {
+            type: AlternativeResult,
+            resolve: async (source, __, ctx) => {
+                const { id } = source as VotationModel;
+                const alternatives = await ctx.prisma.alternative.findMany({ where: { votationId: id } });
+                return alternatives;
+            },
+        });
+        t.nonNull.field('voteCount', {
+            type: 'Int',
+            resolve: async (source, __, ctx) => {
+                const { id } = source as VotationModel;
+                return await ctx.prisma.hasVoted.count({
+                    where: {
+                        votationId: id,
+                    },
+                });
+            },
+        });
+        t.nonNull.field('votingEligibleCount', {
+            type: 'Int',
+            resolve: async (source, __, ctx) => {
+                const { id } = source as VotationModel;
+                const votation = await ctx.prisma.votation.findUnique({
+                    where: {
+                        id,
+                    },
+                });
+                return await ctx.prisma.participant.count({
+                    where: {
+                        meetingId: votation?.meetingId,
+                        isVotingEligible: true,
+                    },
+                });
+            },
+        });
     },
 });
 

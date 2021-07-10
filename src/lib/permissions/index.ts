@@ -4,7 +4,7 @@ import {
     isParticipantOfMeeting,
     isParticipantOfVotation,
     // isParticipantOfAlternativeId,
-    isCounterOfMeeting,
+    isCounterOfVotationById,
     isAdminOfMeetingId,
     isAdminOfMeetingByObject,
     isAdminOfVotationsByObjects,
@@ -14,6 +14,7 @@ import {
     isOwnerOfMeeting,
     userCanVote,
     isAdminOfVotationById,
+    resultIsPublished,
 } from './rules';
 
 const permissions = shield(
@@ -23,6 +24,8 @@ const permissions = shield(
             alternativesByVotation: and(isParticipantOfVotation),
             votationById: and(isParticipantOfVotation),
             votingEligibleCount: and(isParticipantOfVotation),
+            getVotationResults: or(isAdminOfVotationById, isCounterOfVotationById),
+            getWinnerOfVotation: and(resultIsPublished),
         },
         Mutation: {
             addParticipants: and(isAdminOfMeetingId),
@@ -42,9 +45,6 @@ const permissions = shield(
             newVoteRegistered: allow,
             votationStatusUpdated: allow,
             votationOpenedForMeeting: allow,
-        },
-        Alternative: {
-            votes: or(isAdminOfMeetingId, isCounterOfMeeting),
         },
     },
     // If rule is not defined, use isAuthenticated rule
