@@ -257,8 +257,8 @@ it('should return alternatives by votation successfully', async () => {
         }
     );
     expect(getAlternatives.alternativesByVotation).toHaveLength(2);
-    expect(getAlternatives.alternativesByVotation).toContainEqual(alternative1);
-    expect(getAlternatives.alternativesByVotation).toContainEqual(alternative2);
+    expect({ ...getAlternatives.alternativesByVotation[0], isWinner: false }).toEqual(alternative1);
+    expect({ ...getAlternatives.alternativesByVotation[1], isWinner: false }).toEqual(alternative2);
 });
 
 it('should return not authorized', async () => {
