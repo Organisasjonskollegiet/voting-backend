@@ -63,6 +63,12 @@ export interface NexusGenInputs {
     status?: NexusGenEnums['MeetingStatus'] | null; // MeetingStatus
     title?: string | null; // String
   }
+  UpdateParticipantInput: { // input type
+    email: string; // String!
+    isVotingEligible: boolean; // Boolean!
+    role: NexusGenEnums['Role']; // Role!
+    userExists: boolean; // Boolean!
+  }
   UpdateVotationInput: { // input type
     alternatives?: NexusGenInputs['AlternativeInput'][] | null; // [AlternativeInput!]
     blankVotes: boolean; // Boolean!
@@ -213,10 +219,11 @@ export interface NexusGenFieldTypes {
     createVotations: Array<NexusGenRootTypes['Votation'] | null> | null; // [Votation]
     deleteAlternatives: Array<string | null> | null; // [String]
     deleteMeeting: NexusGenRootTypes['Meeting'] | null; // Meeting
-    deleteParticipant: NexusGenRootTypes['DeleteParticipantResult'] | null; // DeleteParticipantResult
+    deleteParticipants: Array<string | null> | null; // [String]
     deleteVotations: Array<string | null> | null; // [String]
     updateAlternative: NexusGenRootTypes['Alternative'] | null; // Alternative
     updateMeeting: NexusGenRootTypes['Meeting'] | null; // Meeting
+    updateParticipants: number | null; // Int
     updateVotationStatus: NexusGenRootTypes['UpdateVotationStatusResult'] | null; // UpdateVotationStatusResult
     updateVotations: Array<NexusGenRootTypes['Votation'] | null> | null; // [Votation]
   }
@@ -327,10 +334,11 @@ export interface NexusGenFieldTypeNames {
     createVotations: 'Votation'
     deleteAlternatives: 'String'
     deleteMeeting: 'Meeting'
-    deleteParticipant: 'DeleteParticipantResult'
+    deleteParticipants: 'String'
     deleteVotations: 'String'
     updateAlternative: 'Alternative'
     updateMeeting: 'Meeting'
+    updateParticipants: 'Int'
     updateVotationStatus: 'UpdateVotationStatusResult'
     updateVotations: 'Votation'
   }
@@ -434,9 +442,9 @@ export interface NexusGenArgTypes {
     deleteMeeting: { // args
       id: string; // String!
     }
-    deleteParticipant: { // args
+    deleteParticipants: { // args
+      emails: string[]; // [String!]!
       meetingId: string; // String!
-      userId: string; // String!
     }
     deleteVotations: { // args
       ids: string[]; // [String!]!
@@ -447,6 +455,10 @@ export interface NexusGenArgTypes {
     }
     updateMeeting: { // args
       meeting: NexusGenInputs['UpdateMeetingInput']; // UpdateMeetingInput!
+    }
+    updateParticipants: { // args
+      meetingId: string; // String!
+      participants: NexusGenInputs['UpdateParticipantInput'][]; // [UpdateParticipantInput!]!
     }
     updateVotationStatus: { // args
       id: string; // String!

@@ -7,6 +7,7 @@ export const OwnerCannotBeRemovedFromParticipantError = objectType({
     },
 });
 
+// Can be deleted if not used
 export const DeleteParticipantResult = unionType({
     name: 'DeleteParticipantResult',
     definition(t) {

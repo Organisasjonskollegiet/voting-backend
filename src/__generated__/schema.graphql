@@ -94,7 +94,7 @@ type Mutation {
   deleteMeeting(id: String!): Meeting
 
   """"""
-  deleteParticipant(meetingId: String!, userId: String!): DeleteParticipantResult
+  deleteParticipants(emails: [String!]!, meetingId: String!): [String]
 
   """"""
   deleteVotations(ids: [String!]!): [String]
@@ -104,6 +104,9 @@ type Mutation {
 
   """"""
   updateMeeting(meeting: UpdateMeetingInput!): Meeting
+
+  """"""
+  updateParticipants(meetingId: String!, participants: [UpdateParticipantInput!]!): Int
 
   """"""
   updateVotationStatus(id: String!, status: VotationStatus!): UpdateVotationStatusResult
@@ -168,6 +171,13 @@ input UpdateMeetingInput {
   startTime: DateTime
   status: MeetingStatus
   title: String
+}
+
+input UpdateParticipantInput {
+  email: String!
+  isVotingEligible: Boolean!
+  role: Role!
+  userExists: Boolean!
 }
 
 input UpdateVotationInput {
