@@ -131,6 +131,12 @@ export interface NexusGenObjects {
     isVotingEligible: boolean; // Boolean!
     role: NexusGenEnums['Role']; // Role!
   }
+  ParticipantOrInvite: { // root type
+    email: string; // String!
+    isVotingEligible: boolean; // Boolean!
+    role: NexusGenEnums['Role']; // Role!
+    userExists: boolean; // Boolean!
+  }
   Query: {};
   Subscription: {};
   User: { // root type
@@ -223,7 +229,6 @@ export interface NexusGenFieldTypes {
     deleteVotations: Array<string | null> | null; // [String]
     updateAlternative: NexusGenRootTypes['Alternative'] | null; // Alternative
     updateMeeting: NexusGenRootTypes['Meeting'] | null; // Meeting
-    updateParticipants: number | null; // Int
     updateVotationStatus: NexusGenRootTypes['UpdateVotationStatusResult'] | null; // UpdateVotationStatusResult
     updateVotations: Array<NexusGenRootTypes['Votation'] | null> | null; // [Votation]
   }
@@ -235,6 +240,12 @@ export interface NexusGenFieldTypes {
     role: NexusGenEnums['Role']; // Role!
     user: NexusGenRootTypes['User'] | null; // User
   }
+  ParticipantOrInvite: { // field return type
+    email: string; // String!
+    isVotingEligible: boolean; // Boolean!
+    role: NexusGenEnums['Role']; // Role!
+    userExists: boolean; // Boolean!
+  }
   Query: { // field return type
     alternativesByVotation: Array<NexusGenRootTypes['Alternative'] | null> | null; // [Alternative]
     getVotationResults: NexusGenRootTypes['VotationResults'] | null; // VotationResults
@@ -242,6 +253,7 @@ export interface NexusGenFieldTypes {
     getWinnerOfVotation: NexusGenRootTypes['Alternative'] | null; // Alternative
     meetingById: NexusGenRootTypes['Meeting'] | null; // Meeting
     meetings: Array<NexusGenRootTypes['Meeting'] | null>; // [Meeting]!
+    participants: Array<NexusGenRootTypes['ParticipantOrInvite'] | null> | null; // [ParticipantOrInvite]
     user: NexusGenRootTypes['GetUserResult'] | null; // GetUserResult
     votationById: NexusGenRootTypes['Votation'] | null; // Votation
     votingEligibleCount: number | null; // Int
@@ -338,7 +350,6 @@ export interface NexusGenFieldTypeNames {
     deleteVotations: 'String'
     updateAlternative: 'Alternative'
     updateMeeting: 'Meeting'
-    updateParticipants: 'Int'
     updateVotationStatus: 'UpdateVotationStatusResult'
     updateVotations: 'Votation'
   }
@@ -350,6 +361,12 @@ export interface NexusGenFieldTypeNames {
     role: 'Role'
     user: 'User'
   }
+  ParticipantOrInvite: { // field return type name
+    email: 'String'
+    isVotingEligible: 'Boolean'
+    role: 'Role'
+    userExists: 'Boolean'
+  }
   Query: { // field return type name
     alternativesByVotation: 'Alternative'
     getVotationResults: 'VotationResults'
@@ -357,6 +374,7 @@ export interface NexusGenFieldTypeNames {
     getWinnerOfVotation: 'Alternative'
     meetingById: 'Meeting'
     meetings: 'Meeting'
+    participants: 'ParticipantOrInvite'
     user: 'GetUserResult'
     votationById: 'Votation'
     votingEligibleCount: 'Int'
@@ -456,10 +474,6 @@ export interface NexusGenArgTypes {
     updateMeeting: { // args
       meeting: NexusGenInputs['UpdateMeetingInput']; // UpdateMeetingInput!
     }
-    updateParticipants: { // args
-      meetingId: string; // String!
-      participants: NexusGenInputs['UpdateParticipantInput'][]; // [UpdateParticipantInput!]!
-    }
     updateVotationStatus: { // args
       id: string; // String!
       status: NexusGenEnums['VotationStatus']; // VotationStatus!
@@ -482,6 +496,9 @@ export interface NexusGenArgTypes {
       id: string; // String!
     }
     meetingById: { // args
+      meetingId: string; // String!
+    }
+    participants: { // args
       meetingId: string; // String!
     }
     votationById: { // args
