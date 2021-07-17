@@ -37,7 +37,7 @@ CREATE TABLE "Meeting" (
 CREATE TABLE "Participant" (
     "id" UUID NOT NULL,
     "role" "Role" NOT NULL,
-    "userId" UUID,
+    "userId" UUID NOT NULL,
     "meetingId" UUID NOT NULL,
     "isVotingEligible" BOOLEAN NOT NULL DEFAULT true,
 
@@ -113,7 +113,7 @@ CREATE UNIQUE INDEX "Vote_nextVoteId_unique" ON "Vote"("nextVoteId");
 ALTER TABLE "Meeting" ADD FOREIGN KEY ("ownerId") REFERENCES "User"("id") ON DELETE CASCADE ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "Participant" ADD FOREIGN KEY ("userId") REFERENCES "User"("id") ON DELETE SET NULL ON UPDATE CASCADE;
+ALTER TABLE "Participant" ADD FOREIGN KEY ("userId") REFERENCES "User"("id") ON DELETE CASCADE ON UPDATE CASCADE;
 
 -- AddForeignKey
 ALTER TABLE "Participant" ADD FOREIGN KEY ("meetingId") REFERENCES "Meeting"("id") ON DELETE CASCADE ON UPDATE CASCADE;
