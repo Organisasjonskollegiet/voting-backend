@@ -1,6 +1,7 @@
 import { inputObjectType, mutationField, nonNull, stringArg, list } from 'nexus';
+import { parentPort } from 'node:worker_threads';
 import { MeetingStatus, Role } from '../enums';
-import { Meeting, DeleteParticipantResult } from './typedefs';
+import { Meeting } from './typedefs';
 
 export const CreateMeetingInput = inputObjectType({
     name: 'CreateMeetingInput',
@@ -30,6 +31,16 @@ export const ParticipantInput = inputObjectType({
         t.nonNull.string('email');
         t.nonNull.field('role', { type: Role });
         t.nonNull.boolean('isVotingEligible');
+    },
+});
+
+export const UpdateParticipantInput = inputObjectType({
+    name: 'UpdateParticipantInput',
+    definition(t) {
+        t.nonNull.string('email');
+        t.nonNull.field('role', { type: Role });
+        t.nonNull.boolean('isVotingEligible');
+        t.nonNull.boolean('userExists');
     },
 });
 
@@ -159,29 +170,50 @@ export const AddParticipantsMutation = mutationField('addParticipants', {
     },
 });
 
-export const DeleteParticipantMutation = mutationField('deleteParticipant', {
-    type: DeleteParticipantResult,
+export const DeleteParticipantsMutation = mutationField('deleteParticipants', {
+    type: list('String'),
     description: '',
     args: {
         meetingId: nonNull(stringArg()),
-        userId: nonNull(stringArg()),
+        emails: nonNull(list(nonNull(stringArg()))),
     },
-    resolve: async (_, { meetingId, userId }, ctx) => {
+    resolve: async (_, { meetingId, emails }, ctx) => {
         const meeting = await ctx.prisma.meeting.findUnique({
             where: {
                 id: meetingId,
             },
         });
-        if (meeting?.ownerId === userId)
-            return {
-                __typename: 'OwnerCannotBeRemovedFromParticipantError',
-                message: 'The owner of the meeting cannot be removed from being a participant.',
-            };
-        const deletedParticipant = await ctx.prisma.participant.delete({
-            where: {
-                userId_meetingId: { userId, meetingId },
-            },
+        const promises: Promise<string>[] = [];
+        emails.forEach((email: string) => {
+            promises.push(
+                new Promise(async (resolve) => {
+                    const user = await ctx.prisma.user.findUnique({
+                        where: {
+                            email,
+                        },
+                    });
+                    if (user) {
+                        if (meeting?.ownerId !== user?.id) {
+                            await ctx.prisma.participant.delete({
+                                where: {
+                                    userId_meetingId: { userId: user.id, meetingId },
+                                },
+                            });
+                            resolve(email);
+                        }
+                    } else {
+                        await ctx.prisma.invite.delete({
+                            where: {
+                                email_meetingId: { meetingId, email },
+                            },
+                        });
+                        resolve(email);
+                    }
+                    resolve('');
+                })
+            );
         });
-        return { __typename: 'Participant', ...deletedParticipant };
+        const resolved = await Promise.all(promises);
+        return resolved;
     },
 });

@@ -497,57 +497,49 @@ it('should return not Authorised trying to add participant and invite ', async (
 it('should delete participant successfully', async () => {
     const otherUser = await createUser();
     const meeting = await createMeeting(ctx.userId, 'ADMIN');
+    const invite = await ctx.prisma.invite.create({
+        data: {
+            email: casual.email,
+            isVotingEligible: true,
+            meetingId: meeting.id,
+            role: Role.ADMIN,
+        },
+    });
     await createParticipant(meeting.id, otherUser.id, 'ADMIN');
-    await ctx.client.request(
+    const deleteParticipants = await ctx.client.request(
         gql`
-            mutation DeleteParticipant($meetingId: String!, $userId: String!) {
-                deleteParticipant(meetingId: $meetingId, userId: $userId) {
-                    ... on Participant {
-                        role
-                    }
-                    ... on OwnerCannotBeRemovedFromParticipantError {
-                        message
-                    }
-                }
+            mutation DeleteParticipant($meetingId: String!, $emails: [String!]!) {
+                deleteParticipants(meetingId: $meetingId, emails: $emails)
             }
         `,
         {
             meetingId: meeting.id,
-            userId: otherUser.id,
+            emails: [invite.email, otherUser.email],
         }
     );
-    const participantCount = await ctx.prisma.participant.count({
-        where: {
-            userId: otherUser.id,
-            meetingId: meeting.id,
-        },
-    });
-    expect(participantCount).toBe(0);
+    expect(deleteParticipants.deleteParticipants.includes(invite.email)).toBeTruthy();
+    expect(deleteParticipants.deleteParticipants.includes(otherUser.email)).toBeTruthy();
 });
 
 it('should return OwnerCannotBeRemovedFromParticipantError', async () => {
     const meeting = await createMeeting(ctx.userId, 'ADMIN');
-    const deleteParticipant = await ctx.client.request(
+    const user = await ctx.prisma.user.findUnique({
+        where: {
+            id: ctx.userId,
+        },
+    });
+    const deleteParticipants = await ctx.client.request(
         gql`
-            mutation DeleteParticipant($meetingId: String!, $userId: String!) {
-                deleteParticipant(meetingId: $meetingId, userId: $userId) {
-                    ... on Participant {
-                        role
-                    }
-                    ... on OwnerCannotBeRemovedFromParticipantError {
-                        message
-                    }
-                }
+            mutation DeleteParticipant($meetingId: String!, $emails: [String!]!) {
+                deleteParticipants(meetingId: $meetingId, emails: $emails)
             }
         `,
         {
             meetingId: meeting.id,
-            userId: ctx.userId,
+            emails: [user?.email],
         }
     );
-    expect(deleteParticipant.deleteParticipant.message).toEqual(
-        'The owner of the meeting cannot be removed from being a participant.'
-    );
+    expect(deleteParticipants.deleteParticipants).toEqual(['']);
     const participantCount = await ctx.prisma.participant.count({
         where: {
             userId: ctx.userId,
@@ -558,26 +550,24 @@ it('should return OwnerCannotBeRemovedFromParticipantError', async () => {
 });
 
 it('should return Not Authorised when deleting participant', async () => {
+    const user = await ctx.prisma.user.findUnique({
+        where: {
+            id: ctx.userId,
+        },
+    });
     const otherUser = await createUser();
     const meeting = await createMeeting(otherUser.id, 'ADMIN');
-    await createParticipant(meeting.id, ctx.userId, 'COUNTER');
+    await createParticipant(meeting.id, user!.id, 'COUNTER');
     try {
         await ctx.client.request(
             gql`
-                mutation DeleteParticipant($meetingId: String!, $userId: String!) {
-                    deleteParticipant(meetingId: $meetingId, userId: $userId) {
-                        ... on Participant {
-                            role
-                        }
-                        ... on OwnerCannotBeRemovedFromParticipantError {
-                            message
-                        }
-                    }
+                mutation DeleteParticipant($meetingId: String!, $emails: [String!]!) {
+                    deleteParticipants(meetingId: $meetingId, emails: $emails)
                 }
             `,
             {
                 meetingId: meeting.id,
-                userId: ctx.userId,
+                emails: [user!.email],
             }
         );
         expect(false).toBeTruthy();

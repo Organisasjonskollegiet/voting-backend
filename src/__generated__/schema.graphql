@@ -94,7 +94,7 @@ type Mutation {
   deleteMeeting(id: String!): Meeting
 
   """"""
-  deleteParticipant(meetingId: String!, userId: String!): DeleteParticipantResult
+  deleteParticipants(emails: [String!]!, meetingId: String!): [String]
 
   """"""
   deleteVotations(ids: [String!]!): [String]
@@ -128,6 +128,13 @@ input ParticipantInput {
   role: Role!
 }
 
+type ParticipantOrInvite {
+  email: String!
+  isVotingEligible: Boolean!
+  role: Role!
+  userExists: Boolean!
+}
+
 type Query {
   alternativesByVotation(votationId: String!): [Alternative]
 
@@ -143,6 +150,11 @@ type Query {
 
   """Find meetings you are participating in"""
   meetings: [Meeting]!
+
+  """
+  Return relevant information about invites and participants connected to meeting
+  """
+  participants(meetingId: String!): [ParticipantOrInvite]
   user: GetUserResult
   votationById(votationId: String!): Votation
   votingEligibleCount(votationId: String!): Int
@@ -168,6 +180,13 @@ input UpdateMeetingInput {
   startTime: DateTime
   status: MeetingStatus
   title: String
+}
+
+input UpdateParticipantInput {
+  email: String!
+  isVotingEligible: Boolean!
+  role: Role!
+  userExists: Boolean!
 }
 
 input UpdateVotationInput {
