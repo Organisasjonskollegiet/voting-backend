@@ -170,65 +170,6 @@ export const AddParticipantsMutation = mutationField('addParticipants', {
     },
 });
 
-export const UpdateParticipantsMutation = mutationField('updateParticipants', {
-    type: 'Int',
-    description: '',
-    args: {
-        meetingId: nonNull(stringArg()),
-        participants: nonNull(list(nonNull('UpdateParticipantInput'))),
-    },
-    resolve: async (_, { meetingId, participants }, ctx) => {
-        const meeting = await ctx.prisma.meeting.findUnique({
-            where: {
-                id: meetingId,
-            },
-        });
-        const promises: Promise<string>[] = [];
-        participants.forEach((participant) =>
-            promises.push(
-                new Promise(async (resolve, reject) => {
-                    try {
-                        if (participant.userExists) {
-                            const user = await ctx.prisma.user.findUnique({
-                                where: {
-                                    email: participant.email,
-                                },
-                            });
-                            if (!user) throw new Error('User does not exist');
-                            if (user.id === meeting?.ownerId) throw new Error('Cannot change role of meeting owner');
-                            await ctx.prisma.participant.update({
-                                where: {
-                                    userId_meetingId: { userId: user.id, meetingId },
-                                },
-                                data: {
-                                    role: participant.role,
-                                    isVotingEligible: participant.isVotingEligible,
-                                },
-                            });
-                            resolve(participant.email);
-                        } else {
-                            await ctx.prisma.invite.update({
-                                where: {
-                                    email_meetingId: { email: participant.email, meetingId },
-                                },
-                                data: {
-                                    role: participant.role,
-                                    isVotingEligible: participant.isVotingEligible,
-                                },
-                            });
-                            resolve(participant.email);
-                        }
-                    } catch (error) {
-                        reject(error);
-                    }
-                })
-            )
-        );
-        const resolved = await Promise.all(promises);
-        return resolved.length;
-    },
-});
-
 export const DeleteParticipantsMutation = mutationField('deleteParticipants', {
     type: list('String'),
     description: '',
