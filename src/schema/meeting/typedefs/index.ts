@@ -4,6 +4,16 @@ import { User } from '../../auth';
 import { EXPOSED_USER_FIELDS } from '../../auth/utils';
 import { Votation } from '../../votation';
 
+export const ParticipantOrInvite = objectType({
+    name: 'ParticipantOrInvite',
+    definition: (t) => {
+        t.nonNull.string('email');
+        t.nonNull.field('role', { type: 'Role' });
+        t.nonNull.boolean('isVotingEligible');
+        t.nonNull.boolean('userExists');
+    },
+});
+
 export const Meeting = objectType({
     name: 'Meeting',
     definition: (t) => {
