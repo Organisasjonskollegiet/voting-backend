@@ -260,6 +260,7 @@ type VotationResults {
 
 enum VotationStatus {
   CHECKING_RESULT
+  INVALID
   OPEN
   PUBLISHED_RESULT
   UPCOMING

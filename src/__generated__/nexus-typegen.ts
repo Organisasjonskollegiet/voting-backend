@@ -88,7 +88,7 @@ export interface NexusGenEnums {
   MeetingStatus: "ENDED" | "ONGOING" | "UPCOMING"
   Role: "ADMIN" | "COUNTER" | "PARTICIPANT"
   ViewState: "CLOSED" | "ENDED" | "LOADING" | "ONGOING"
-  VotationStatus: "CHECKING_RESULT" | "OPEN" | "PUBLISHED_RESULT" | "UPCOMING"
+  VotationStatus: "CHECKING_RESULT" | "INVALID" | "OPEN" | "PUBLISHED_RESULT" | "UPCOMING"
 }
 
 export interface NexusGenScalars {

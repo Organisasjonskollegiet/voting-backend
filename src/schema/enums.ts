@@ -17,7 +17,7 @@ export const MeetingStatus = enumType({
 
 export const VotationStatus = enumType({
     name: 'VotationStatus',
-    members: ['UPCOMING', 'OPEN', 'CHECKING_RESULT', 'PUBLISHED_RESULT'],
+    members: ['UPCOMING', 'OPEN', 'CHECKING_RESULT', 'PUBLISHED_RESULT', 'INVALID'],
 });
 
 export const ViewState = enumType({
