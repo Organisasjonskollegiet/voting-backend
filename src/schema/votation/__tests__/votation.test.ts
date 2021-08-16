@@ -2,10 +2,7 @@ import { createTestContext } from '../../../lib/tests/testContext';
 import { gql } from 'graphql-request';
 import { VotationStatus, MeetingStatus, MajorityType, Role } from '.prisma/client';
 import { uuid } from 'casual';
-import { Votation } from '../typedefs';
 import casual from 'casual';
-import { computeResult } from '../utils';
-import { CreateAlternativeMutation } from '../mutation';
 const ctx = createTestContext();
 
 interface StaticMeetingDataType {
@@ -90,6 +87,40 @@ const createAlternative = async (votationId: string, text: string) => {
         data: {
             text,
             votationId,
+        },
+    });
+};
+
+const createUser = async () => {
+    return await ctx.prisma.user.create({
+        data: {
+            email: casual.email,
+            password: casual.password,
+        },
+    });
+};
+
+const createParticipant = async (meetingId: string, userId: string, isVotingEligible: boolean, role: Role) => {
+    return await ctx.prisma.participant.create({
+        data: {
+            meetingId,
+            userId,
+            isVotingEligible,
+            role,
+        },
+    });
+};
+
+const vote = async (votationId: string, userId: string, alternativeId: string) => {
+    await ctx.prisma.hasVoted.create({
+        data: {
+            votationId,
+            userId,
+        },
+    });
+    await ctx.prisma.vote.create({
+        data: {
+            alternativeId,
         },
     });
 };
@@ -990,6 +1021,62 @@ it('should not cast vote successfully since the participant is not votingEligibl
             },
         });
         expect(hasVoted).toBe(1);
+    }
+});
+
+it('should return correct vote count', async () => {
+    const meeting = await createMeeting(ctx.userId, Role.ADMIN, true);
+    const user1 = await createUser();
+    const user2 = await createUser();
+    await createParticipant(meeting.id, user1.id, true, Role.PARTICIPANT);
+    await createParticipant(meeting.id, user2.id, false, Role.PARTICIPANT);
+    const votation1 = await createVotation(meeting.id, VotationStatus.OPEN, 1);
+    const votation2 = await createVotation(meeting.id, VotationStatus.OPEN, 1);
+    const alternativeForVotation1 = await createAlternative(votation1.id, alternative1Text);
+    const alternativeForVotation2 = await createAlternative(votation2.id, alternative1Text);
+    await vote(votation1.id, ctx.userId, alternativeForVotation1.id);
+    await vote(votation1.id, user1.id, alternativeForVotation1.id);
+    await vote(votation2.id, user1.id, alternativeForVotation2.id);
+    const voteCount = await ctx.client.request(
+        gql`
+            query GetVoteCount($votationId: String!) {
+                getVoteCount(votationId: $votationId) {
+                    votingEligibleCount
+                    voteCount
+                }
+            }
+        `,
+        {
+            votationId: votation1.id,
+        }
+    );
+    expect(voteCount.getVoteCount.votingEligibleCount).toEqual(2);
+    expect(voteCount.getVoteCount.voteCount).toEqual(2);
+});
+
+it('should return not authorised', async () => {
+    const user1 = await createUser();
+    const meeting = await createMeeting(user1.id, Role.ADMIN, false);
+    const votation = await createVotation(meeting.id, VotationStatus.OPEN, 1);
+    const alternative = await createAlternative(votation.id, alternative1Text);
+    await vote(votation.id, user1.id, alternative.id);
+    try {
+        const response = await ctx.client.request(
+            gql`
+                query GetVoteCount($votationId: String!) {
+                    getVoteCount(votationId: $votationId) {
+                        votingEligibleCount
+                        voteCount
+                    }
+                }
+            `,
+            {
+                votationId: votation.id,
+            }
+        );
+        expect(true).toBeFalsy();
+    } catch (error) {
+        expect(error.message).toContain('Not Authorised!');
     }
 });
 
