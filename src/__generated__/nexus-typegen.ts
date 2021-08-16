@@ -256,7 +256,6 @@ export interface NexusGenFieldTypes {
     participants: Array<NexusGenRootTypes['ParticipantOrInvite'] | null> | null; // [ParticipantOrInvite]
     user: NexusGenRootTypes['GetUserResult'] | null; // GetUserResult
     votationById: NexusGenRootTypes['Votation'] | null; // Votation
-    votingEligibleCount: number | null; // Int
   }
   Subscription: { // field return type
     newVoteRegistered: number | null; // Int
@@ -377,7 +376,6 @@ export interface NexusGenFieldTypeNames {
     participants: 'ParticipantOrInvite'
     user: 'GetUserResult'
     votationById: 'Votation'
-    votingEligibleCount: 'Int'
   }
   Subscription: { // field return type name
     newVoteRegistered: 'Int'
@@ -502,9 +500,6 @@ export interface NexusGenArgTypes {
       meetingId: string; // String!
     }
     votationById: { // args
-      votationId: string; // String!
-    }
-    votingEligibleCount: { // args
       votationId: string; // String!
     }
   }

@@ -1,5 +1,4 @@
 import { Context } from '../../context';
-import { votingEligibleCount } from './query';
 
 type VotationResult = {
     id: string;

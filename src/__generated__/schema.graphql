@@ -157,7 +157,6 @@ type Query {
   participants(meetingId: String!): [ParticipantOrInvite]
   user: GetUserResult
   votationById(votationId: String!): Votation
-  votingEligibleCount(votationId: String!): Int
 }
 
 enum Role {
