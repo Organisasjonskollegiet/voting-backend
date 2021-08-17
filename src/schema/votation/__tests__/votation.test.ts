@@ -75,7 +75,7 @@ const createVotation = async (
     status: VotationStatus,
     index: number,
     majorityType: MajorityType = MajorityType.SIMPLE,
-    majorityThreshold: number = 50
+    majorityThreshold: number = 66
 ) => {
     return await ctx.prisma.votation.create({
         data: {
@@ -172,6 +172,8 @@ it('should return votation by id', async () => {
     expect(getVotation.votationById).toEqual({
         id: votationId,
         ...staticVotationData,
+        majorityType: MajorityType.SIMPLE,
+        majorityThreshold: 66,
         meetingId: meeting.id,
     });
 });
@@ -267,11 +269,15 @@ it('should create votations successfully', async () => {
         votations: [
             {
                 ...staticVotationData,
+                majorityType: MajorityType.SIMPLE,
+                majorityThreshold: 66,
                 index: 1,
                 alternatives: ['alternative1', 'alternative2'],
             },
             {
                 ...staticVotationData,
+                majorityType: MajorityType.SIMPLE,
+                majorityThreshold: 66,
                 index: 2,
                 alternatives: [],
             },
@@ -600,11 +606,15 @@ it('should not create votations successfully', async () => {
         votations: [
             {
                 ...staticVotationData,
+                majorityType: MajorityType.SIMPLE,
+                majorityThreshold: 66,
                 index: 1,
                 alternatives: [],
             },
             {
                 ...staticVotationData,
+                majorityType: MajorityType.SIMPLE,
+                majorityThreshold: 66,
                 index: 2,
                 alternatives: [],
             },
