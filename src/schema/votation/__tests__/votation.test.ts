@@ -3,6 +3,7 @@ import { gql } from 'graphql-request';
 import { VotationStatus, MeetingStatus, MajorityType, Role } from '.prisma/client';
 import { uuid } from 'casual';
 import casual from 'casual';
+import { setWinner } from '../utils';
 const ctx = createTestContext();
 
 interface StaticMeetingDataType {
@@ -19,8 +20,8 @@ interface StaticVotationDataType {
     blankVotes: boolean;
     hiddenVotes: boolean;
     severalVotes: boolean;
-    majorityType: MajorityType;
-    majorityThreshold: number;
+    majorityType?: MajorityType;
+    majorityThreshold?: number;
 }
 
 const staticMeetingData: StaticMeetingDataType = {
@@ -37,8 +38,6 @@ const staticVotationData: StaticVotationDataType = {
     blankVotes: true,
     hiddenVotes: true,
     severalVotes: true,
-    majorityType: MajorityType.SIMPLE,
-    majorityThreshold: 50,
 };
 
 const updatedStaticVotationData: StaticVotationDataType = {
@@ -71,10 +70,18 @@ const createMeeting = async (ownerId: string, role: Role, isVotingEligible: bool
     });
 };
 
-const createVotation = async (meetingId: string, status: VotationStatus, index: number) => {
+const createVotation = async (
+    meetingId: string,
+    status: VotationStatus,
+    index: number,
+    majorityType: MajorityType = MajorityType.SIMPLE,
+    majorityThreshold: number = 66
+) => {
     return await ctx.prisma.votation.create({
         data: {
             ...staticVotationData,
+            majorityType,
+            majorityThreshold,
             status: status,
             index,
             meetingId,
@@ -165,6 +172,8 @@ it('should return votation by id', async () => {
     expect(getVotation.votationById).toEqual({
         id: votationId,
         ...staticVotationData,
+        majorityType: MajorityType.SIMPLE,
+        majorityThreshold: 66,
         meetingId: meeting.id,
     });
 });
@@ -260,11 +269,15 @@ it('should create votations successfully', async () => {
         votations: [
             {
                 ...staticVotationData,
+                majorityType: MajorityType.SIMPLE,
+                majorityThreshold: 66,
                 index: 1,
                 alternatives: ['alternative1', 'alternative2'],
             },
             {
                 ...staticVotationData,
+                majorityType: MajorityType.SIMPLE,
+                majorityThreshold: 66,
                 index: 2,
                 alternatives: [],
             },
@@ -593,11 +606,15 @@ it('should not create votations successfully', async () => {
         votations: [
             {
                 ...staticVotationData,
+                majorityType: MajorityType.SIMPLE,
+                majorityThreshold: 66,
                 index: 1,
                 alternatives: [],
             },
             {
                 ...staticVotationData,
+                majorityType: MajorityType.SIMPLE,
+                majorityThreshold: 66,
                 index: 2,
                 alternatives: [],
             },
@@ -1008,6 +1025,207 @@ it('should return not authorised', async () => {
     } catch (error) {
         expect(error.message).toContain('Not Authorised!');
     }
+});
+
+it('should return alternative1 as winner with simple majority', async () => {
+    const user1 = await createUser();
+    const user2 = await createUser();
+    const meeting = await createMeeting(ctx.userId, Role.ADMIN, true);
+    await createParticipant(meeting.id, user1.id, true, Role.PARTICIPANT);
+    await createParticipant(meeting.id, user2.id, true, Role.PARTICIPANT);
+    const votation = await createVotation(meeting.id, VotationStatus.CHECKING_RESULT, 1, MajorityType.SIMPLE);
+    const alternative1 = await createAlternative(votation.id, alternative1Text);
+    const alternative2 = await createAlternative(votation.id, alternative2Text);
+    await vote(votation.id, ctx.userId, alternative1.id);
+    await vote(votation.id, user1.id, alternative1.id);
+    await vote(votation.id, user2.id, alternative2.id);
+    await setWinner(ctx, votation.id);
+    const response = await ctx.client.request(
+        gql`
+            query GetVotationResults($id: String!) {
+                getVotationResults(id: $id) {
+                    alternatives {
+                        id
+                        text
+                        votationId
+                        isWinner
+                        votes
+                    }
+                    votingEligibleCount
+                    voteCount
+                }
+            }
+        `,
+        {
+            id: votation.id,
+        }
+    );
+    expect(response.getVotationResults.alternatives).toEqual(
+        expect.arrayContaining([
+            {
+                ...alternative1,
+                isWinner: true,
+                votes: 2,
+            },
+            {
+                ...alternative2,
+                isWinner: false,
+                votes: 1,
+            },
+        ])
+    );
+    expect(response.getVotationResults.votingEligibleCount).toEqual(3);
+    expect(response.getVotationResults.voteCount).toEqual(3);
+});
+
+it('should return no winner with simple majority when the alternatives has equal amount of votes', async () => {
+    const user1 = await createUser();
+    const meeting = await createMeeting(ctx.userId, Role.ADMIN, true);
+    await createParticipant(meeting.id, user1.id, true, Role.PARTICIPANT);
+    const votation = await createVotation(meeting.id, VotationStatus.CHECKING_RESULT, 1, MajorityType.SIMPLE);
+    const alternative1 = await createAlternative(votation.id, alternative1Text);
+    const alternative2 = await createAlternative(votation.id, alternative2Text);
+    await vote(votation.id, ctx.userId, alternative1.id);
+    await vote(votation.id, user1.id, alternative2.id);
+    await setWinner(ctx, votation.id);
+    const response = await ctx.client.request(
+        gql`
+            query GetVotationResults($id: String!) {
+                getVotationResults(id: $id) {
+                    alternatives {
+                        id
+                        text
+                        votationId
+                        isWinner
+                        votes
+                    }
+                    votingEligibleCount
+                    voteCount
+                }
+            }
+        `,
+        {
+            id: votation.id,
+        }
+    );
+    expect(response.getVotationResults.alternatives).toEqual(
+        expect.arrayContaining([
+            {
+                ...alternative1,
+                isWinner: false,
+                votes: 1,
+            },
+            {
+                ...alternative2,
+                isWinner: false,
+                votes: 1,
+            },
+        ])
+    );
+    expect(response.getVotationResults.votingEligibleCount).toEqual(2);
+    expect(response.getVotationResults.voteCount).toEqual(2);
+});
+
+it('should return alternative1 as winner with qualified over 66%', async () => {
+    const user1 = await createUser();
+    const user2 = await createUser();
+    const meeting = await createMeeting(ctx.userId, Role.ADMIN, true);
+    await createParticipant(meeting.id, user1.id, true, Role.PARTICIPANT);
+    await createParticipant(meeting.id, user2.id, true, Role.PARTICIPANT);
+    const votation = await createVotation(meeting.id, VotationStatus.CHECKING_RESULT, 1, MajorityType.QUALIFIED, 66);
+    const alternative1 = await createAlternative(votation.id, alternative1Text);
+    const alternative2 = await createAlternative(votation.id, alternative2Text);
+    await vote(votation.id, ctx.userId, alternative1.id);
+    await vote(votation.id, user1.id, alternative1.id);
+    await vote(votation.id, user2.id, alternative2.id);
+    await setWinner(ctx, votation.id);
+    const response = await ctx.client.request(
+        gql`
+            query GetVotationResults($id: String!) {
+                getVotationResults(id: $id) {
+                    alternatives {
+                        id
+                        text
+                        votationId
+                        isWinner
+                        votes
+                    }
+                    votingEligibleCount
+                    voteCount
+                }
+            }
+        `,
+        {
+            id: votation.id,
+        }
+    );
+    expect(response.getVotationResults.alternatives).toEqual(
+        expect.arrayContaining([
+            {
+                ...alternative1,
+                isWinner: true,
+                votes: 2,
+            },
+            {
+                ...alternative2,
+                isWinner: false,
+                votes: 1,
+            },
+        ])
+    );
+    expect(response.getVotationResults.votingEligibleCount).toEqual(3);
+    expect(response.getVotationResults.voteCount).toEqual(3);
+});
+
+it('should return no winner with qualified over 67%', async () => {
+    const user1 = await createUser();
+    const user2 = await createUser();
+    const meeting = await createMeeting(ctx.userId, Role.ADMIN, true);
+    await createParticipant(meeting.id, user1.id, true, Role.PARTICIPANT);
+    await createParticipant(meeting.id, user2.id, true, Role.PARTICIPANT);
+    const votation = await createVotation(meeting.id, VotationStatus.CHECKING_RESULT, 1, MajorityType.QUALIFIED, 67);
+    const alternative1 = await createAlternative(votation.id, alternative1Text);
+    const alternative2 = await createAlternative(votation.id, alternative2Text);
+    await vote(votation.id, ctx.userId, alternative1.id);
+    await vote(votation.id, user1.id, alternative1.id);
+    await vote(votation.id, user2.id, alternative2.id);
+    await setWinner(ctx, votation.id);
+    const response = await ctx.client.request(
+        gql`
+            query GetVotationResults($id: String!) {
+                getVotationResults(id: $id) {
+                    alternatives {
+                        id
+                        text
+                        votationId
+                        isWinner
+                        votes
+                    }
+                    votingEligibleCount
+                    voteCount
+                }
+            }
+        `,
+        {
+            id: votation.id,
+        }
+    );
+    expect(response.getVotationResults.alternatives).toEqual(
+        expect.arrayContaining([
+            {
+                ...alternative1,
+                isWinner: false,
+                votes: 2,
+            },
+            {
+                ...alternative2,
+                isWinner: false,
+                votes: 1,
+            },
+        ])
+    );
+    expect(response.getVotationResults.votingEligibleCount).toEqual(3);
+    expect(response.getVotationResults.voteCount).toEqual(3);
 });
 
 // it('should return correct winner', async () => {
