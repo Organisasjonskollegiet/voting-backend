@@ -3,7 +3,7 @@ import { Vote } from './';
 import { pubsub } from '../../lib/pubsub';
 import { Alternative, UpdateVotationStatusResult, Votation, MaxOneOpenVotationError } from './typedefs';
 import { MajorityType, VotationStatus } from '../enums';
-import { computeResult } from './utils';
+import { setWinner } from './utils';
 
 export const AlternativeInput = inputObjectType({
     name: 'AlternativeInput',
@@ -160,17 +160,7 @@ export const UpdateVotationStatusMutation = mutationField('updateVotationStatus'
             }
             await pubsub.publish(`VOTATION_OPENED_FOR_MEETING_${votation?.meetingId}`, id);
         } else if (status === 'CHECKING_RESULT') {
-            const winners = await computeResult(ctx, id);
-            if (winners.length === 1) {
-                await ctx.prisma.alternative.update({
-                    where: {
-                        id: winners[0].id,
-                    },
-                    data: {
-                        isWinner: true,
-                    },
-                });
-            }
+            await setWinner(ctx, id);
         }
         const updatedVotation = await ctx.prisma.votation.update({
             data: {
