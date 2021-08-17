@@ -582,3 +582,87 @@ it('should return Not Authorised when deleting participant', async () => {
     });
     expect(participantCount).toBe(1);
 });
+
+it('should return correct participants and invitations', async () => {
+    const ctxUserRole = Role.ADMIN;
+    const meeting = await createMeeting(ctx.userId, ctxUserRole);
+    const ctxUser = await ctx.prisma.user.findUnique({
+        where: {
+            id: ctx.userId,
+        },
+    });
+    if (!ctxUser) throw new Error();
+    const user1 = await createUser();
+    const participant1 = await createParticipant(meeting.id, user1.id, Role.PARTICIPANT);
+    const invite = await ctx.prisma.invite.create({
+        data: {
+            meetingId: meeting.id,
+            email: casual.email,
+            role: Role.COUNTER,
+            isVotingEligible: true,
+        },
+    });
+    const response = await ctx.client.request(
+        gql`
+            query GetParticipants($meetingId: String!) {
+                participants(meetingId: $meetingId) {
+                    email
+                    role
+                    isVotingEligible
+                    userExists
+                }
+            }
+        `,
+        {
+            meetingId: meeting.id,
+        }
+    );
+    const participants = response.participants;
+    expect(participants).toEqual(
+        expect.arrayContaining([
+            {
+                email: user1.email,
+                role: participant1.role,
+                isVotingEligible: participant1.isVotingEligible,
+                userExists: true,
+            },
+            {
+                email: ctxUser.email,
+                role: ctxUserRole,
+                isVotingEligible: true,
+                userExists: true,
+            },
+            {
+                email: invite.email,
+                role: invite.role,
+                isVotingEligible: invite.isVotingEligible,
+                userExists: false,
+            },
+        ])
+    );
+});
+
+it('should return not Authorised', async () => {
+    const ctxUserRole = Role.ADMIN;
+    const meeting = await createMeeting(ctx.userId, ctxUserRole);
+    try {
+        await ctx.client.request(
+            gql`
+                query GetParticipants($meetingId: String!) {
+                    participants(meetingId: $meetingId) {
+                        email
+                        role
+                        isVotingEligible
+                        userExists
+                    }
+                }
+            `,
+            {
+                meetingId: meeting.id,
+            }
+        );
+        expect(false).toBeTruthy();
+    } catch (error) {
+        expect(error.message).toContain('Not Authorised!');
+    }
+});
