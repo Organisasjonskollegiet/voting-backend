@@ -135,7 +135,6 @@ export interface NexusGenObjects {
     email: string; // String!
     isVotingEligible: boolean; // Boolean!
     role: NexusGenEnums['Role']; // Role!
-    userExists: boolean; // Boolean!
   }
   Query: {};
   Subscription: {};
@@ -217,7 +216,7 @@ export interface NexusGenFieldTypes {
     votations: Array<NexusGenRootTypes['Votation'] | null> | null; // [Votation]
   }
   Mutation: { // field return type
-    addParticipants: number | null; // Int
+    addParticipants: Array<NexusGenRootTypes['ParticipantOrInvite'] | null> | null; // [ParticipantOrInvite]
     castVote: NexusGenRootTypes['Vote'] | null; // Vote
     changeView: NexusGenEnums['ViewState'] | null; // ViewState
     createAlternative: NexusGenRootTypes['Alternative'] | null; // Alternative
@@ -244,7 +243,6 @@ export interface NexusGenFieldTypes {
     email: string; // String!
     isVotingEligible: boolean; // Boolean!
     role: NexusGenEnums['Role']; // Role!
-    userExists: boolean; // Boolean!
   }
   Query: { // field return type
     alternativesByVotation: Array<NexusGenRootTypes['Alternative'] | null> | null; // [Alternative]
@@ -337,7 +335,7 @@ export interface NexusGenFieldTypeNames {
     votations: 'Votation'
   }
   Mutation: { // field return type name
-    addParticipants: 'Int'
+    addParticipants: 'ParticipantOrInvite'
     castVote: 'Vote'
     changeView: 'ViewState'
     createAlternative: 'Alternative'
@@ -364,7 +362,6 @@ export interface NexusGenFieldTypeNames {
     email: 'String'
     isVotingEligible: 'Boolean'
     role: 'Role'
-    userExists: 'Boolean'
   }
   Query: { // field return type name
     alternativesByVotation: 'Alternative'
