@@ -54,7 +54,7 @@ model Meeting {
   owner        User          @relation(fields: [ownerId], references: [id])
   ownerId      String        @db.Uuid
   votations    Votation[]
-  status       MeetingStatus @db.default(UPCOMING)
+  status       MeetingStatus @default(UPCOMING)
   participants Participant[]
   Invite       Invite[]
 }
