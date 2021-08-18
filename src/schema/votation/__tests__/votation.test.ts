@@ -1180,7 +1180,7 @@ it('should return alternative1 as winner with qualified over 66%', async () => {
 it('should return no winner with qualified over 67%', async () => {
     const user1 = await createUser();
     const user2 = await createUser();
-    const meeting = await createMeeting(ctx.userId, Role.ADMIN, true);
+    const meeting = await createMeeting(ctx.userId, Role.COUNTER, true);
     await createParticipant(meeting.id, user1.id, true, Role.PARTICIPANT);
     await createParticipant(meeting.id, user2.id, true, Role.PARTICIPANT);
     const votation = await createVotation(meeting.id, VotationStatus.CHECKING_RESULT, 1, MajorityType.QUALIFIED, 67);
@@ -1226,6 +1226,39 @@ it('should return no winner with qualified over 67%', async () => {
     );
     expect(response.getVotationResults.votingEligibleCount).toEqual(3);
     expect(response.getVotationResults.voteCount).toEqual(3);
+});
+
+it('should return not authorised trying to get votation results', async () => {
+    const meeting = await createMeeting(ctx.userId, Role.PARTICIPANT, true);
+    const votation = await createVotation(meeting.id, VotationStatus.CHECKING_RESULT, 1, MajorityType.QUALIFIED, 67);
+    const alternative1 = await createAlternative(votation.id, alternative1Text);
+    await vote(votation.id, ctx.userId, alternative1.id);
+    await setWinner(ctx, votation.id);
+    try {
+        await ctx.client.request(
+            gql`
+                query GetVotationResults($id: String!) {
+                    getVotationResults(id: $id) {
+                        alternatives {
+                            id
+                            text
+                            votationId
+                            isWinner
+                            votes
+                        }
+                        votingEligibleCount
+                        voteCount
+                    }
+                }
+            `,
+            {
+                id: votation.id,
+            }
+        );
+        expect(false).toBeTruthy();
+    } catch (error) {
+        expect(error.message).toContain('Not Authorised!');
+    }
 });
 
 // it('should return correct winner', async () => {
