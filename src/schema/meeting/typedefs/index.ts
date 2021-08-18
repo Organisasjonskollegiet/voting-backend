@@ -10,7 +10,6 @@ export const ParticipantOrInvite = objectType({
         t.nonNull.string('email');
         t.nonNull.field('role', { type: 'Role' });
         t.nonNull.boolean('isVotingEligible');
-        t.nonNull.boolean('userExists');
     },
 });
 

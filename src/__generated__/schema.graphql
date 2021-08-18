@@ -78,7 +78,7 @@ enum MeetingStatus {
 
 type Mutation {
   """"""
-  addParticipants(meetingId: String!, participants: [ParticipantInput!]!): Int
+  addParticipants(meetingId: String!, participants: [ParticipantInput!]!): [ParticipantOrInvite]
   castVote(alternativeId: String!): Vote
   changeView(state: ViewState!): ViewState
   createAlternative(text: String!, votationId: String!): Alternative
@@ -132,7 +132,6 @@ type ParticipantOrInvite {
   email: String!
   isVotingEligible: Boolean!
   role: Role!
-  userExists: Boolean!
 }
 
 type Query {

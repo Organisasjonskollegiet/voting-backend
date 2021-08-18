@@ -1,7 +1,14 @@
+import { Role as RoleEnum } from '@prisma/client';
 import { inputObjectType, mutationField, nonNull, stringArg, list } from 'nexus';
 import { parentPort } from 'node:worker_threads';
 import { MeetingStatus, Role } from '../enums';
-import { Meeting } from './typedefs';
+import { Meeting, ParticipantOrInvite } from './typedefs';
+
+type ParticipantOrIniteType = {
+    email: string;
+    role: RoleEnum;
+    isVotingEligible: boolean;
+};
 
 export const CreateMeetingInput = inputObjectType({
     name: 'CreateMeetingInput',
@@ -110,63 +117,84 @@ export const DeleteMeetingMutation = mutationField('deleteMeeting', {
 });
 
 export const AddParticipantsMutation = mutationField('addParticipants', {
-    type: 'Int',
+    type: list(ParticipantOrInvite),
     description: '',
     args: {
         meetingId: nonNull(stringArg()),
         participants: nonNull(list(nonNull(ParticipantInput))),
     },
     resolve: async (_, { meetingId, participants }, ctx) => {
-        let participantsAdded = 0;
+        const promises: Promise<ParticipantOrIniteType | null>[] = [];
         for (const participant of participants) {
-            try {
-                const user = await ctx.prisma.user.findUnique({ where: { email: participant.email } });
-                if (user) {
-                    await ctx.prisma.participant.upsert({
-                        where: {
-                            userId_meetingId: {
-                                userId: user?.id,
-                                meetingId,
-                            },
-                        },
-                        update: {
-                            role: participant.role,
-                            isVotingEligible: participant.isVotingEligible,
-                        },
-                        create: {
-                            role: participant.role,
-                            userId: user?.id ?? null,
-                            meetingId,
-                            isVotingEligible: participant.isVotingEligible,
-                        },
-                    });
-                    participantsAdded += 1;
-                } else {
-                    await ctx.prisma.invite.upsert({
-                        where: {
-                            email_meetingId: {
-                                email: participant.email,
-                                meetingId,
-                            },
-                        },
-                        create: {
-                            email: participant.email,
-                            role: participant.role,
-                            isVotingEligible: participant.isVotingEligible,
-                            meetingId,
-                        },
-                        update: {
-                            role: participant.role,
-                            isVotingEligible: participant.isVotingEligible,
-                        },
-                    });
-                    participantsAdded += 1;
-                }
-            } catch (error) {
-                console.log(error);
+            const user = await ctx.prisma.user.findUnique({ where: { email: participant.email } });
+            if (user) {
+                promises.push(
+                    new Promise(async (resolve) => {
+                        try {
+                            await ctx.prisma.participant.upsert({
+                                where: {
+                                    userId_meetingId: {
+                                        userId: user?.id,
+                                        meetingId,
+                                    },
+                                },
+                                update: {
+                                    role: participant.role,
+                                    isVotingEligible: participant.isVotingEligible,
+                                },
+                                create: {
+                                    role: participant.role,
+                                    userId: user?.id ?? null,
+                                    meetingId,
+                                    isVotingEligible: participant.isVotingEligible,
+                                },
+                            });
+                            resolve({
+                                email: user.email,
+                                role: participant.role,
+                                isVotingEligible: participant.isVotingEligible,
+                            });
+                        } catch (error) {
+                            resolve(null);
+                        }
+                    })
+                );
+            } else {
+                promises.push(
+                    new Promise(async (resolve) => {
+                        try {
+                            const invite = await ctx.prisma.invite.upsert({
+                                where: {
+                                    email_meetingId: {
+                                        email: participant.email,
+                                        meetingId,
+                                    },
+                                },
+                                create: {
+                                    email: participant.email,
+                                    role: participant.role,
+                                    isVotingEligible: participant.isVotingEligible,
+                                    meetingId,
+                                },
+                                update: {
+                                    role: participant.role,
+                                    isVotingEligible: participant.isVotingEligible,
+                                },
+                            });
+                            resolve({
+                                email: invite.email,
+                                role: invite.role,
+                                isVotingEligible: invite.isVotingEligible,
+                            });
+                        } catch (error) {
+                            resolve(null);
+                        }
+                    })
+                );
             }
         }
-        return participantsAdded;
+        const participantsChanged = await Promise.all(promises);
+        return participantsChanged.filter((p) => !!p);
     },
 });
 
@@ -214,6 +242,6 @@ export const DeleteParticipantsMutation = mutationField('deleteParticipants', {
             );
         });
         const resolved = await Promise.all(promises);
-        return resolved;
+        return resolved.filter((e) => e !== '');
     },
 });

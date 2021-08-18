@@ -406,7 +406,9 @@ it('should add participant and invite successfully', async () => {
     await ctx.client.request(
         gql`
             mutation AddParticipants($meetingId: String!, $participants: [ParticipantInput!]!) {
-                addParticipants(meetingId: $meetingId, participants: $participants)
+                addParticipants(meetingId: $meetingId, participants: $participants) {
+                    email
+                }
             }
         `,
         {
@@ -469,7 +471,9 @@ it('should return not Authorised trying to add participant and invite ', async (
         await ctx.client.request(
             gql`
                 mutation AddParticipants($meetingId: String!, $participants: [ParticipantInput!]!) {
-                    addParticipants(meetingId: $meetingId, participants: $participants)
+                    addParticipants(meetingId: $meetingId, participants: $participants) {
+                        email
+                    }
                 }
             `,
             {
@@ -539,7 +543,7 @@ it('should return OwnerCannotBeRemovedFromParticipantError', async () => {
             emails: [user?.email],
         }
     );
-    expect(deleteParticipants.deleteParticipants).toEqual(['']);
+    expect(deleteParticipants.deleteParticipants).toEqual([]);
     const participantCount = await ctx.prisma.participant.count({
         where: {
             userId: ctx.userId,
@@ -609,7 +613,6 @@ it('should return correct participants and invitations', async () => {
                     email
                     role
                     isVotingEligible
-                    userExists
                 }
             }
         `,
@@ -624,19 +627,16 @@ it('should return correct participants and invitations', async () => {
                 email: user1.email,
                 role: participant1.role,
                 isVotingEligible: participant1.isVotingEligible,
-                userExists: true,
             },
             {
                 email: ctxUser.email,
                 role: ctxUserRole,
                 isVotingEligible: true,
-                userExists: true,
             },
             {
                 email: invite.email,
                 role: invite.role,
                 isVotingEligible: invite.isVotingEligible,
-                userExists: false,
             },
         ])
     );
@@ -653,7 +653,6 @@ it('should return not Authorised', async () => {
                         email
                         role
                         isVotingEligible
-                        userExists
                     }
                 }
             `,
