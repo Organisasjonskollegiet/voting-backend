@@ -34,7 +34,7 @@ export interface NexusGenInputs {
     text: string; // String!
   }
   CreateMeetingInput: { // input type
-    description: string; // String!
+    description?: string | null; // String
     organization: string; // String!
     startTime: NexusGenScalars['DateTime']; // DateTime!
     title: string; // String!
@@ -42,7 +42,7 @@ export interface NexusGenInputs {
   CreateVotationInput: { // input type
     alternatives?: string[] | null; // [String!]
     blankVotes: boolean; // Boolean!
-    description: string; // String!
+    description?: string | null; // String
     hiddenVotes: boolean; // Boolean!
     index: number; // Int!
     majorityThreshold: number; // Int!
@@ -72,7 +72,7 @@ export interface NexusGenInputs {
   UpdateVotationInput: { // input type
     alternatives?: NexusGenInputs['AlternativeInput'][] | null; // [AlternativeInput!]
     blankVotes: boolean; // Boolean!
-    description: string; // String!
+    description?: string | null; // String
     hiddenVotes: boolean; // Boolean!
     id: string; // String!
     index: number; // Int!
@@ -151,7 +151,7 @@ export interface NexusGenObjects {
   }
   Votation: { // root type
     blankVotes: boolean; // Boolean!
-    description: string; // String!
+    description?: string | null; // String
     hiddenVotes: boolean; // Boolean!
     id: string; // ID!
     index: number; // Int!
@@ -275,7 +275,7 @@ export interface NexusGenFieldTypes {
   Votation: { // field return type
     alternatives: Array<NexusGenRootTypes['Alternative'] | null> | null; // [Alternative]
     blankVotes: boolean; // Boolean!
-    description: string; // String!
+    description: string | null; // String
     hasVoted: Array<string | null> | null; // [String]
     hiddenVotes: boolean; // Boolean!
     id: string; // ID!

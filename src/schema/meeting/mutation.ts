@@ -1,6 +1,5 @@
 import { Role as RoleEnum } from '@prisma/client';
 import { inputObjectType, mutationField, nonNull, stringArg, list } from 'nexus';
-import { parentPort } from 'node:worker_threads';
 import { MeetingStatus, Role } from '../enums';
 import { Meeting, ParticipantOrInvite } from './typedefs';
 
@@ -16,7 +15,7 @@ export const CreateMeetingInput = inputObjectType({
         t.nonNull.string('organization');
         t.nonNull.string('title');
         t.nonNull.datetime('startTime');
-        t.nonNull.string('description', { default: 'Ingen beskrivelse satt.' });
+        t.string('description');
     },
 });
 

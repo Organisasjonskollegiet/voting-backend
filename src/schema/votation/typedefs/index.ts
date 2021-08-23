@@ -44,7 +44,7 @@ export const Votation = objectType({
     definition: (t) => {
         t.nonNull.id('id');
         t.nonNull.string('title');
-        t.nonNull.string('description');
+        t.string('description');
         t.int('order');
         t.nonNull.field('status', { type: VotationStatus });
         t.nonNull.boolean('blankVotes');

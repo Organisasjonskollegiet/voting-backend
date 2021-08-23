@@ -18,7 +18,7 @@ export const UpdateVotationInput = inputObjectType({
     definition(t) {
         t.nonNull.string('id');
         t.nonNull.string('title');
-        t.nonNull.string('description');
+        t.string('description');
         t.nonNull.boolean('blankVotes');
         t.nonNull.boolean('hiddenVotes');
         t.nonNull.boolean('severalVotes');
@@ -33,7 +33,7 @@ export const CreateVotationInput = inputObjectType({
     name: 'CreateVotationInput',
     definition(t) {
         t.nonNull.string('title');
-        t.nonNull.string('description');
+        t.string('description');
         t.nonNull.boolean('blankVotes');
         t.nonNull.boolean('hiddenVotes');
         t.nonNull.boolean('severalVotes');
