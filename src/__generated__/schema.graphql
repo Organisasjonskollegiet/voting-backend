@@ -22,7 +22,7 @@ type AlternativeResult {
 }
 
 input CreateMeetingInput {
-  description: String! = "Ingen beskrivelse satt."
+  description: String
   organization: String!
   startTime: DateTime!
   title: String!
@@ -31,7 +31,7 @@ input CreateMeetingInput {
 input CreateVotationInput {
   alternatives: [String!]
   blankVotes: Boolean!
-  description: String!
+  description: String
   hiddenVotes: Boolean!
   index: Int!
   majorityThreshold: Int!
@@ -190,7 +190,7 @@ input UpdateParticipantInput {
 input UpdateVotationInput {
   alternatives: [AlternativeInput!]
   blankVotes: Boolean!
-  description: String!
+  description: String
   hiddenVotes: Boolean!
   id: String!
   index: Int!
@@ -235,7 +235,7 @@ enum ViewState {
 type Votation {
   alternatives: [Alternative]
   blankVotes: Boolean!
-  description: String!
+  description: String
   hasVoted: [String]
   hiddenVotes: Boolean!
   id: ID!

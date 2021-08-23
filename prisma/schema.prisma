@@ -50,7 +50,7 @@ model Meeting {
   organization String
   title        String        @db.VarChar(255)
   startTime    DateTime
-  description  String
+  description  String?
   owner        User          @relation(fields: [ownerId], references: [id])
   ownerId      String        @db.Uuid
   votations    Votation[]
@@ -84,7 +84,7 @@ model Invite {
 model Votation {
   id                String         @id @default(uuid()) @db.Uuid
   title             String         @db.VarChar(255)
-  description       String
+  description       String?
   status            VotationStatus @default(UPCOMING)
   blankVotes        Boolean
   hiddenVotes       Boolean
