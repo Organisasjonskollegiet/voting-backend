@@ -26,9 +26,9 @@ const computeSimpleResult = async (ctx: Context, alternatives: Alternative[]) =>
                 alternativeId: alternative.id,
             },
         });
-        if (tempWinners.length === 0 || voteCount > tempWinners[0].count) {
+        if (voteCount > 0 && (tempWinners.length === 0 || voteCount > tempWinners[0].count)) {
             tempWinners = [{ id: alternative.id, count: voteCount }];
-        } else if (voteCount === tempWinners[0].count) {
+        } else if (voteCount > 0 && voteCount === tempWinners[0].count) {
             tempWinners.push({ id: alternative.id, count: voteCount });
         }
     }
