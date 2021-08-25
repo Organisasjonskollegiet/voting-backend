@@ -85,6 +85,7 @@ export const Alternative = objectType({
     definition: (t) => {
         t.nonNull.id('id');
         t.nonNull.string('text');
+        t.boolean('isWinner');
         t.nonNull.string('votationId');
     },
 });
