@@ -1,8 +1,7 @@
-import { RsaSigningKey } from 'jwks-rsa';
-import jwt, { GetPublicKeyOrSecret } from 'jsonwebtoken';
-import jwksClient from 'jwks-rsa';
+import jwt from 'express-jwt';
+import jwksRsa from 'jwks-rsa';
 
-interface DecodedToken {
+export interface DecodedToken {
     iss: string;
     sub: string;
     aud: string[];
@@ -12,31 +11,15 @@ interface DecodedToken {
     scope: string;
 }
 
-const client = jwksClient({
-    jwksUri: `https://${process.env.AUTH0_DOMAIN}/.well-known/jwks.json`,
+export const checkJwt = jwt({
+    secret: jwksRsa.expressJwtSecret({
+        cache: true,
+        rateLimit: true,
+        jwksRequestsPerMinute: 5,
+        jwksUri: `https://${process.env.AUTH0_DOMAIN}/.well-known/jwks.json`,
+    }),
+    audience: process.env.AUTH0_AUDIENCE,
+    issuer: `https://${process.env.AUTH0_DOMAIN}/`,
+    algorithms: ['RS256'],
+    credentialsRequired: false,
 });
-const getJwksClientKey: GetPublicKeyOrSecret = (header, callback) => {
-    client.getSigningKey(header.kid || '', (_, key) => {
-        const signingKey = key.getPublicKey || (key as RsaSigningKey).rsaPublicKey;
-        callback(null, signingKey());
-    });
-};
-
-export const verifyToken = async (bearerToken: string) => {
-    return new Promise<DecodedToken | undefined>((resolve, reject) => {
-        jwt.verify(
-            bearerToken,
-            getJwksClientKey,
-            {
-                audience: process.env.AUDIENCE,
-                algorithms: ['RS256'],
-            },
-            (err, decoded) => {
-                if (err) {
-                    reject(err);
-                }
-                resolve(decoded as DecodedToken);
-            }
-        );
-    });
-};
