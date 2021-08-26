@@ -89,11 +89,12 @@ const createVotation = async (
     });
 };
 
-const createAlternative = async (votationId: string, text: string) => {
+const createAlternative = async (votationId: string, text: string, isWinner?: boolean) => {
     return ctx.prisma.alternative.create({
         data: {
             text,
             votationId,
+            isWinner,
         },
     });
 };
@@ -1261,16 +1262,74 @@ it('should return not authorised trying to get votation results', async () => {
     }
 });
 
-// it('should return correct winner', async () => {
-//     const meeting = await createMeeting(ctx.userId, Role.ADMIN, false)
-//     const votation = await createVotation(meeting.id, VotationStatus.OPEN, 1)
-//     const alternative1 = await createAlternative(votation.id, alternative1Text);
-//     const alternative2 = await createAlternative(votation.id, alternative2Text);
-//     [1, 2, 3].forEach(() => {
-//         ctx.prisma.vote.create({
-//             data: {
-//                 alternativeId: alternative1.id
-//             }
-//         })
-//     })
-// });
+it('should return votation id with results (alternative with isWinner) for all votatons of meeting', async () => {
+    const meeting = await createMeeting(ctx.userId, Role.PARTICIPANT, true);
+    const publishedVotation = await createVotation(meeting.id, VotationStatus.PUBLISHED_RESULT, 1);
+    await createVotation(meeting.id, VotationStatus.CHECKING_RESULT, 1);
+    const winner = await createAlternative(publishedVotation.id, casual.title, true);
+    const loser = await createAlternative(publishedVotation.id, casual.title, false);
+    const response = await ctx.client.request(
+        gql`
+            query GetResultsOfPublishedVotations($meetingId: String!) {
+                resultsOfPublishedVotations(meetingId: $meetingId) {
+                    id
+                    alternatives {
+                        id
+                        text
+                        isWinner
+                    }
+                }
+            }
+        `,
+        {
+            meetingId: meeting.id,
+        }
+    );
+    const result = response.resultsOfPublishedVotations[0];
+    expect(result.id).toEqual(publishedVotation.id);
+    expect(result.alternatives.length).toEqual(2);
+    expect(result.alternatives).toEqual(
+        expect.arrayContaining([
+            {
+                id: winner.id,
+                text: winner.text,
+                isWinner: true,
+            },
+            {
+                id: loser.id,
+                text: loser.text,
+                isWinner: false,
+            },
+        ])
+    );
+});
+
+it('should return not authorised trying to get results of puublished votations', async () => {
+    const otherUser = await createUser();
+    const meeting = await createMeeting(otherUser.id, Role.PARTICIPANT, true);
+    const publishedVotation = await createVotation(meeting.id, VotationStatus.PUBLISHED_RESULT, 1);
+    await createAlternative(publishedVotation.id, casual.title, true);
+    await createAlternative(publishedVotation.id, casual.title, false);
+    try {
+        await ctx.client.request(
+            gql`
+                query GetResultsOfPublishedVotations($meetingId: String!) {
+                    resultsOfPublishedVotations(meetingId: $meetingId) {
+                        id
+                        alternatives {
+                            id
+                            text
+                            isWinner
+                        }
+                    }
+                }
+            `,
+            {
+                meetingId: meeting.id,
+            }
+        );
+        expect(false).toBeTruthy();
+    } catch (error) {
+        expect(error.message).toContain('Not Authorised!');
+    }
+});
