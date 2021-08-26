@@ -16,9 +16,10 @@ enum Role {
   COUNTER
 }
 
-enum MajorityType {
+enum VotationType {
   QUALIFIED
   SIMPLE
+  STV
 }
 
 enum MeetingStatus {
@@ -88,8 +89,7 @@ model Votation {
   status            VotationStatus @default(UPCOMING)
   blankVotes        Boolean
   hiddenVotes       Boolean
-  severalVotes      Boolean
-  majorityType      MajorityType
+  type              VotationType   @default(SIMPLE)
   majorityThreshold Int
   index             Int
   meetingId         String         @db.Uuid

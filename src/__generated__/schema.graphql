@@ -35,9 +35,8 @@ input CreateVotationInput {
   hiddenVotes: Boolean!
   index: Int!
   majorityThreshold: Int!
-  majorityType: MajorityType!
-  severalVotes: Boolean!
   title: String!
+  type: VotationType!
 }
 
 """
@@ -48,11 +47,6 @@ scalar DateTime
 union DeleteParticipantResult = OwnerCannotBeRemovedFromParticipantError | Participant
 
 union GetUserResult = User | UserNotFoundError
-
-enum MajorityType {
-  QUALIFIED
-  SIMPLE
-}
 
 type MaxOneOpenVotationError {
   message: String!
@@ -195,9 +189,8 @@ input UpdateVotationInput {
   id: String!
   index: Int!
   majorityThreshold: Int!
-  majorityType: MajorityType!
-  severalVotes: Boolean!
   title: String!
+  type: VotationType!
 }
 
 union UpdateVotationStatusResult = MaxOneOpenVotationError | Votation
@@ -241,12 +234,11 @@ type Votation {
   id: ID!
   index: Int!
   majorityThreshold: Int!
-  majorityType: MajorityType!
   meetingId: String!
   order: Int
-  severalVotes: Boolean!
   status: VotationStatus!
   title: String!
+  type: VotationType!
 }
 
 """The results of a votation"""
@@ -262,6 +254,12 @@ enum VotationStatus {
   OPEN
   PUBLISHED_RESULT
   UPCOMING
+}
+
+enum VotationType {
+  QUALIFIED
+  SIMPLE
+  STV
 }
 
 type Vote {

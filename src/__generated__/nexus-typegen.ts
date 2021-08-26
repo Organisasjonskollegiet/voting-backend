@@ -46,9 +46,8 @@ export interface NexusGenInputs {
     hiddenVotes: boolean; // Boolean!
     index: number; // Int!
     majorityThreshold: number; // Int!
-    majorityType: NexusGenEnums['MajorityType']; // MajorityType!
-    severalVotes: boolean; // Boolean!
     title: string; // String!
+    type: NexusGenEnums['VotationType']; // VotationType!
   }
   ParticipantInput: { // input type
     email: string; // String!
@@ -77,18 +76,17 @@ export interface NexusGenInputs {
     id: string; // String!
     index: number; // Int!
     majorityThreshold: number; // Int!
-    majorityType: NexusGenEnums['MajorityType']; // MajorityType!
-    severalVotes: boolean; // Boolean!
     title: string; // String!
+    type: NexusGenEnums['VotationType']; // VotationType!
   }
 }
 
 export interface NexusGenEnums {
-  MajorityType: "QUALIFIED" | "SIMPLE"
   MeetingStatus: "ENDED" | "ONGOING" | "UPCOMING"
   Role: "ADMIN" | "COUNTER" | "PARTICIPANT"
   ViewState: "CLOSED" | "ENDED" | "LOADING" | "ONGOING"
   VotationStatus: "CHECKING_RESULT" | "INVALID" | "OPEN" | "PUBLISHED_RESULT" | "UPCOMING"
+  VotationType: "QUALIFIED" | "SIMPLE" | "STV"
 }
 
 export interface NexusGenScalars {
@@ -156,12 +154,11 @@ export interface NexusGenObjects {
     id: string; // ID!
     index: number; // Int!
     majorityThreshold: number; // Int!
-    majorityType: NexusGenEnums['MajorityType']; // MajorityType!
     meetingId: string; // String!
     order?: number | null; // Int
-    severalVotes: boolean; // Boolean!
     status: NexusGenEnums['VotationStatus']; // VotationStatus!
     title: string; // String!
+    type: NexusGenEnums['VotationType']; // VotationType!
   }
   VotationResults: {};
   Vote: { // root type
@@ -281,12 +278,11 @@ export interface NexusGenFieldTypes {
     id: string; // ID!
     index: number; // Int!
     majorityThreshold: number; // Int!
-    majorityType: NexusGenEnums['MajorityType']; // MajorityType!
     meetingId: string; // String!
     order: number | null; // Int
-    severalVotes: boolean; // Boolean!
     status: NexusGenEnums['VotationStatus']; // VotationStatus!
     title: string; // String!
+    type: NexusGenEnums['VotationType']; // VotationType!
   }
   VotationResults: { // field return type
     alternatives: Array<NexusGenRootTypes['AlternativeResult'] | null>; // [AlternativeResult]!
@@ -400,12 +396,11 @@ export interface NexusGenFieldTypeNames {
     id: 'ID'
     index: 'Int'
     majorityThreshold: 'Int'
-    majorityType: 'MajorityType'
     meetingId: 'String'
     order: 'Int'
-    severalVotes: 'Boolean'
     status: 'VotationStatus'
     title: 'String'
+    type: 'VotationType'
   }
   VotationResults: { // field return type name
     alternatives: 'AlternativeResult'

@@ -5,9 +5,9 @@ export const Role = enumType({
     members: ['ADMIN', 'PARTICIPANT', 'COUNTER'],
 });
 
-export const MajorityType = enumType({
-    name: 'MajorityType',
-    members: ['QUALIFIED', 'SIMPLE'],
+export const VotationType = enumType({
+    name: 'VotationType',
+    members: ['QUALIFIED', 'SIMPLE', 'STV'],
 });
 
 export const MeetingStatus = enumType({

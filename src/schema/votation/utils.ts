@@ -66,7 +66,7 @@ const computeResult = async (ctx: Context, votationId: string) => {
             votationId,
         },
     });
-    switch (votation?.majorityType) {
+    switch (votation?.type) {
         case 'SIMPLE':
             return await computeSimpleResult(ctx, alternatives);
         case 'QUALIFIED':
