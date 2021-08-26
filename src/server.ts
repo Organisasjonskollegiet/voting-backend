@@ -9,13 +9,18 @@ import cors from 'cors';
 import 'dotenv/config';
 import { Context } from './context';
 import { checkJwt, DecodedToken } from './lib/auth/verifyToken';
+import { saveAuth0UserIfNotExist } from './utils/save_user_locally';
 
 export const createApollo = (prisma: PrismaClient) => {
     const server = new ApolloServer({
         context: async ({ req }): Promise<Context> => {
             if (req.user) {
                 const decodedToken = req.user as DecodedToken;
-                return { userId: decodedToken.sub.split('|')[1], prisma };
+                const userId = decodedToken.sub.split('|')[1];
+                if (process.env.NODE_ENV != 'production') {
+                    await saveAuth0UserIfNotExist(prisma, userId, req.headers['authorization']);
+                }
+                return { userId: userId, prisma };
             }
             return { userId: '', prisma };
         },
