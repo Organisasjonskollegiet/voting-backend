@@ -1,5 +1,6 @@
 import { idArg, list, nonNull, queryField, stringArg } from 'nexus';
 import { Alternative, Votation, VotationResults } from './typedefs';
+import { VotationStatus } from '@prisma/client';
 
 export const GetVotationById = queryField('votationById', {
     type: Votation,
@@ -85,5 +86,22 @@ export const GetVotationResults = queryField('getVotationResults', {
             },
         });
         return votation;
+    },
+});
+
+export const GetResultsOfPublishedVotations = queryField('resultsOfPublishedVotations', {
+    type: list('VotationWithWinner'),
+    description: 'Return the results of all the votations with votationStatus === "PUBLISHED_RESULT" of that meeting',
+    args: {
+        meetingId: nonNull(stringArg()),
+    },
+    resolve: async (_, { meetingId }, ctx) => {
+        const votations = await ctx.prisma.votation.findMany({
+            where: {
+                meetingId,
+                status: VotationStatus.PUBLISHED_RESULT,
+            },
+        });
+        return votations;
     },
 });

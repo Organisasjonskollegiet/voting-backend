@@ -108,6 +108,30 @@ export const AlternativeResult = objectType({
     },
 });
 
+export const AlternativeWithWinner = objectType({
+    name: 'AlternativeWithWinner',
+    definition: (t) => {
+        t.nonNull.id('id');
+        t.nonNull.string('text');
+        t.nonNull.boolean('isWinner');
+    },
+});
+
+export const VotationWithWinner = objectType({
+    name: 'VotationWithWinner',
+    definition: (t) => {
+        t.nonNull.id('id');
+        t.nonNull.list.field('alternatives', {
+            type: AlternativeWithWinner,
+            resolve: async (source, __, ctx) => {
+                const { id } = source as VotationModel;
+                const alternatives = await ctx.prisma.alternative.findMany({ where: { votationId: id } });
+                return alternatives;
+            },
+        });
+    },
+});
+
 export const VoteCountResult = objectType({
     name: 'VoteCountResult',
     description: 'The result of getVoteCount',
