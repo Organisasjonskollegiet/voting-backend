@@ -85,7 +85,6 @@ export const Alternative = objectType({
     definition: (t) => {
         t.nonNull.id('id');
         t.nonNull.string('text');
-        t.boolean('isWinner');
         t.nonNull.string('votationId');
     },
 });
@@ -104,6 +103,30 @@ export const AlternativeResult = objectType({
                 const { id } = source as AlternativeModel;
                 const votes = await ctx.prisma.vote.count({ where: { alternativeId: id } });
                 return votes;
+            },
+        });
+    },
+});
+
+export const AlternativeWithWinner = objectType({
+    name: 'AlternativeWithWinner',
+    definition: (t) => {
+        t.nonNull.id('id');
+        t.nonNull.string('text');
+        t.nonNull.boolean('isWinner');
+    },
+});
+
+export const VotationWithWinner = objectType({
+    name: 'VotationWithWinner',
+    definition: (t) => {
+        t.nonNull.id('id');
+        t.nonNull.list.field('alternatives', {
+            type: AlternativeWithWinner,
+            resolve: async (source, __, ctx) => {
+                const { id } = source as VotationModel;
+                const alternatives = await ctx.prisma.alternative.findMany({ where: { votationId: id } });
+                return alternatives;
             },
         });
     },
