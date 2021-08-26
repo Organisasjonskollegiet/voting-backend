@@ -50,6 +50,7 @@ export const Votation = objectType({
         t.nonNull.boolean('blankVotes');
         t.nonNull.boolean('hiddenVotes');
         t.nonNull.field('type', { type: VotationType });
+        t.nonNull.int('numberOfWinners');
         t.nonNull.int('majorityThreshold');
         t.nonNull.int('index');
         t.nonNull.string('meetingId');

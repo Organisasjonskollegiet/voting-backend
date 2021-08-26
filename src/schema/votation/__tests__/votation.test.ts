@@ -20,6 +20,7 @@ interface StaticVotationDataType {
     blankVotes: boolean;
     hiddenVotes: boolean;
     type?: VotationType;
+    numberOfWinners: number;
     majorityThreshold?: number;
 }
 
@@ -36,6 +37,7 @@ const staticVotationData: StaticVotationDataType = {
     description: 'test votation description',
     blankVotes: true,
     hiddenVotes: true,
+    numberOfWinners: 1,
 };
 
 const updatedStaticVotationData: StaticVotationDataType = {
@@ -44,6 +46,7 @@ const updatedStaticVotationData: StaticVotationDataType = {
     blankVotes: false,
     hiddenVotes: false,
     type: VotationType.QUALIFIED,
+    numberOfWinners: 1,
     majorityThreshold: 67,
 };
 
@@ -155,6 +158,7 @@ it('should return votation by id', async () => {
                     blankVotes
                     hiddenVotes
                     type
+                    numberOfWinners
                     majorityThreshold
                     meetingId
                 }
@@ -186,6 +190,7 @@ it('should throw error from votation by id', async () => {
                         description
                         blankVotes
                         type
+                        numberOfWinners
                         majorityThreshold
                         meetingId
                     }
@@ -290,6 +295,7 @@ it('should create votations successfully', async () => {
                     hiddenVotes
                     type
                     majorityThreshold
+                    numberOfWinners
                     alternatives {
                         text
                     }
@@ -391,6 +397,7 @@ it('should update votations successfully', async () => {
                     hiddenVotes
                     type
                     majorityThreshold
+                    numberOfWinners
                     index
                     status
                     alternatives {
@@ -493,6 +500,7 @@ it('should not update votations successfully', async () => {
                         hiddenVotes
                         type
                         majorityThreshold
+                        numberOfWinners
                         index
                     }
                 }
@@ -625,6 +633,7 @@ it('should not create votations successfully', async () => {
                         hiddenVotes
                         type
                         majorityThreshold
+                        numberOfWinners
                         alternatives {
                             text
                         }

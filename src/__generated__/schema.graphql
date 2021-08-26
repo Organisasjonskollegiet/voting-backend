@@ -35,6 +35,7 @@ input CreateVotationInput {
   hiddenVotes: Boolean!
   index: Int!
   majorityThreshold: Int!
+  numberOfWinners: Int!
   title: String!
   type: VotationType!
 }
@@ -189,6 +190,7 @@ input UpdateVotationInput {
   id: String!
   index: Int!
   majorityThreshold: Int!
+  numberOfWinners: Int!
   title: String!
   type: VotationType!
 }
@@ -235,6 +237,7 @@ type Votation {
   index: Int!
   majorityThreshold: Int!
   meetingId: String!
+  numberOfWinners: Int!
   order: Int
   status: VotationStatus!
   title: String!

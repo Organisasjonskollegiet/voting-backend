@@ -46,6 +46,7 @@ export interface NexusGenInputs {
     hiddenVotes: boolean; // Boolean!
     index: number; // Int!
     majorityThreshold: number; // Int!
+    numberOfWinners: number; // Int!
     title: string; // String!
     type: NexusGenEnums['VotationType']; // VotationType!
   }
@@ -76,6 +77,7 @@ export interface NexusGenInputs {
     id: string; // String!
     index: number; // Int!
     majorityThreshold: number; // Int!
+    numberOfWinners: number; // Int!
     title: string; // String!
     type: NexusGenEnums['VotationType']; // VotationType!
   }
@@ -155,6 +157,7 @@ export interface NexusGenObjects {
     index: number; // Int!
     majorityThreshold: number; // Int!
     meetingId: string; // String!
+    numberOfWinners: number; // Int!
     order?: number | null; // Int
     status: NexusGenEnums['VotationStatus']; // VotationStatus!
     title: string; // String!
@@ -279,6 +282,7 @@ export interface NexusGenFieldTypes {
     index: number; // Int!
     majorityThreshold: number; // Int!
     meetingId: string; // String!
+    numberOfWinners: number; // Int!
     order: number | null; // Int
     status: NexusGenEnums['VotationStatus']; // VotationStatus!
     title: string; // String!
@@ -397,6 +401,7 @@ export interface NexusGenFieldTypeNames {
     index: 'Int'
     majorityThreshold: 'Int'
     meetingId: 'String'
+    numberOfWinners: 'Int'
     order: 'Int'
     status: 'VotationStatus'
     title: 'String'
