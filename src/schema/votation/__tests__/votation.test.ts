@@ -1,6 +1,6 @@
 import { createTestContext } from '../../../lib/tests/testContext';
 import { gql } from 'graphql-request';
-import { VotationStatus, MeetingStatus, MajorityType, Role } from '.prisma/client';
+import { VotationStatus, MeetingStatus, VotationType, Role } from '.prisma/client';
 import { uuid } from 'casual';
 import casual from 'casual';
 import { setWinner } from '../utils';
@@ -19,8 +19,8 @@ interface StaticVotationDataType {
     description: string;
     blankVotes: boolean;
     hiddenVotes: boolean;
-    severalVotes: boolean;
-    majorityType?: MajorityType;
+    type?: VotationType;
+    numberOfWinners: number;
     majorityThreshold?: number;
 }
 
@@ -37,7 +37,7 @@ const staticVotationData: StaticVotationDataType = {
     description: 'test votation description',
     blankVotes: true,
     hiddenVotes: true,
-    severalVotes: true,
+    numberOfWinners: 1,
 };
 
 const updatedStaticVotationData: StaticVotationDataType = {
@@ -45,8 +45,8 @@ const updatedStaticVotationData: StaticVotationDataType = {
     description: 'updated votation description',
     blankVotes: false,
     hiddenVotes: false,
-    severalVotes: false,
-    majorityType: MajorityType.QUALIFIED,
+    type: VotationType.QUALIFIED,
+    numberOfWinners: 1,
     majorityThreshold: 67,
 };
 
@@ -74,13 +74,13 @@ const createVotation = async (
     meetingId: string,
     status: VotationStatus,
     index: number,
-    majorityType: MajorityType = MajorityType.SIMPLE,
+    type: VotationType = VotationType.SIMPLE,
     majorityThreshold: number = 66
 ) => {
     return await ctx.prisma.votation.create({
         data: {
             ...staticVotationData,
-            majorityType,
+            type,
             majorityThreshold,
             status: status,
             index,
@@ -139,8 +139,7 @@ const formatVotationToCompare = (votation: any) => {
         description: votation.description,
         blankVotes: votation.blankVotes,
         hiddenVotes: votation.hiddenVotes,
-        severalVotes: votation.severalVotes,
-        majorityType: votation.majorityType,
+        type: votation.type,
         majorityThreshold: votation.majorityThreshold,
         index: votation.index,
     };
@@ -159,8 +158,8 @@ it('should return votation by id', async () => {
                     description
                     blankVotes
                     hiddenVotes
-                    severalVotes
-                    majorityType
+                    type
+                    numberOfWinners
                     majorityThreshold
                     meetingId
                 }
@@ -173,7 +172,7 @@ it('should return votation by id', async () => {
     expect(getVotation.votationById).toEqual({
         id: votationId,
         ...staticVotationData,
-        majorityType: MajorityType.SIMPLE,
+        type: VotationType.SIMPLE,
         majorityThreshold: 66,
         meetingId: meeting.id,
     });
@@ -191,7 +190,8 @@ it('should throw error from votation by id', async () => {
                         title
                         description
                         blankVotes
-                        majorityType
+                        type
+                        numberOfWinners
                         majorityThreshold
                         meetingId
                     }
@@ -270,14 +270,14 @@ it('should create votations successfully', async () => {
         votations: [
             {
                 ...staticVotationData,
-                majorityType: MajorityType.SIMPLE,
+                type: VotationType.SIMPLE,
                 majorityThreshold: 66,
                 index: 1,
                 alternatives: ['alternative1', 'alternative2'],
             },
             {
                 ...staticVotationData,
-                majorityType: MajorityType.SIMPLE,
+                type: VotationType.SIMPLE,
                 majorityThreshold: 66,
                 index: 2,
                 alternatives: [],
@@ -294,9 +294,9 @@ it('should create votations successfully', async () => {
                     index
                     blankVotes
                     hiddenVotes
-                    severalVotes
-                    majorityType
+                    type
                     majorityThreshold
+                    numberOfWinners
                     alternatives {
                         text
                     }
@@ -396,9 +396,9 @@ it('should update votations successfully', async () => {
                     description
                     blankVotes
                     hiddenVotes
-                    severalVotes
-                    majorityType
+                    type
                     majorityThreshold
+                    numberOfWinners
                     index
                     status
                     alternatives {
@@ -499,9 +499,9 @@ it('should not update votations successfully', async () => {
                         description
                         blankVotes
                         hiddenVotes
-                        severalVotes
-                        majorityType
+                        type
                         majorityThreshold
+                        numberOfWinners
                         index
                     }
                 }
@@ -607,14 +607,14 @@ it('should not create votations successfully', async () => {
         votations: [
             {
                 ...staticVotationData,
-                majorityType: MajorityType.SIMPLE,
+                type: VotationType.SIMPLE,
                 majorityThreshold: 66,
                 index: 1,
                 alternatives: [],
             },
             {
                 ...staticVotationData,
-                majorityType: MajorityType.SIMPLE,
+                type: VotationType.SIMPLE,
                 majorityThreshold: 66,
                 index: 2,
                 alternatives: [],
@@ -632,9 +632,9 @@ it('should not create votations successfully', async () => {
                         index
                         blankVotes
                         hiddenVotes
-                        severalVotes
-                        majorityType
+                        type
                         majorityThreshold
+                        numberOfWinners
                         alternatives {
                             text
                         }
@@ -1034,7 +1034,7 @@ it('should return alternative1 as winner with simple majority', async () => {
     const meeting = await createMeeting(ctx.userId, Role.ADMIN, true);
     await createParticipant(meeting.id, user1.id, true, Role.PARTICIPANT);
     await createParticipant(meeting.id, user2.id, true, Role.PARTICIPANT);
-    const votation = await createVotation(meeting.id, VotationStatus.CHECKING_RESULT, 1, MajorityType.SIMPLE);
+    const votation = await createVotation(meeting.id, VotationStatus.CHECKING_RESULT, 1, VotationType.SIMPLE);
     const alternative1 = await createAlternative(votation.id, alternative1Text);
     const alternative2 = await createAlternative(votation.id, alternative2Text);
     await vote(votation.id, ctx.userId, alternative1.id);
@@ -1083,7 +1083,7 @@ it('should return no winner with simple majority when the alternatives has equal
     const user1 = await createUser();
     const meeting = await createMeeting(ctx.userId, Role.ADMIN, true);
     await createParticipant(meeting.id, user1.id, true, Role.PARTICIPANT);
-    const votation = await createVotation(meeting.id, VotationStatus.CHECKING_RESULT, 1, MajorityType.SIMPLE);
+    const votation = await createVotation(meeting.id, VotationStatus.CHECKING_RESULT, 1, VotationType.SIMPLE);
     const alternative1 = await createAlternative(votation.id, alternative1Text);
     const alternative2 = await createAlternative(votation.id, alternative2Text);
     await vote(votation.id, ctx.userId, alternative1.id);
@@ -1133,7 +1133,7 @@ it('should return alternative1 as winner with qualified over 66%', async () => {
     const meeting = await createMeeting(ctx.userId, Role.ADMIN, true);
     await createParticipant(meeting.id, user1.id, true, Role.PARTICIPANT);
     await createParticipant(meeting.id, user2.id, true, Role.PARTICIPANT);
-    const votation = await createVotation(meeting.id, VotationStatus.CHECKING_RESULT, 1, MajorityType.QUALIFIED, 66);
+    const votation = await createVotation(meeting.id, VotationStatus.CHECKING_RESULT, 1, VotationType.QUALIFIED, 66);
     const alternative1 = await createAlternative(votation.id, alternative1Text);
     const alternative2 = await createAlternative(votation.id, alternative2Text);
     await vote(votation.id, ctx.userId, alternative1.id);
@@ -1184,7 +1184,7 @@ it('should return no winner with qualified over 67%', async () => {
     const meeting = await createMeeting(ctx.userId, Role.COUNTER, true);
     await createParticipant(meeting.id, user1.id, true, Role.PARTICIPANT);
     await createParticipant(meeting.id, user2.id, true, Role.PARTICIPANT);
-    const votation = await createVotation(meeting.id, VotationStatus.CHECKING_RESULT, 1, MajorityType.QUALIFIED, 67);
+    const votation = await createVotation(meeting.id, VotationStatus.CHECKING_RESULT, 1, VotationType.QUALIFIED, 67);
     const alternative1 = await createAlternative(votation.id, alternative1Text);
     const alternative2 = await createAlternative(votation.id, alternative2Text);
     await vote(votation.id, ctx.userId, alternative1.id);
@@ -1231,7 +1231,7 @@ it('should return no winner with qualified over 67%', async () => {
 
 it('should return not authorised trying to get votation results', async () => {
     const meeting = await createMeeting(ctx.userId, Role.PARTICIPANT, true);
-    const votation = await createVotation(meeting.id, VotationStatus.CHECKING_RESULT, 1, MajorityType.QUALIFIED, 67);
+    const votation = await createVotation(meeting.id, VotationStatus.CHECKING_RESULT, 1, VotationType.QUALIFIED, 67);
     const alternative1 = await createAlternative(votation.id, alternative1Text);
     await vote(votation.id, ctx.userId, alternative1.id);
     await setWinner(ctx, votation.id);

@@ -2,7 +2,7 @@ import { inputObjectType, list, mutationField, nonNull, stringArg } from 'nexus'
 import { Vote } from './';
 import { pubsub } from '../../lib/pubsub';
 import { Alternative, UpdateVotationStatusResult, Votation, MaxOneOpenVotationError } from './typedefs';
-import { MajorityType, VotationStatus } from '../enums';
+import { VotationType, VotationStatus } from '../enums';
 import { setWinner } from './utils';
 
 export const AlternativeInput = inputObjectType({
@@ -21,8 +21,8 @@ export const UpdateVotationInput = inputObjectType({
         t.string('description');
         t.nonNull.boolean('blankVotes');
         t.nonNull.boolean('hiddenVotes');
-        t.nonNull.boolean('severalVotes');
-        t.nonNull.field('majorityType', { type: MajorityType });
+        t.nonNull.field('type', { type: VotationType });
+        t.nonNull.int('numberOfWinners');
         t.nonNull.int('majorityThreshold');
         t.nonNull.int('index');
         t.list.nonNull.field('alternatives', { type: AlternativeInput });
@@ -36,8 +36,8 @@ export const CreateVotationInput = inputObjectType({
         t.string('description');
         t.nonNull.boolean('blankVotes');
         t.nonNull.boolean('hiddenVotes');
-        t.nonNull.boolean('severalVotes');
-        t.nonNull.field('majorityType', { type: MajorityType });
+        t.nonNull.field('type', { type: VotationType });
+        t.nonNull.int('numberOfWinners');
         t.nonNull.int('majorityThreshold');
         t.nonNull.int('index');
         t.list.nonNull.string('alternatives');
@@ -119,8 +119,7 @@ export const UpdateVotationsMutation = mutationField('updateVotations', {
                         index: votation.index,
                         blankVotes: votation.blankVotes,
                         hiddenVotes: votation.hiddenVotes,
-                        severalVotes: votation.severalVotes,
-                        majorityType: votation.majorityType,
+                        type: votation.type,
                         majorityThreshold: votation.majorityThreshold,
                     },
                 })

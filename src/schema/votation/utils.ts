@@ -55,6 +55,14 @@ const computeQualifiedResult = async (ctx: Context, votation: Votation, alternat
     return [];
 };
 
+const computeStvResult = async (ctx: Context) => {
+    const firstVotes = await ctx.prisma.vote.findMany({
+        where: {
+            prevVote: undefined,
+        },
+    });
+};
+
 const computeResult = async (ctx: Context, votationId: string) => {
     const votation = await ctx.prisma.votation.findUnique({
         where: {
@@ -66,7 +74,7 @@ const computeResult = async (ctx: Context, votationId: string) => {
             votationId,
         },
     });
-    switch (votation?.majorityType) {
+    switch (votation?.type) {
         case 'SIMPLE':
             return await computeSimpleResult(ctx, alternatives);
         case 'QUALIFIED':
