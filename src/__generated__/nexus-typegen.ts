@@ -230,6 +230,7 @@ export interface NexusGenFieldTypes {
   }
   Mutation: { // field return type
     addParticipants: Array<NexusGenRootTypes['ParticipantOrInvite'] | null> | null; // [ParticipantOrInvite]
+    castBlankVote: number | null; // Int
     castVote: NexusGenRootTypes['Vote'] | null; // Vote
     changeView: NexusGenEnums['ViewState'] | null; // ViewState
     createAlternative: NexusGenRootTypes['Alternative'] | null; // Alternative
@@ -359,6 +360,7 @@ export interface NexusGenFieldTypeNames {
   }
   Mutation: { // field return type name
     addParticipants: 'ParticipantOrInvite'
+    castBlankVote: 'Int'
     castVote: 'Vote'
     changeView: 'ViewState'
     createAlternative: 'Alternative'
@@ -459,6 +461,9 @@ export interface NexusGenArgTypes {
     addParticipants: { // args
       meetingId: string; // String!
       participants: NexusGenInputs['ParticipantInput'][]; // [ParticipantInput!]!
+    }
+    castBlankVote: { // args
+      votationId: string; // String!
     }
     castVote: { // args
       alternativeId: string; // String!
