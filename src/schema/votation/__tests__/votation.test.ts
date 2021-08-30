@@ -988,21 +988,28 @@ it('should successfully cast a blank vote', async () => {
         { votationId: votation.id }
     );
     expect(blankVoteCount.castBlankVote).toEqual(1);
+    const updatedVotation = await ctx.prisma.votation.findUnique({ where: { id: votation.id } });
+    expect(updatedVotation?.blankVoteCount).toEqual(1);
 });
 
 it('should fail to cast a blank vote if you voted', async () => {
     const meeting = await createMeeting(ctx.userId, Role.PARTICIPANT, true);
     const votation = await createVotation(meeting.id, VotationStatus.OPEN, 1, 'SIMPLE', 50, true);
     await ctx.prisma.hasVoted.create({ data: { votationId: votation.id, userId: ctx.userId } });
-    const blankVoteCount = await ctx.client.request(
-        gql`
-            mutation CastBlankVote($votationId: String!) {
-                castBlankVote(votationId: $votationId)
-            }
-        `,
-        { votationId: votation.id }
-    );
-    expect(blankVoteCount.castBlankVote).toEqual(0);
+    try {
+        await ctx.client.request(
+            gql`
+                mutation CastBlankVote($votationId: String!) {
+                    castBlankVote(votationId: $votationId)
+                }
+            `,
+            { votationId: votation.id }
+        );
+    } catch (err) {
+        // Check if the votation still has 0 blank votes.
+        const sameVotation = await ctx.prisma.votation.findUnique({ where: { id: votation.id } });
+        expect(sameVotation).toEqual(0);
+    }
 });
 
 it('should return correct vote count', async () => {
