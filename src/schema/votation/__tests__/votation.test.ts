@@ -1,9 +1,10 @@
 import { createTestContext } from '../../../lib/tests/testContext';
 import { gql } from 'graphql-request';
 import { VotationStatus, MeetingStatus, VotationType, Role } from '.prisma/client';
-import { uuid } from 'casual';
+import { string, uuid } from 'casual';
 import casual from 'casual';
-import { setWinner } from '../utils';
+import { computeResult, setWinner } from '../utils';
+import { Vote } from '@prisma/client';
 const ctx = createTestContext();
 
 interface StaticMeetingDataType {
@@ -75,6 +76,7 @@ const createVotation = async (
     status: VotationStatus,
     index: number,
     type: VotationType = VotationType.SIMPLE,
+    numberOfWinners: number = 1,
     majorityThreshold: number = 66
 ) => {
     return await ctx.prisma.votation.create({
@@ -85,6 +87,7 @@ const createVotation = async (
             status: status,
             index,
             meetingId,
+            numberOfWinners,
         },
     });
 };
@@ -131,6 +134,40 @@ const vote = async (votationId: string, userId: string, alternativeId: string) =
             alternativeId,
         },
     });
+};
+
+const castStvVote = async (votationId: string, alternatives: { id: string; ranking: number }[], userId: string) => {
+    const stv = await ctx.prisma.stvVote.create({
+        data: {
+            votationId,
+        },
+    });
+    await ctx.prisma.hasVoted.create({
+        data: {
+            userId,
+            votationId,
+        },
+    });
+    const promises: Promise<Vote>[] = [];
+    alternatives.forEach((a) =>
+        promises.push(
+            new Promise(async (resolve, reject) => {
+                try {
+                    const vote = await ctx.prisma.vote.create({
+                        data: {
+                            stvVoteId: stv.id,
+                            alternativeId: a.id,
+                            ranking: a.ranking,
+                        },
+                    });
+                    resolve(vote);
+                } catch (error) {
+                    reject(error);
+                }
+            })
+        )
+    );
+    return await Promise.all(promises);
 };
 
 const formatVotationToCompare = (votation: any) => {
@@ -1133,7 +1170,7 @@ it('should return alternative1 as winner with qualified over 66%', async () => {
     const meeting = await createMeeting(ctx.userId, Role.ADMIN, true);
     await createParticipant(meeting.id, user1.id, true, Role.PARTICIPANT);
     await createParticipant(meeting.id, user2.id, true, Role.PARTICIPANT);
-    const votation = await createVotation(meeting.id, VotationStatus.CHECKING_RESULT, 1, VotationType.QUALIFIED, 66);
+    const votation = await createVotation(meeting.id, VotationStatus.CHECKING_RESULT, 1, VotationType.QUALIFIED, 1, 66);
     const alternative1 = await createAlternative(votation.id, alternative1Text);
     const alternative2 = await createAlternative(votation.id, alternative2Text);
     await vote(votation.id, ctx.userId, alternative1.id);
@@ -1184,7 +1221,7 @@ it('should return no winner with qualified over 67%', async () => {
     const meeting = await createMeeting(ctx.userId, Role.COUNTER, true);
     await createParticipant(meeting.id, user1.id, true, Role.PARTICIPANT);
     await createParticipant(meeting.id, user2.id, true, Role.PARTICIPANT);
-    const votation = await createVotation(meeting.id, VotationStatus.CHECKING_RESULT, 1, VotationType.QUALIFIED, 67);
+    const votation = await createVotation(meeting.id, VotationStatus.CHECKING_RESULT, 1, VotationType.QUALIFIED, 1, 67);
     const alternative1 = await createAlternative(votation.id, alternative1Text);
     const alternative2 = await createAlternative(votation.id, alternative2Text);
     await vote(votation.id, ctx.userId, alternative1.id);
@@ -1231,7 +1268,7 @@ it('should return no winner with qualified over 67%', async () => {
 
 it('should return not authorised trying to get votation results', async () => {
     const meeting = await createMeeting(ctx.userId, Role.PARTICIPANT, true);
-    const votation = await createVotation(meeting.id, VotationStatus.CHECKING_RESULT, 1, VotationType.QUALIFIED, 67);
+    const votation = await createVotation(meeting.id, VotationStatus.CHECKING_RESULT, 1, VotationType.QUALIFIED, 1, 67);
     const alternative1 = await createAlternative(votation.id, alternative1Text);
     await vote(votation.id, ctx.userId, alternative1.id);
     await setWinner(ctx, votation.id);
@@ -1304,7 +1341,7 @@ it('should return votation id with results (alternative with isWinner) for all v
     );
 });
 
-it('should return not authorised trying to get results of puublished votations', async () => {
+it('should return not authorised trying to get results of published votations', async () => {
     const otherUser = await createUser();
     const meeting = await createMeeting(otherUser.id, Role.PARTICIPANT, true);
     const publishedVotation = await createVotation(meeting.id, VotationStatus.PUBLISHED_RESULT, 1);
@@ -1332,4 +1369,85 @@ it('should return not authorised trying to get results of puublished votations',
     } catch (error) {
         expect(error.message).toContain('Not Authorised!');
     }
+});
+
+it('should return andrea and carter as winners', async () => {
+    const meeting = await createMeeting(ctx.userId, Role.ADMIN, true);
+    const votation = await createVotation(meeting.id, VotationStatus.PUBLISHED_RESULT, 1, VotationType.STV, 2);
+    const andrea = await createAlternative(votation.id, casual.title);
+    const brad = await createAlternative(votation.id, casual.title);
+    const carter = await createAlternative(votation.id, casual.title);
+    const delilah = await createAlternative(votation.id, casual.title);
+    const promises: Promise<Vote[]>[] = [];
+    for (let i = 0; i < 16; i++) {
+        promises.push(
+            new Promise(async (resolve, reject) => {
+                try {
+                    const user = await createUser();
+                    const votes = await castStvVote(
+                        votation.id,
+                        [
+                            { id: andrea.id, ranking: 0 },
+                            { id: brad.id, ranking: 1 },
+                            { id: carter.id, ranking: 2 },
+                            { id: delilah.id, ranking: 3 },
+                        ],
+                        user.id
+                    );
+                    resolve(votes);
+                } catch (error) {
+                    reject(error);
+                }
+            })
+        );
+    }
+    for (let i = 0; i < 24; i++) {
+        promises.push(
+            new Promise(async (resolve, reject) => {
+                try {
+                    const user = await createUser();
+                    const votes = await castStvVote(
+                        votation.id,
+                        [
+                            { id: andrea.id, ranking: 0 },
+                            { id: carter.id, ranking: 1 },
+                            { id: brad.id, ranking: 2 },
+                            { id: delilah.id, ranking: 3 },
+                        ],
+                        user.id
+                    );
+                    resolve(votes);
+                } catch (error) {
+                    reject(error);
+                }
+            })
+        );
+    }
+    for (let i = 0; i < 17; i++) {
+        promises.push(
+            new Promise(async (resolve, reject) => {
+                try {
+                    const user = await createUser();
+                    const votes = await castStvVote(
+                        votation.id,
+                        [
+                            { id: delilah.id, ranking: 0 },
+                            { id: andrea.id, ranking: 1 },
+                            { id: brad.id, ranking: 2 },
+                            { id: carter.id, ranking: 3 },
+                        ],
+                        user.id
+                    );
+                    resolve(votes);
+                } catch (error) {
+                    reject(error);
+                }
+            })
+        );
+    }
+    await Promise.all(promises);
+    const result = await computeResult(ctx, votation);
+    expect(result.length).toBe(2);
+    expect(result.includes(andrea.id)).toBeTruthy();
+    expect(result.includes(carter.id)).toBeTruthy();
 });
