@@ -13,5 +13,5 @@ export const canUserVoteOnVotation = async (votationId: string, ctx: Context) =>
         },
     });
     const hasVotedCount = await ctx.prisma.hasVoted.count({ where: { userId: ctx.userId, votationId } });
-    return !!participant && votation.status === 'OPEN' && hasVotedCount > 0 && participant.isVotingEligible;
+    return !!participant && votation.status === 'OPEN' && hasVotedCount == 0 && participant.isVotingEligible;
 };
