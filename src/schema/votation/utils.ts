@@ -1,9 +1,17 @@
-import { Alternative, Votation } from '@prisma/client';
+import { Alternative, Votation, Vote } from '@prisma/client';
 import { Context } from '../../context';
 
 type VotationResult = {
     id: string;
     count: number;
+};
+
+interface AlternativeIdToVoteCount {
+    [id: string]: number;
+}
+
+type VoteWithWeight = Vote & {
+    weight: number;
 };
 
 export const userHasVoted = async (ctx: Context, votationId: string) => {
@@ -53,6 +61,65 @@ const computeQualifiedResult = async (ctx: Context, votation: Votation, alternat
         }
     }
     return [];
+};
+
+const computeStvResult = async (ctx: Context, votation: Votation, alternatives: Alternative[]) => {
+    const winners: VotationResult[] = [];
+    const losers: string[] = [];
+    let alternativeIdToVoteCount: AlternativeIdToVoteCount = {};
+    alternatives.forEach((alternative) => (alternativeIdToVoteCount[alternative.id] = 0));
+    const hasVoted = await ctx.prisma.hasVoted.count({
+        where: {
+            votationId: votation.id,
+        },
+    });
+    const quota = Math.floor(hasVoted / (votation.numberOfWinners + 1)) + 1;
+    const votes = await ctx.prisma.vote.findMany({
+        where: {
+            alternative: {
+                votationId: votation.id,
+            },
+        },
+    });
+    let votesWithWeight = votes.map((vote) => {
+        return {
+            ...vote,
+            weight: 1,
+        };
+    });
+    const alternativeIds = Object.keys(alternativeIdToVoteCount);
+    while (true) {
+        votesWithWeight.forEach((vote) => (alternativeIdToVoteCount[vote.alternativeId] += 1));
+        const roundWinners = alternativeIds
+            .filter((key) => alternativeIdToVoteCount[key] >= quota)
+            .map((key) => {
+                return {
+                    id: key,
+                    count: alternativeIdToVoteCount[key],
+                };
+            });
+        if (roundWinners.length > 0) {
+            winners.push(...roundWinners);
+            roundWinners.forEach((winner) => {
+                const surplus = winner.count - quota;
+                const weightOfNextVotes = surplus / winner.count;
+                for (let i = 0; i < votesWithWeight.length; i++) {
+                    if (votesWithWeight[i].alternativeId === winner.id) {
+                        const nextVoteId = votesWithWeight[i].nextVoteId;
+                    }
+                }
+            });
+            // Push whats over quota
+        } else {
+            let loser: VotationResult;
+            alternativeIds.forEach((id) => {
+                const count = alternativeIdToVoteCount[id];
+                if (!loser || count < loser.count) {
+                    loser = { id, count };
+                }
+            });
+        }
+    }
 };
 
 const computeResult = async (ctx: Context, votationId: string) => {
