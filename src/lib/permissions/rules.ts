@@ -159,7 +159,7 @@ export const userCanVoteOnVotation = rule({ cache: 'contextual' })(async (_, { v
 /**
  * Rule: Check that the user can vote. Checks that he is participant, is voting eligible and has not already voted
  */
-export const userCanVote = rule({ cache: 'contextual' })(async (_, { alternativeId }, ctx: Context) => {
+export const userCanVoteOnAlternative = rule({ cache: 'contextual' })(async (_, { alternativeId }, ctx: Context) => {
     const alternative = await ctx.prisma.alternative.findUnique({ where: { id: alternativeId } });
     if (!alternative) return false;
     const canVote = await canUserVoteOnVotation(alternative.votationId, ctx);
