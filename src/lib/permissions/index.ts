@@ -32,6 +32,7 @@ const permissions = shield(
         Mutation: {
             addParticipants: and(isAdminOfMeetingId),
             castVote: and(userCanVote),
+            castBlankVote: and(userCanVote),
             createVotations: and(isAdminOfMeetingId),
             updateMeeting: and(isAdminOfMeetingByObject),
             updateVotations: and(isAdminOfVotationsByObjects),
