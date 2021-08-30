@@ -90,6 +90,7 @@ model Votation {
   blankVotes        Boolean
   hiddenVotes       Boolean
   type              VotationType   @default(SIMPLE)
+  numberOfWinners   Int            @default(1)
   majorityThreshold Int
   index             Int
   meetingId         String         @db.Uuid

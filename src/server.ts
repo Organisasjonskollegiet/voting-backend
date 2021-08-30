@@ -3,18 +3,26 @@
 import { PrismaClient } from '@prisma/client';
 import { ApolloServer } from 'apollo-server-express';
 import express from 'express';
-import { userFromRequest } from './lib/auth/getUser';
 import simpleMock from './lib/mocks/mock';
 import { protectedSchema } from './schema';
 import cors from 'cors';
 import 'dotenv/config';
 import { Context } from './context';
+import { checkJwt, DecodedToken } from './lib/auth/verifyToken';
+import { saveAuth0UserIfNotExist } from './utils/save_user_locally';
 
 export const createApollo = (prisma: PrismaClient) => {
     const server = new ApolloServer({
         context: async ({ req }): Promise<Context> => {
-            const userId = await userFromRequest(req);
-            return { userId, prisma };
+            if (req.user) {
+                const decodedToken = req.user as DecodedToken;
+                const userId = decodedToken.sub.split('|')[1];
+                if (process.env.NODE_ENV != 'production') {
+                    await saveAuth0UserIfNotExist(prisma, userId, req.headers['authorization']);
+                }
+                return { userId: userId, prisma };
+            }
+            return { userId: '', prisma };
         },
         schema: protectedSchema,
         mocks: process.env.MOCKING == 'true' && simpleMock,
@@ -43,6 +51,7 @@ export const createGraphqlServer = async (server: ApolloServer, prisma: PrismaCl
             },
         })
     );
+    app.use(checkJwt);
 
     if (process.env.MOCKING != 'true') await prisma.$connect();
     // Connect to database

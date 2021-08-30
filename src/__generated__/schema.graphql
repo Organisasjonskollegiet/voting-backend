@@ -21,6 +21,12 @@ type AlternativeResult {
   votes: Int!
 }
 
+type AlternativeWithWinner {
+  id: ID!
+  isWinner: Boolean!
+  text: String!
+}
+
 input CreateMeetingInput {
   description: String
   organization: String!
@@ -35,6 +41,7 @@ input CreateVotationInput {
   hiddenVotes: Boolean!
   index: Int!
   majorityThreshold: Int!
+  numberOfWinners: Int!
   title: String!
   type: VotationType!
 }
@@ -148,6 +155,11 @@ type Query {
   Return relevant information about invites and participants connected to meeting
   """
   participants(meetingId: String!): [ParticipantOrInvite]
+
+  """
+  Return the results of all the votations with votationStatus === "PUBLISHED_RESULT" of that meeting
+  """
+  resultsOfPublishedVotations(meetingId: String!): [VotationWithWinner]
   user: GetUserResult
   votationById(votationId: String!): Votation
 }
@@ -189,6 +201,7 @@ input UpdateVotationInput {
   id: String!
   index: Int!
   majorityThreshold: Int!
+  numberOfWinners: Int!
   title: String!
   type: VotationType!
 }
@@ -235,6 +248,7 @@ type Votation {
   index: Int!
   majorityThreshold: Int!
   meetingId: String!
+  numberOfWinners: Int!
   order: Int
   status: VotationStatus!
   title: String!
@@ -260,6 +274,11 @@ enum VotationType {
   QUALIFIED
   SIMPLE
   STV
+}
+
+type VotationWithWinner {
+  alternatives: [AlternativeWithWinner]!
+  id: ID!
 }
 
 type Vote {

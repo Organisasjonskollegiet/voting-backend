@@ -22,6 +22,7 @@ export const UpdateVotationInput = inputObjectType({
         t.nonNull.boolean('blankVotes');
         t.nonNull.boolean('hiddenVotes');
         t.nonNull.field('type', { type: VotationType });
+        t.nonNull.int('numberOfWinners');
         t.nonNull.int('majorityThreshold');
         t.nonNull.int('index');
         t.list.nonNull.field('alternatives', { type: AlternativeInput });
@@ -36,6 +37,7 @@ export const CreateVotationInput = inputObjectType({
         t.nonNull.boolean('blankVotes');
         t.nonNull.boolean('hiddenVotes');
         t.nonNull.field('type', { type: VotationType });
+        t.nonNull.int('numberOfWinners');
         t.nonNull.int('majorityThreshold');
         t.nonNull.int('index');
         t.list.nonNull.string('alternatives');
