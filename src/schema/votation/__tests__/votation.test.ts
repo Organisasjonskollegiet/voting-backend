@@ -112,27 +112,15 @@ const createUser = async () => {
 
 const createParticipant = async (meetingId: string, userId: string, isVotingEligible: boolean, role: Role) => {
     return await ctx.prisma.participant.create({
-        data: {
-            meetingId,
-            userId,
-            isVotingEligible,
-            role,
-        },
+        data: { meetingId, userId, isVotingEligible, role },
     });
 };
 
 const vote = async (votationId: string, userId: string, alternativeId: string) => {
-    await ctx.prisma.hasVoted.create({
-        data: {
-            votationId,
-            userId,
-        },
-    });
-    await ctx.prisma.vote.create({
-        data: {
-            alternativeId,
-        },
-    });
+    await ctx.prisma.$transaction([
+        ctx.prisma.hasVoted.create({ data: { votationId, userId } }),
+        ctx.prisma.vote.create({ data: { alternativeId } }),
+    ]);
 };
 
 const formatVotationToCompare = (votation: any) => {
@@ -1008,7 +996,7 @@ it('should fail to cast a blank vote if you voted', async () => {
     } catch (err) {
         // Check if the votation still has 0 blank votes.
         const sameVotation = await ctx.prisma.votation.findUnique({ where: { id: votation.id } });
-        expect(sameVotation).toEqual(0);
+        expect(sameVotation?.blankVoteCount).toEqual(0);
     }
 });
 
