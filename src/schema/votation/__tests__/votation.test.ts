@@ -177,6 +177,7 @@ it('should return votation by id', async () => {
         type: VotationType.SIMPLE,
         majorityThreshold: 66,
         meetingId: meeting.id,
+        blankVotes: false,
     });
 });
 
@@ -975,7 +976,7 @@ it('should not cast vote successfully since the participant is not votingEligibl
 });
 
 it('should successfully cast a blank vote', async () => {
-    const meeting = await createMeeting(ctx.userId, Role.ADMIN, true);
+    const meeting = await createMeeting(ctx.userId, Role.PARTICIPANT, true);
     const votation = await createVotation(meeting.id, VotationStatus.OPEN, 1, 'SIMPLE', 50, true);
     expect(votation.blankVoteCount).toEqual(0);
     const blankVoteCount = await ctx.client.request(
@@ -990,7 +991,7 @@ it('should successfully cast a blank vote', async () => {
 });
 
 it('should fail to cast a blank vote if you voted', async () => {
-    const meeting = await createMeeting(ctx.userId, Role.ADMIN, true);
+    const meeting = await createMeeting(ctx.userId, Role.PARTICIPANT, true);
     const votation = await createVotation(meeting.id, VotationStatus.OPEN, 1, 'SIMPLE', 50, true);
     await ctx.prisma.hasVoted.create({ data: { votationId: votation.id, userId: ctx.userId } });
     const blankVoteCount = await ctx.client.request(
