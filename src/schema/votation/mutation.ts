@@ -139,6 +139,18 @@ export const UpdateVotationsMutation = mutationField('updateVotations', {
     },
 });
 
+export const test = mutationField('test', {
+    type: 'Int',
+    description: '',
+    args: {
+        votationId: nonNull(stringArg()),
+    },
+    resolve: async (_, { votationId }, ctx) => {
+        await setWinner(ctx, votationId);
+        return 0;
+    },
+});
+
 export const UpdateVotationStatusMutation = mutationField('updateVotationStatus', {
     type: UpdateVotationStatusResult,
     description: '',
