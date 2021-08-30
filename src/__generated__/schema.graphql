@@ -102,9 +102,6 @@ type Mutation {
   deleteVotations(ids: [String!]!): [String]
 
   """"""
-  test(votationId: String!): Int
-
-  """"""
   updateAlternative(id: String!, text: String!): Alternative
 
   """"""
