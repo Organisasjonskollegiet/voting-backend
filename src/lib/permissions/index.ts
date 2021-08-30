@@ -15,6 +15,7 @@ import {
     userCanVote,
     isAdminOfVotationById,
     resultIsPublished,
+    userCanVoteOnVotation,
 } from './rules';
 
 const permissions = shield(
@@ -32,7 +33,7 @@ const permissions = shield(
         Mutation: {
             addParticipants: and(isAdminOfMeetingId),
             castVote: and(userCanVote),
-            castBlankVote: and(userCanVote),
+            castBlankVote: and(userCanVoteOnVotation),
             createVotations: and(isAdminOfMeetingId),
             updateMeeting: and(isAdminOfMeetingByObject),
             updateVotations: and(isAdminOfVotationsByObjects),
