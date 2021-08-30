@@ -63,10 +63,10 @@ model Meeting {
 model Participant {
   id               String  @id @default(uuid()) @db.Uuid
   role             Role
-  userId           String @db.Uuid
+  userId           String  @db.Uuid
   meetingId        String  @db.Uuid
   isVotingEligible Boolean @default(true)
-  user             User   @relation(fields: [userId], references: [id])
+  user             User    @relation(fields: [userId], references: [id])
   meeting          Meeting @relation(fields: [meetingId], references: [id])
 
   @@unique([userId, meetingId])
@@ -88,6 +88,7 @@ model Votation {
   description       String?
   status            VotationStatus @default(UPCOMING)
   blankVotes        Boolean
+  blankVoteCount    Int            @default(0)
   hiddenVotes       Boolean
   type              VotationType   @default(SIMPLE)
   numberOfWinners   Int            @default(1)
@@ -115,7 +116,7 @@ model Alternative {
   text       String   @db.VarChar(120)
   votationId String   @db.Uuid
   votation   Votation @relation(fields: [votationId], references: [id])
-  isWinner   Boolean @default(false)
+  isWinner   Boolean  @default(false)
   votes      Vote[]
 }
 

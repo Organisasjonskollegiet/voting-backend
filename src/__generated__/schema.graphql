@@ -80,6 +80,9 @@ enum MeetingStatus {
 type Mutation {
   """"""
   addParticipants(meetingId: String!, participants: [ParticipantInput!]!): [ParticipantOrInvite]
+
+  """Returns the current number of blank votes"""
+  castBlankVote(votationId: String!): Int
   castStvVote(alternatives: [StvVoteAlternativeInput!]!, votationId: String!): String
   castVote(alternativeId: String!): Vote
   changeView(state: ViewState!): ViewState

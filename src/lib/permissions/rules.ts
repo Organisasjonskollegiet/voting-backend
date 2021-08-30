@@ -2,6 +2,7 @@ import { Role } from '.prisma/client';
 import { AuthenticationError } from 'apollo-server-express';
 import { rule } from 'graphql-shield';
 import { Context } from '../../context';
+import { canUserVoteOnVotation } from './utils';
 
 /**
  * Helper function for checking if person is admin of meeting
@@ -175,24 +176,19 @@ export const isOwnerOfMeeting = rule({ cache: 'strict' })(async (_, { id }, ctx:
     return meeting ? meeting.ownerId === ctx.userId : false;
 });
 
-/**
- * Rule: Check that the user can vote. Checks that he is participant, is voting eligible and has not already voted
- */
-export const userCanVoteByVotationId = rule({ cache: 'contextual' })(async (_, { votationId }, ctx: Context) => {
-    return await checkIfUserCanVote(votationId, ctx);
+export const userCanVoteOnVotation = rule({ cache: 'contextual' })(async (_, { votationId }, ctx: Context) => {
+    const canVote = await canUserVoteOnVotation(votationId, ctx);
+    return canVote;
 });
 
 /**
  * Rule: Check that the user can vote. Checks that he is participant, is voting eligible and has not already voted
  */
-export const userCanVoteByAlternativeId = rule({ cache: 'contextual' })(async (_, { alternativeId }, ctx: Context) => {
-    const alternative = await ctx.prisma.alternative.findUnique({
-        where: {
-            id: alternativeId,
-        },
-    });
+export const userCanVoteOnAlternative = rule({ cache: 'contextual' })(async (_, { alternativeId }, ctx: Context) => {
+    const alternative = await ctx.prisma.alternative.findUnique({ where: { id: alternativeId } });
     if (!alternative) return false;
-    return await checkIfUserCanVote(alternative.votationId, ctx);
+    const canVote = await canUserVoteOnVotation(alternative.votationId, ctx);
+    return canVote;
 });
 
 /**
