@@ -75,7 +75,8 @@ const createVotation = async (
     status: VotationStatus,
     index: number,
     type: VotationType = VotationType.SIMPLE,
-    majorityThreshold: number = 66
+    majorityThreshold: number = 66,
+    blankVotes = false
 ) => {
     return await ctx.prisma.votation.create({
         data: {
@@ -85,6 +86,7 @@ const createVotation = async (
             status: status,
             index,
             meetingId,
+            blankVotes,
         },
     });
 };
@@ -110,27 +112,15 @@ const createUser = async () => {
 
 const createParticipant = async (meetingId: string, userId: string, isVotingEligible: boolean, role: Role) => {
     return await ctx.prisma.participant.create({
-        data: {
-            meetingId,
-            userId,
-            isVotingEligible,
-            role,
-        },
+        data: { meetingId, userId, isVotingEligible, role },
     });
 };
 
 const vote = async (votationId: string, userId: string, alternativeId: string) => {
-    await ctx.prisma.hasVoted.create({
-        data: {
-            votationId,
-            userId,
-        },
-    });
-    await ctx.prisma.vote.create({
-        data: {
-            alternativeId,
-        },
-    });
+    await ctx.prisma.$transaction([
+        ctx.prisma.hasVoted.create({ data: { votationId, userId } }),
+        ctx.prisma.vote.create({ data: { alternativeId } }),
+    ]);
 };
 
 const formatVotationToCompare = (votation: any) => {
@@ -175,6 +165,7 @@ it('should return votation by id', async () => {
         type: VotationType.SIMPLE,
         majorityThreshold: 66,
         meetingId: meeting.id,
+        blankVotes: false,
     });
 });
 
@@ -969,6 +960,43 @@ it('should not cast vote successfully since the participant is not votingEligibl
             },
         });
         expect(hasVoted).toBe(1);
+    }
+});
+
+it('should successfully cast a blank vote', async () => {
+    const meeting = await createMeeting(ctx.userId, Role.PARTICIPANT, true);
+    const votation = await createVotation(meeting.id, VotationStatus.OPEN, 2, 'SIMPLE', 50, true);
+    expect(votation.blankVoteCount).toEqual(0);
+    const blankVoteCount = await ctx.client.request(
+        gql`
+            mutation CastBlankVote($votationId: String!) {
+                castBlankVote(votationId: $votationId)
+            }
+        `,
+        { votationId: votation.id }
+    );
+    expect(blankVoteCount.castBlankVote).toEqual(1);
+    const updatedVotation = await ctx.prisma.votation.findUnique({ where: { id: votation.id } });
+    expect(updatedVotation?.blankVoteCount).toEqual(1);
+});
+
+it('should fail to cast a blank vote if you voted', async () => {
+    const meeting = await createMeeting(ctx.userId, Role.PARTICIPANT, true);
+    const votation = await createVotation(meeting.id, VotationStatus.OPEN, 1, 'SIMPLE', 50, true);
+    await ctx.prisma.hasVoted.create({ data: { votationId: votation.id, userId: ctx.userId } });
+    try {
+        await ctx.client.request(
+            gql`
+                mutation CastBlankVote($votationId: String!) {
+                    castBlankVote(votationId: $votationId)
+                }
+            `,
+            { votationId: votation.id }
+        );
+    } catch (err) {
+        // Check if the votation still has 0 blank votes.
+        const sameVotation = await ctx.prisma.votation.findUnique({ where: { id: votation.id } });
+        expect(sameVotation?.blankVoteCount).toEqual(0);
     }
 });
 

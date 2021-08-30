@@ -2,6 +2,7 @@ import { Role } from '.prisma/client';
 import { AuthenticationError } from 'apollo-server-express';
 import { rule } from 'graphql-shield';
 import { Context } from '../../context';
+import { canUserVoteOnVotation } from './utils';
 
 /**
  * Helper function for checking if person is admin of meeting
@@ -150,38 +151,19 @@ export const isOwnerOfMeeting = rule({ cache: 'strict' })(async (_, { id }, ctx:
     return meeting ? meeting.ownerId === ctx.userId : false;
 });
 
+export const userCanVoteOnVotation = rule({ cache: 'contextual' })(async (_, { votationId }, ctx: Context) => {
+    const canVote = await canUserVoteOnVotation(votationId, ctx);
+    return canVote;
+});
+
 /**
  * Rule: Check that the user can vote. Checks that he is participant, is voting eligible and has not already voted
  */
-export const userCanVote = rule({ cache: 'contextual' })(async (_, { alternativeId }, ctx: Context) => {
-    const alternative = await ctx.prisma.alternative.findUnique({
-        where: {
-            id: alternativeId,
-        },
-    });
+export const userCanVoteOnAlternative = rule({ cache: 'contextual' })(async (_, { alternativeId }, ctx: Context) => {
+    const alternative = await ctx.prisma.alternative.findUnique({ where: { id: alternativeId } });
     if (!alternative) return false;
-    const votation = await ctx.prisma.votation.findUnique({
-        where: {
-            id: alternative.votationId,
-        },
-    });
-    if (!votation) return false;
-    const participant = await ctx.prisma.participant.findUnique({
-        where: {
-            userId_meetingId: {
-                userId: ctx.userId,
-                meetingId: votation?.meetingId,
-            },
-        },
-    });
-    const hasVoted =
-        (await ctx.prisma.hasVoted.count({
-            where: {
-                userId: ctx.userId,
-                votationId: alternative.votationId,
-            },
-        })) > 0;
-    return !!participant && votation.status === 'OPEN' && !hasVoted && participant.isVotingEligible;
+    const canVote = await canUserVoteOnVotation(alternative.votationId, ctx);
+    return canVote;
 });
 
 /**

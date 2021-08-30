@@ -298,3 +298,20 @@ export const CastVoteMutation = mutationField('castVote', {
         return vote;
     },
 });
+
+export const CastBlankVoteMutation = mutationField('castBlankVote', {
+    type: 'Int',
+    args: {
+        votationId: nonNull(stringArg()),
+    },
+    description: 'Returns the current number of blank votes',
+    resolve: async (_, { votationId }, ctx) => {
+        const [__, votation] = await ctx.prisma.$transaction([
+            ctx.prisma.hasVoted.create({ data: { userId: ctx.userId, votationId: votationId } }),
+            ctx.prisma.votation.update({ where: { id: votationId }, data: { blankVoteCount: { increment: 1 } } }),
+        ]);
+        const voteCount = await ctx.prisma.hasVoted.count({ where: { votationId: votationId } });
+        await pubsub.publish(`NEW_VOTE_REGISTERED_FOR_${votationId}`, voteCount);
+        return votation.blankVoteCount;
+    },
+});
