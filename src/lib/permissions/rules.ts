@@ -23,6 +23,31 @@ const checkIsAdminOfAlternative = async (id: string, ctx: Context) => {
     return await checkIsRoleOfMeetingId(votation.meetingId, Role.ADMIN, ctx);
 };
 
+const checkIfUserCanVote = async (votationId: string, ctx: Context) => {
+    const votation = await ctx.prisma.votation.findUnique({
+        where: {
+            id: votationId,
+        },
+    });
+    if (!votation) return false;
+    const participant = await ctx.prisma.participant.findUnique({
+        where: {
+            userId_meetingId: {
+                userId: ctx.userId,
+                meetingId: votation?.meetingId,
+            },
+        },
+    });
+    const hasVoted =
+        (await ctx.prisma.hasVoted.count({
+            where: {
+                userId: ctx.userId,
+                votationId: votationId,
+            },
+        })) > 0;
+    return !!participant && votation.status === 'OPEN' && !hasVoted && participant.isVotingEligible;
+};
+
 export const isAuthenticated = rule({ cache: 'contextual' })(async (_, __, ctx: Context) => {
     return ctx.userId ? true : new AuthenticationError('User must be logged in');
 });
@@ -153,35 +178,21 @@ export const isOwnerOfMeeting = rule({ cache: 'strict' })(async (_, { id }, ctx:
 /**
  * Rule: Check that the user can vote. Checks that he is participant, is voting eligible and has not already voted
  */
-export const userCanVote = rule({ cache: 'contextual' })(async (_, { alternativeId }, ctx: Context) => {
+export const userCanVoteByVotationId = rule({ cache: 'contextual' })(async (_, { votationId }, ctx: Context) => {
+    return await checkIfUserCanVote(votationId, ctx);
+});
+
+/**
+ * Rule: Check that the user can vote. Checks that he is participant, is voting eligible and has not already voted
+ */
+export const userCanVoteByAlternativeId = rule({ cache: 'contextual' })(async (_, { alternativeId }, ctx: Context) => {
     const alternative = await ctx.prisma.alternative.findUnique({
         where: {
             id: alternativeId,
         },
     });
     if (!alternative) return false;
-    const votation = await ctx.prisma.votation.findUnique({
-        where: {
-            id: alternative.votationId,
-        },
-    });
-    if (!votation) return false;
-    const participant = await ctx.prisma.participant.findUnique({
-        where: {
-            userId_meetingId: {
-                userId: ctx.userId,
-                meetingId: votation?.meetingId,
-            },
-        },
-    });
-    const hasVoted =
-        (await ctx.prisma.hasVoted.count({
-            where: {
-                userId: ctx.userId,
-                votationId: alternative.votationId,
-            },
-        })) > 0;
-    return !!participant && votation.status === 'OPEN' && !hasVoted && participant.isVotingEligible;
+    return await checkIfUserCanVote(alternative.votationId, ctx);
 });
 
 /**

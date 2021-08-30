@@ -7,7 +7,6 @@ export const Vote = objectType({
     definition: (t) => {
         t.nonNull.id('id');
         t.nonNull.string('alternativeId');
-        t.string('nextVoteId');
         t.field('alternative', {
             type: Alternative,
             resolve: async (source, __, ctx) => {
@@ -17,23 +16,6 @@ export const Vote = objectType({
                     rejectOnNotFound: true,
                 });
                 return alternative;
-            },
-        });
-        t.field('nextVote', {
-            type: Vote,
-            resolve: async (source, __, ctx) => {
-                const { nextVoteId } = source as VoteModel;
-                if (!nextVoteId) return null;
-                const nextVote = ctx.prisma.vote.findUnique({ where: { id: nextVoteId } });
-                return nextVote;
-            },
-        });
-        t.field('prevVote', {
-            type: Vote,
-            resolve: async (source, __, ctx) => {
-                const { id } = source as VoteModel;
-                const prevVote = ctx.prisma.vote.findFirst({ where: { nextVoteId: id } });
-                return prevVote;
             },
         });
     },

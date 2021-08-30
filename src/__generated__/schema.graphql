@@ -80,6 +80,7 @@ enum MeetingStatus {
 type Mutation {
   """"""
   addParticipants(meetingId: String!, participants: [ParticipantInput!]!): [ParticipantOrInvite]
+  castStvVote(alternatives: [StvVoteAlternativeInput!]!, votationId: String!): String
   castVote(alternativeId: String!): Vote
   changeView(state: ViewState!): ViewState
   createAlternative(text: String!, votationId: String!): Alternative
@@ -168,6 +169,11 @@ enum Role {
   ADMIN
   COUNTER
   PARTICIPANT
+}
+
+input StvVoteAlternativeInput {
+  alternativeId: String!
+  ranking: Int!
 }
 
 type Subscription {
@@ -285,9 +291,6 @@ type Vote {
   alternative: Alternative
   alternativeId: String!
   id: ID!
-  nextVote: Vote
-  nextVoteId: String
-  prevVote: Vote
 }
 
 """The result of getVoteCount"""
