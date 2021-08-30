@@ -977,7 +977,7 @@ it('should not cast vote successfully since the participant is not votingEligibl
 
 it('should successfully cast a blank vote', async () => {
     const meeting = await createMeeting(ctx.userId, Role.PARTICIPANT, true);
-    const votation = await createVotation(meeting.id, VotationStatus.OPEN, 1, 'SIMPLE', 50, true);
+    const votation = await createVotation(meeting.id, VotationStatus.OPEN, 2, 'SIMPLE', 50, true);
     expect(votation.blankVoteCount).toEqual(0);
     const blankVoteCount = await ctx.client.request(
         gql`
@@ -987,7 +987,7 @@ it('should successfully cast a blank vote', async () => {
         `,
         { votationId: votation.id }
     );
-    expect(blankVoteCount).toEqual(1);
+    expect(blankVoteCount.castBlankVote).toEqual(1);
 });
 
 it('should fail to cast a blank vote if you voted', async () => {
@@ -1002,7 +1002,7 @@ it('should fail to cast a blank vote if you voted', async () => {
         `,
         { votationId: votation.id }
     );
-    expect(blankVoteCount).toEqual(0);
+    expect(blankVoteCount.castBlankVote).toEqual(0);
 });
 
 it('should return correct vote count', async () => {
