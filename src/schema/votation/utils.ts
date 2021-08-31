@@ -1,4 +1,4 @@
-import { Alternative, Votation, Vote } from '@prisma/client';
+import { Alternative, Votation, VotationType, Vote } from '@prisma/client';
 import { Context } from '../../context';
 
 type VotationResult = {
@@ -257,7 +257,10 @@ export const setWinner = async (ctx: Context, votationId: string) => {
     if (!votation) throw new Error('Votation does not exist.');
     const winners = await computeResult(ctx, votation);
     const promises: Promise<Alternative>[] = [];
-    if (winners.length <= votation.numberOfWinners) {
+    if (
+        (votation.type !== VotationType.STV && winners.length === 1) ||
+        (votation.type === VotationType.STV && winners.length <= votation.numberOfWinners)
+    ) {
         winners.forEach((winner) =>
             promises.push(
                 ctx.prisma.alternative.update({
