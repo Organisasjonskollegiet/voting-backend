@@ -96,6 +96,7 @@ model Votation {
   index             Int
   meetingId         String         @db.Uuid
   meeting           Meeting        @relation(fields: [meetingId], references: [id])
+  stvVotes          StvVote[]
   alternatives      Alternative[]
   HasVoted          HasVoted[]
 }
@@ -119,11 +120,18 @@ model Alternative {
   votes      Vote[]
 }
 
+model StvVote {
+  id String @id @default(uuid()) @db.Uuid
+  votationId String @db.Uuid
+  votation Votation @relation(fields: [votationId], references: [id])
+  votes Vote[]
+}
+
 model Vote {
   id            String      @id @default(uuid()) @db.Uuid
   alternative   Alternative @relation(fields: [alternativeId], references: [id])
   alternativeId String      @db.Uuid
-  nextVoteId    String?     @db.Uuid
-  nextVote      Vote?       @relation("VoteRanking", fields: [nextVoteId], references: [id])
-  prevVote      Vote?       @relation("VoteRanking")
+  ranking       Int         @default(1) 
+  stvVoteId     String?      @db.Uuid
+  stvVote       StvVote?    @relation(fields: [stvVoteId], references: [id])
 }

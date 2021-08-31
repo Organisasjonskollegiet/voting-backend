@@ -83,6 +83,7 @@ type Mutation {
 
   """Returns the current number of blank votes"""
   castBlankVote(votationId: String!): Int
+  castStvVote(alternatives: [StvVoteAlternativeInput!]!, votationId: String!): String
   castVote(alternativeId: String!): Vote
   changeView(state: ViewState!): ViewState
   createAlternative(text: String!, votationId: String!): Alternative
@@ -146,7 +147,7 @@ type Query {
   getVoteCount(votationId: String!): VoteCountResult
 
   """"""
-  getWinnerOfVotation(id: String!): Alternative
+  getWinnerOfVotation(id: String!): [Alternative]
 
   """Find a meeting by id from meetings youre participating in"""
   meetingById(meetingId: String!): Meeting
@@ -171,6 +172,11 @@ enum Role {
   ADMIN
   COUNTER
   PARTICIPANT
+}
+
+input StvVoteAlternativeInput {
+  alternativeId: String!
+  ranking: Int!
 }
 
 type Subscription {
@@ -288,9 +294,6 @@ type Vote {
   alternative: Alternative
   alternativeId: String!
   id: ID!
-  nextVote: Vote
-  nextVoteId: String
-  prevVote: Vote
 }
 
 """The result of getVoteCount"""

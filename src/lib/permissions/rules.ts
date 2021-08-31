@@ -24,6 +24,31 @@ const checkIsAdminOfAlternative = async (id: string, ctx: Context) => {
     return await checkIsRoleOfMeetingId(votation.meetingId, Role.ADMIN, ctx);
 };
 
+const checkIfUserCanVote = async (votationId: string, ctx: Context) => {
+    const votation = await ctx.prisma.votation.findUnique({
+        where: {
+            id: votationId,
+        },
+    });
+    if (!votation) return false;
+    const participant = await ctx.prisma.participant.findUnique({
+        where: {
+            userId_meetingId: {
+                userId: ctx.userId,
+                meetingId: votation?.meetingId,
+            },
+        },
+    });
+    const hasVoted =
+        (await ctx.prisma.hasVoted.count({
+            where: {
+                userId: ctx.userId,
+                votationId: votationId,
+            },
+        })) > 0;
+    return !!participant && votation.status === 'OPEN' && !hasVoted && participant.isVotingEligible;
+};
+
 export const isAuthenticated = rule({ cache: 'contextual' })(async (_, __, ctx: Context) => {
     return ctx.userId ? true : new AuthenticationError('User must be logged in');
 });

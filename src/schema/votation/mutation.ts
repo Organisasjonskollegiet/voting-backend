@@ -13,6 +13,14 @@ export const AlternativeInput = inputObjectType({
     },
 });
 
+export const StvVoteAlternativeInput = inputObjectType({
+    name: 'StvVoteAlternativeInput',
+    definition(t) {
+        t.nonNull.string('alternativeId');
+        t.nonNull.int('ranking');
+    },
+});
+
 export const UpdateVotationInput = inputObjectType({
     name: 'UpdateVotationInput',
     definition(t) {
@@ -258,6 +266,39 @@ export const DeleteAlternativesMutation = mutationField('deleteAlternatives', {
         }
         const alternatives = await Promise.all(promises);
         return alternatives;
+    },
+});
+
+export const CastStvVoteMutation = mutationField('castStvVote', {
+    type: 'String',
+    args: {
+        votationId: nonNull(stringArg()),
+        alternatives: nonNull(list(nonNull(StvVoteAlternativeInput))),
+    },
+    resolve: async (_, { votationId, alternatives }, ctx) => {
+        const stvVote = await ctx.prisma.stvVote.create({
+            data: {
+                votationId,
+            },
+        });
+        const [__, vote] = await ctx.prisma.$transaction([
+            ctx.prisma.hasVoted.create({
+                data: {
+                    userId: ctx.userId,
+                    votationId,
+                },
+            }),
+            ...alternatives.map((a) =>
+                ctx.prisma.vote.create({
+                    data: {
+                        alternativeId: a.alternativeId,
+                        stvVoteId: stvVote.id,
+                        ranking: a.ranking,
+                    },
+                })
+            ),
+        ]);
+        return 'Vote registered';
     },
 });
 

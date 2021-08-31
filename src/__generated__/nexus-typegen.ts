@@ -55,6 +55,10 @@ export interface NexusGenInputs {
     isVotingEligible: boolean; // Boolean!
     role: NexusGenEnums['Role']; // Role!
   }
+  StvVoteAlternativeInput: { // input type
+    alternativeId: string; // String!
+    ranking: number; // Int!
+  }
   UpdateMeetingInput: { // input type
     description?: string | null; // String
     id: string; // String!
@@ -175,7 +179,6 @@ export interface NexusGenObjects {
   Vote: { // root type
     alternativeId: string; // String!
     id: string; // ID!
-    nextVoteId?: string | null; // String
   }
   VoteCountResult: { // root type
     voteCount: number; // Int!
@@ -231,6 +234,7 @@ export interface NexusGenFieldTypes {
   Mutation: { // field return type
     addParticipants: Array<NexusGenRootTypes['ParticipantOrInvite'] | null> | null; // [ParticipantOrInvite]
     castBlankVote: number | null; // Int
+    castStvVote: string | null; // String
     castVote: NexusGenRootTypes['Vote'] | null; // Vote
     changeView: NexusGenEnums['ViewState'] | null; // ViewState
     createAlternative: NexusGenRootTypes['Alternative'] | null; // Alternative
@@ -262,7 +266,7 @@ export interface NexusGenFieldTypes {
     alternativesByVotation: Array<NexusGenRootTypes['Alternative'] | null> | null; // [Alternative]
     getVotationResults: NexusGenRootTypes['VotationResults'] | null; // VotationResults
     getVoteCount: NexusGenRootTypes['VoteCountResult'] | null; // VoteCountResult
-    getWinnerOfVotation: NexusGenRootTypes['Alternative'] | null; // Alternative
+    getWinnerOfVotation: Array<NexusGenRootTypes['Alternative'] | null> | null; // [Alternative]
     meetingById: NexusGenRootTypes['Meeting'] | null; // Meeting
     meetings: Array<NexusGenRootTypes['Meeting'] | null>; // [Meeting]!
     participants: Array<NexusGenRootTypes['ParticipantOrInvite'] | null> | null; // [ParticipantOrInvite]
@@ -316,9 +320,6 @@ export interface NexusGenFieldTypes {
     alternative: NexusGenRootTypes['Alternative'] | null; // Alternative
     alternativeId: string; // String!
     id: string; // ID!
-    nextVote: NexusGenRootTypes['Vote'] | null; // Vote
-    nextVoteId: string | null; // String
-    prevVote: NexusGenRootTypes['Vote'] | null; // Vote
   }
   VoteCountResult: { // field return type
     voteCount: number; // Int!
@@ -361,6 +362,7 @@ export interface NexusGenFieldTypeNames {
   Mutation: { // field return type name
     addParticipants: 'ParticipantOrInvite'
     castBlankVote: 'Int'
+    castStvVote: 'String'
     castVote: 'Vote'
     changeView: 'ViewState'
     createAlternative: 'Alternative'
@@ -446,9 +448,6 @@ export interface NexusGenFieldTypeNames {
     alternative: 'Alternative'
     alternativeId: 'String'
     id: 'ID'
-    nextVote: 'Vote'
-    nextVoteId: 'String'
-    prevVote: 'Vote'
   }
   VoteCountResult: { // field return type name
     voteCount: 'Int'
@@ -463,6 +462,10 @@ export interface NexusGenArgTypes {
       participants: NexusGenInputs['ParticipantInput'][]; // [ParticipantInput!]!
     }
     castBlankVote: { // args
+      votationId: string; // String!
+    }
+    castStvVote: { // args
+      alternatives: NexusGenInputs['StvVoteAlternativeInput'][]; // [StvVoteAlternativeInput!]!
       votationId: string; // String!
     }
     castVote: { // args
