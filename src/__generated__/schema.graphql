@@ -147,7 +147,7 @@ type Query {
   getVoteCount(votationId: String!): VoteCountResult
 
   """"""
-  getWinnerOfVotation(id: String!): Alternative
+  getWinnerOfVotation(id: String!): [Alternative]
 
   """Find a meeting by id from meetings youre participating in"""
   meetingById(meetingId: String!): Meeting

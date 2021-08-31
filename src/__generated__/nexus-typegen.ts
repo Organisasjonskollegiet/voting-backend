@@ -266,7 +266,7 @@ export interface NexusGenFieldTypes {
     alternativesByVotation: Array<NexusGenRootTypes['Alternative'] | null> | null; // [Alternative]
     getVotationResults: NexusGenRootTypes['VotationResults'] | null; // VotationResults
     getVoteCount: NexusGenRootTypes['VoteCountResult'] | null; // VoteCountResult
-    getWinnerOfVotation: NexusGenRootTypes['Alternative'] | null; // Alternative
+    getWinnerOfVotation: Array<NexusGenRootTypes['Alternative'] | null> | null; // [Alternative]
     meetingById: NexusGenRootTypes['Meeting'] | null; // Meeting
     meetings: Array<NexusGenRootTypes['Meeting'] | null>; // [Meeting]!
     participants: Array<NexusGenRootTypes['ParticipantOrInvite'] | null> | null; // [ParticipantOrInvite]

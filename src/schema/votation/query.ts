@@ -58,13 +58,13 @@ export const GetVoteCount = queryField('getVoteCount', {
 });
 
 export const GetWinnerOfVotation = queryField('getWinnerOfVotation', {
-    type: Alternative,
+    type: list(Alternative),
     description: '',
     args: {
         id: nonNull(stringArg()),
     },
     resolve: async (_, { id }, ctx) => {
-        return await ctx.prisma.alternative.findFirst({
+        return await ctx.prisma.alternative.findMany({
             where: {
                 votationId: id,
                 isWinner: true,
