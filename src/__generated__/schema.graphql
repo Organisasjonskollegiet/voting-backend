@@ -267,6 +267,8 @@ type Votation {
 """The results of a votation"""
 type VotationResults {
   alternatives: [AlternativeResult]!
+  blankVoteCount: Int!
+  blankVotes: Boolean!
   voteCount: Int!
   votingEligibleCount: Int!
 }

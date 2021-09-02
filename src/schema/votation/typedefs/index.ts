@@ -135,6 +135,8 @@ export const VotationResults = objectType({
                 return alternatives;
             },
         });
+        t.nonNull.boolean('blankVotes');
+        t.nonNull.int('blankVoteCount');
         t.nonNull.field('voteCount', {
             type: 'Int',
             resolve: async (source, __, ctx) => {

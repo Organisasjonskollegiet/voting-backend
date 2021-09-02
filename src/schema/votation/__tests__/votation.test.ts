@@ -1117,6 +1117,7 @@ it('should return alternative1 as winner with simple majority', async () => {
                         isWinner
                         votes
                     }
+                    blankVoteCount
                     votingEligibleCount
                     voteCount
                 }
@@ -1165,6 +1166,7 @@ it('should return no winner with simple majority when the alternatives has equal
                         isWinner
                         votes
                     }
+                    blankVoteCount
                     votingEligibleCount
                     voteCount
                 }
@@ -1216,6 +1218,7 @@ it('should return alternative1 as winner with qualified over 66%', async () => {
                         isWinner
                         votes
                     }
+                    blankVoteCount
                     votingEligibleCount
                     voteCount
                 }
@@ -1267,6 +1270,7 @@ it('should return no winner with qualified over 67%', async () => {
                         isWinner
                         votes
                     }
+                    blankVoteCount
                     votingEligibleCount
                     voteCount
                 }
@@ -1312,6 +1316,7 @@ it('should return not authorised trying to get votation results', async () => {
                             isWinner
                             votes
                         }
+                        blankVoteCount
                         votingEligibleCount
                         voteCount
                     }
