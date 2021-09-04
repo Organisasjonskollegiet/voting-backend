@@ -111,7 +111,7 @@ type Mutation {
   updateMeeting(meeting: UpdateMeetingInput!): Meeting
 
   """"""
-  updateVotationStatus(id: String!, status: VotationStatus!): UpdateVotationStatusResult
+  updateVotationStatus(status: VotationStatus!, votationId: String!): UpdateVotationStatusResult
 
   """"""
   updateVotations(votations: [UpdateVotationInput!]!): [Votation]
@@ -143,11 +143,11 @@ type Query {
   alternativesByVotation(votationId: String!): [Alternative]
 
   """"""
-  getVotationResults(id: String!): VotationResults
+  getVotationResults(votationId: String!): VotationResults
   getVoteCount(votationId: String!): VoteCountResult
 
   """"""
-  getWinnerOfVotation(id: String!): [Alternative]
+  getWinnerOfVotation(votationId: String!): [Alternative]
 
   """Find a meeting by id from meetings youre participating in"""
   meetingById(meetingId: String!): Meeting

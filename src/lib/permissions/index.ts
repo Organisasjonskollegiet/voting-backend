@@ -16,6 +16,7 @@ import {
     resultIsPublished,
     userCanVoteOnVotation,
     userCanVoteOnAlternative,
+    votesNotHidden,
 } from './rules';
 
 const permissions = shield(
@@ -24,7 +25,11 @@ const permissions = shield(
             meetingById: and(isParticipantOfMeeting),
             alternativesByVotation: and(isParticipantOfVotation),
             votationById: and(isParticipantOfVotation),
-            getVotationResults: or(isAdminOfVotationById, isCounterOfVotationById),
+            getVotationResults: or(
+                isAdminOfVotationById,
+                isCounterOfVotationById,
+                and(isParticipantOfVotation, resultIsPublished, votesNotHidden)
+            ),
             getVoteCount: and(isParticipantOfVotation),
             getWinnerOfVotation: and(resultIsPublished),
             participants: and(isAdminOfMeetingId),

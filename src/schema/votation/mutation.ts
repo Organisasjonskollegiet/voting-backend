@@ -143,13 +143,13 @@ export const UpdateVotationStatusMutation = mutationField('updateVotationStatus'
     type: UpdateVotationStatusResult,
     description: '',
     args: {
-        id: nonNull(stringArg()),
+        votationId: nonNull(stringArg()),
         status: nonNull(VotationStatus),
     },
-    resolve: async (_, { id, status }, ctx) => {
+    resolve: async (_, { votationId, status }, ctx) => {
         const votation = await ctx.prisma.votation.findUnique({
             where: {
-                id,
+                id: votationId,
             },
         });
         if (status === 'OPEN') {
@@ -165,19 +165,19 @@ export const UpdateVotationStatusMutation = mutationField('updateVotationStatus'
                     message: 'Møtet kan kun ha en åpen votering om gangen',
                 };
             }
-            await pubsub.publish(`VOTATION_OPENED_FOR_MEETING_${votation?.meetingId}`, id);
+            await pubsub.publish(`VOTATION_OPENED_FOR_MEETING_${votation?.meetingId}`, votationId);
         } else if (status === 'CHECKING_RESULT') {
-            await setWinner(ctx, id);
+            await setWinner(ctx, votationId);
         }
         const updatedVotation = await ctx.prisma.votation.update({
             data: {
                 status,
             },
             where: {
-                id,
+                id: votationId,
             },
         });
-        await pubsub.publish(`VOTATION_STATUS_UPDATED_FOR_${id}`, status);
+        await pubsub.publish(`VOTATION_STATUS_UPDATED_FOR_${votationId}`, status);
         return { __typename: 'Votation', ...updatedVotation };
     },
 });
