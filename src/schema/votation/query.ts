@@ -61,12 +61,12 @@ export const GetWinnerOfVotation = queryField('getWinnerOfVotation', {
     type: list(Alternative),
     description: '',
     args: {
-        id: nonNull(stringArg()),
+        votationId: nonNull(stringArg()),
     },
-    resolve: async (_, { id }, ctx) => {
+    resolve: async (_, { votationId }, ctx) => {
         return await ctx.prisma.alternative.findMany({
             where: {
-                votationId: id,
+                votationId,
                 isWinner: true,
             },
         });
@@ -77,12 +77,12 @@ export const GetVotationResults = queryField('getVotationResults', {
     type: VotationResults,
     description: '',
     args: {
-        id: nonNull(stringArg()),
+        votationId: nonNull(stringArg()),
     },
-    resolve: async (_, { id }, ctx) => {
+    resolve: async (_, { votationId }, ctx) => {
         const votation = await ctx.prisma.votation.findUnique({
             where: {
-                id,
+                id: votationId,
             },
         });
         return votation;
