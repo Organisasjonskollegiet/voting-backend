@@ -548,8 +548,8 @@ it('should update votation status successfully', async () => {
     const newStatus = VotationStatus.OPEN;
     const updateVotationStatus = await ctx.client.request(
         gql`
-            mutation UpdateVotationStatus($id: String!, $status: VotationStatus!) {
-                updateVotationStatus(id: $id, status: $status) {
+            mutation UpdateVotationStatus($votationId: String!, $status: VotationStatus!) {
+                updateVotationStatus(votationId: $votationId, status: $status) {
                     __typename
                     ... on Votation {
                         id
@@ -562,7 +562,7 @@ it('should update votation status successfully', async () => {
             }
         `,
         {
-            id: votation.id,
+            votationId: votation.id,
             status: newStatus,
         }
     );
@@ -576,8 +576,8 @@ it('should return MaxOneOpenVotationStatus trying to open votation', async () =>
     const votation = await createVotation(meeting.id, VotationStatus.UPCOMING, 2);
     const updateVotationStatus = await ctx.client.request(
         gql`
-            mutation UpdateVotationStatus($id: String!, $status: VotationStatus!) {
-                updateVotationStatus(id: $id, status: $status) {
+            mutation UpdateVotationStatus($votationId: String!, $status: VotationStatus!) {
+                updateVotationStatus(votationId: $votationId, status: $status) {
                     __typename
                     ... on Votation {
                         id
@@ -590,7 +590,7 @@ it('should return MaxOneOpenVotationStatus trying to open votation', async () =>
             }
         `,
         {
-            id: votation.id,
+            votationId: votation.id,
             status: VotationStatus.OPEN,
         }
     );
@@ -604,8 +604,8 @@ it('should return Not Authorised trying to update votation status', async () => 
     try {
         await ctx.client.request(
             gql`
-                mutation UpdateVotationStatus($id: String!, $status: VotationStatus!) {
-                    updateVotationStatus(id: $id, status: $status) {
+                mutation UpdateVotationStatus($votationId: String!, $status: VotationStatus!) {
+                    updateVotationStatus(votationId: $votationId, status: $status) {
                         __typename
                         ... on Votation {
                             id
@@ -618,7 +618,7 @@ it('should return Not Authorised trying to update votation status', async () => 
                 }
             `,
             {
-                id: votation.id,
+                votationId: votation.id,
                 status: newStatus,
             }
         );
@@ -1108,8 +1108,8 @@ it('should return alternative1 as winner with simple majority', async () => {
     await setWinner(ctx, votation.id);
     const response = await ctx.client.request(
         gql`
-            query GetVotationResults($id: String!) {
-                getVotationResults(id: $id) {
+            query GetVotationResults($votationId: String!) {
+                getVotationResults(votationId: $votationId) {
                     alternatives {
                         id
                         text
@@ -1124,7 +1124,7 @@ it('should return alternative1 as winner with simple majority', async () => {
             }
         `,
         {
-            id: votation.id,
+            votationId: votation.id,
         }
     );
     expect(response.getVotationResults.alternatives).toEqual(
@@ -1157,8 +1157,8 @@ it('should return no winner with simple majority when the alternatives has equal
     await setWinner(ctx, votation.id);
     const response = await ctx.client.request(
         gql`
-            query GetVotationResults($id: String!) {
-                getVotationResults(id: $id) {
+            query GetVotationResults($votationId: String!) {
+                getVotationResults(votationId: $votationId) {
                     alternatives {
                         id
                         text
@@ -1173,7 +1173,7 @@ it('should return no winner with simple majority when the alternatives has equal
             }
         `,
         {
-            id: votation.id,
+            votationId: votation.id,
         }
     );
     expect(response.getVotationResults.alternatives).toEqual(
@@ -1209,8 +1209,8 @@ it('should return alternative1 as winner with qualified over 66%', async () => {
     await setWinner(ctx, votation.id);
     const response = await ctx.client.request(
         gql`
-            query GetVotationResults($id: String!) {
-                getVotationResults(id: $id) {
+            query GetVotationResults($votationId: String!) {
+                getVotationResults(votationId: $votationId) {
                     alternatives {
                         id
                         text
@@ -1225,7 +1225,7 @@ it('should return alternative1 as winner with qualified over 66%', async () => {
             }
         `,
         {
-            id: votation.id,
+            votationId: votation.id,
         }
     );
     expect(response.getVotationResults.alternatives).toEqual(
@@ -1261,8 +1261,8 @@ it('should return no winner with qualified over 67%', async () => {
     await setWinner(ctx, votation.id);
     const response = await ctx.client.request(
         gql`
-            query GetVotationResults($id: String!) {
-                getVotationResults(id: $id) {
+            query GetVotationResults($votationId: String!) {
+                getVotationResults(votationId: $votationId) {
                     alternatives {
                         id
                         text
@@ -1277,7 +1277,7 @@ it('should return no winner with qualified over 67%', async () => {
             }
         `,
         {
-            id: votation.id,
+            votationId: votation.id,
         }
     );
     expect(response.getVotationResults.alternatives).toEqual(
@@ -1307,8 +1307,8 @@ it('should return not authorised trying to get votation results', async () => {
     try {
         await ctx.client.request(
             gql`
-                query GetVotationResults($id: String!) {
-                    getVotationResults(id: $id) {
+                query GetVotationResults($votationId: String!) {
+                    getVotationResults(votationId: $votationId) {
                         alternatives {
                             id
                             text
@@ -1323,7 +1323,7 @@ it('should return not authorised trying to get votation results', async () => {
                 }
             `,
             {
-                id: votation.id,
+                votationId: votation.id,
             }
         );
         expect(false).toBeTruthy();

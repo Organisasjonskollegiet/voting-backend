@@ -82,8 +82,8 @@ export const isParticipantOfVotation = rule({ cache: 'contextual' })(async (_, {
 /**
  * Rule: The user is an Counter of the meeting
  */
-export const isCounterOfVotationById = rule({ cache: 'strict' })(async (_, { id }, ctx: Context) => {
-    const votationFromDB = await ctx.prisma.votation.findUnique({ where: { id } });
+export const isCounterOfVotationById = rule({ cache: 'strict' })(async (_, { votationId }, ctx: Context) => {
+    const votationFromDB = await ctx.prisma.votation.findUnique({ where: { id: votationId } });
     if (!votationFromDB) return false;
     const isCounter = await checkIsRoleOfMeetingId(votationFromDB.meetingId, Role.COUNTER, ctx);
     return isCounter;
