@@ -142,8 +142,6 @@ export const isAdminOfVotationsById = rule({ cache: 'strict' })(async (_, { ids 
 export const isAdminOfVotationById = rule({ cache: 'strict' })(async (_, { votationId }, ctx: Context) => {
     const votationFromDB = await ctx.prisma.votation.findUnique({ where: { id: votationId } });
     if (!votationFromDB) return false;
-    const isAdmin = await checkIsRoleOfMeetingId(votationFromDB.meetingId, Role.ADMIN, ctx);
-    console.log('isAdmin', isAdmin);
     return await checkIsRoleOfMeetingId(votationFromDB.meetingId, Role.ADMIN, ctx);
 });
 
