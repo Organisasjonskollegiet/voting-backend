@@ -56,8 +56,7 @@ export const isAuthenticated = rule({ cache: 'contextual' })(async (_, __, ctx: 
 /**
  * The user has to be a participant of the meeting in @args
  */
-export const isParticipantOfMeeting = rule({ cache: 'contextual' })(async (_, args, ctx: Context) => {
-    const meetingId = args.id;
+export const isParticipantOfMeeting = rule({ cache: 'contextual' })(async (_, { meetingId }, ctx: Context) => {
     const resultCount = await ctx.prisma.participant.count({ where: { userId: ctx.userId, meetingId } });
     return resultCount > 0;
 });

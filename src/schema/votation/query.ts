@@ -105,3 +105,20 @@ export const GetResultsOfPublishedVotations = queryField('resultsOfPublishedVota
         return votations;
     },
 });
+
+export const GetOpenVotation = queryField('getOpenVotation', {
+    type: 'String',
+    description: '',
+    args: {
+        meetingId: nonNull(stringArg()),
+    },
+    resolve: async (_, { meetingId }, ctx) => {
+        const openVotation = await ctx.prisma.votation.findFirst({
+            where: {
+                meetingId,
+                status: VotationStatus.OPEN,
+            },
+        });
+        return openVotation?.id ?? '';
+    },
+});
