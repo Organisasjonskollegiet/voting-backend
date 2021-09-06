@@ -143,6 +143,9 @@ type Query {
   alternativesByVotation(votationId: String!): [Alternative]
 
   """"""
+  getOpenVotation(meetingId: String!): String
+
+  """"""
   getVotationResults(votationId: String!): VotationResults
   getVoteCount(votationId: String!): VoteCountResult
 

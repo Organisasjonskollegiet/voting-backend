@@ -1484,3 +1484,57 @@ it('should return andrea and carter as winners', async () => {
     expect(result.includes(andrea.id)).toBeTruthy();
     expect(result.includes(carter.id)).toBeTruthy();
 });
+
+it('should return id of open votation', async () => {
+    const meeting = await createMeeting(ctx.userId, Role.ADMIN, true);
+    const openVotation = await createVotation(meeting.id, VotationStatus.OPEN, 1);
+    await createVotation(meeting.id, VotationStatus.PUBLISHED_RESULT, 2);
+    const response = await ctx.client.request(
+        gql`
+            query GetOpenVotation($meetingId: String!) {
+                getOpenVotation(meetingId: $meetingId)
+            }
+        `,
+        {
+            meetingId: meeting.id,
+        }
+    );
+    expect(response.getOpenVotation).toBe(openVotation.id);
+});
+
+it('should return id of open votation', async () => {
+    const meeting = await createMeeting(ctx.userId, Role.ADMIN, true);
+    const closedVotation = await createVotation(meeting.id, VotationStatus.PUBLISHED_RESULT, 2);
+    const response = await ctx.client.request(
+        gql`
+            query GetOpenVotation($meetingId: String!) {
+                getOpenVotation(meetingId: $meetingId)
+            }
+        `,
+        {
+            meetingId: meeting.id,
+        }
+    );
+    expect(response.getOpenVotation).toBe('');
+});
+
+it('should Not Authorised trying to get open votation', async () => {
+    const otherUser = await createUser();
+    const meeting = await createMeeting(otherUser.id, Role.ADMIN, true);
+    await createVotation(meeting.id, VotationStatus.PUBLISHED_RESULT, 2);
+    try {
+        await ctx.client.request(
+            gql`
+                query GetOpenVotation($meetingId: String!) {
+                    getOpenVotation(meetingId: $meetingId)
+                }
+            `,
+            {
+                meetingId: meeting.id,
+            }
+        );
+        expect(false).toBeTruthy();
+    } catch (error) {
+        expect(error.message).toContain('Not Authorised!');
+    }
+});

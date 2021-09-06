@@ -267,6 +267,7 @@ export interface NexusGenFieldTypes {
   }
   Query: { // field return type
     alternativesByVotation: Array<NexusGenRootTypes['Alternative'] | null> | null; // [Alternative]
+    getOpenVotation: string | null; // String
     getVotationResults: NexusGenRootTypes['VotationResults'] | null; // VotationResults
     getVoteCount: NexusGenRootTypes['VoteCountResult'] | null; // VoteCountResult
     getWinnerOfVotation: Array<NexusGenRootTypes['Alternative'] | null> | null; // [Alternative]
@@ -397,6 +398,7 @@ export interface NexusGenFieldTypeNames {
   }
   Query: { // field return type name
     alternativesByVotation: 'Alternative'
+    getOpenVotation: 'String'
     getVotationResults: 'VotationResults'
     getVoteCount: 'VoteCountResult'
     getWinnerOfVotation: 'Alternative'
@@ -523,6 +525,9 @@ export interface NexusGenArgTypes {
   Query: {
     alternativesByVotation: { // args
       votationId: string; // String!
+    }
+    getOpenVotation: { // args
+      meetingId: string; // String!
     }
     getVotationResults: { // args
       votationId: string; // String!
