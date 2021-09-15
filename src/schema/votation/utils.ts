@@ -271,9 +271,8 @@ const computeStvResult = async (ctx: Context, votation: Votation, alternatives: 
                     } else if (tempRoundLosers[0].count === count) tempRoundLosers.push({ id, count });
                 });
             const undecidedAlternatives = alternatives.length - winners.length - losers.length;
-            let alternativesRemainingAfterRound = undecidedAlternatives - tempRoundLosers.length;
             const winnersLeftToPick = votation.numberOfWinners - winners.length;
-            let roundLosers = trimLosers(tempRoundLosers, winnersLeftToPick, alternativesRemainingAfterRound);
+            let roundLosers = trimLosers(tempRoundLosers, winnersLeftToPick, undecidedAlternatives);
             roundLosers.forEach((l) => losers.push(l.id));
             const { unchanged, updated } = redistributeVotes(
                 roundLosers.map((a) => a.id),
