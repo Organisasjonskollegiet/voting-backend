@@ -1,12 +1,18 @@
-import { Role as RoleEnum } from '@prisma/client';
+import { Participant, Role as RoleEnum } from '@prisma/client';
 import { inputObjectType, mutationField, nonNull, stringArg, list } from 'nexus';
 import { MeetingStatus, Role } from '../enums';
 import { Meeting, ParticipantOrInvite } from './typedefs';
+import sendEmail from '../../utils/sendEmail';
+import { string } from 'casual';
 
-type ParticipantOrIniteType = {
+export type ParticipantOrInviteType = {
     email: string;
     role: RoleEnum;
     isVotingEligible: boolean;
+};
+
+type RegisteredParticipant = ParticipantOrInviteType & {
+    userId: string;
 };
 
 export const CreateMeetingInput = inputObjectType({
@@ -117,85 +123,126 @@ export const DeleteMeetingMutation = mutationField('deleteMeeting', {
     },
 });
 
+export const UpdateParticipant = mutationField('updateParticipant', {
+    type: ParticipantOrInvite,
+    description: 'Update participants of a meeting.',
+    args: {
+        meetingId: nonNull(stringArg()),
+        participant: nonNull(ParticipantInput),
+    },
+    resolve: async (_, { meetingId, participant }, ctx) => {
+        // get user with the provided email
+        const user = await ctx.prisma.user.findUnique({ where: { email: participant.email } });
+        // if a user exist for that email create a participant for that user
+        if (user) {
+            const updatedParticipant = await ctx.prisma.participant.update({
+                where: {
+                    userId_meetingId: {
+                        userId: user?.id,
+                        meetingId,
+                    },
+                },
+                data: {
+                    role: participant.role,
+                    isVotingEligible: participant.isVotingEligible,
+                },
+                select: {
+                    user: true,
+                    role: true,
+                    isVotingEligible: true,
+                },
+            });
+            return {
+                email: updatedParticipant.user.email,
+                role: participant.role,
+                isVotingEligible: participant.isVotingEligible,
+            };
+            // if no user exists, create an invite
+        } else {
+            const invite = await ctx.prisma.invite.update({
+                where: {
+                    email_meetingId: {
+                        email: participant.email,
+                        meetingId,
+                    },
+                },
+                data: {
+                    role: participant.role,
+                    isVotingEligible: participant.isVotingEligible,
+                },
+            });
+            return { email: invite.email, role: invite.role, isVotingEligible: invite.isVotingEligible };
+        }
+    },
+});
+
 export const AddParticipantsMutation = mutationField('addParticipants', {
-    type: list(ParticipantOrInvite),
-    description: '',
+    type: 'Int',
+    description: 'Creates invites and participants for the emails provided.',
     args: {
         meetingId: nonNull(stringArg()),
         participants: nonNull(list(nonNull(ParticipantInput))),
     },
     resolve: async (_, { meetingId, participants }, ctx) => {
-        const promises: Promise<ParticipantOrIniteType | null>[] = [];
-        for (const participant of participants) {
-            const user = await ctx.prisma.user.findUnique({ where: { email: participant.email } });
-            if (user) {
-                promises.push(
-                    new Promise(async (resolve) => {
-                        try {
-                            await ctx.prisma.participant.upsert({
-                                where: {
-                                    userId_meetingId: {
-                                        userId: user?.id,
-                                        meetingId,
-                                    },
-                                },
-                                update: {
-                                    role: participant.role,
-                                    isVotingEligible: participant.isVotingEligible,
-                                },
-                                create: {
-                                    role: participant.role,
-                                    userId: user?.id ?? null,
-                                    meetingId,
-                                    isVotingEligible: participant.isVotingEligible,
-                                },
-                            });
-                            resolve({
-                                email: user.email,
-                                role: participant.role,
-                                isVotingEligible: participant.isVotingEligible,
-                            });
-                        } catch (error) {
-                            resolve(null);
-                        }
-                    })
-                );
-            } else {
-                promises.push(
-                    new Promise(async (resolve) => {
-                        try {
-                            const invite = await ctx.prisma.invite.upsert({
-                                where: {
-                                    email_meetingId: {
-                                        email: participant.email,
-                                        meetingId,
-                                    },
-                                },
-                                create: {
-                                    email: participant.email,
-                                    role: participant.role,
-                                    isVotingEligible: participant.isVotingEligible,
-                                    meetingId,
-                                },
-                                update: {
-                                    role: participant.role,
-                                    isVotingEligible: participant.isVotingEligible,
-                                },
-                            });
-                            resolve({
-                                email: invite.email,
-                                role: invite.role,
-                                isVotingEligible: invite.isVotingEligible,
-                            });
-                        } catch (error) {
-                            resolve(null);
-                        }
-                    })
-                );
-            }
+        const meeting = await ctx.prisma.meeting.findUnique({
+            where: {
+                id: meetingId,
+            },
+        });
+        if (!meeting) throw new Error('Meeting does not exist.');
+        const registeredParticipants: RegisteredParticipant[] = [];
+        const unregisteredParticipants: typeof participants = [];
+        const filterParticipantsPromises: Promise<string>[] = [];
+
+        // Add promises sorting the participants into an array for those who are registered users and one for those who are not.
+        participants.forEach((participant) =>
+            filterParticipantsPromises.push(
+                new Promise(async (resolve) => {
+                    const user = await ctx.prisma.user.findUnique({ where: { email: participant.email } });
+                    if (user) {
+                        registeredParticipants.push({ ...participant, userId: user.id });
+                    } else {
+                        unregisteredParticipants.push(participant);
+                    }
+                    resolve('success');
+                })
+            )
+        );
+
+        // Wait for the participants to be sorted.
+        await Promise.all(filterParticipantsPromises);
+
+        // create all new Participants for the users that are already registered.
+        const createdParticipants = await ctx.prisma.participant.createMany({
+            data: registeredParticipants.map((participant) => {
+                return {
+                    userId: participant.userId,
+                    role: participant.role,
+                    isVotingEligible: participant.isVotingEligible,
+                    meetingId,
+                };
+            }),
+        });
+
+        // create invtes for the participants that are not registered users.
+        const creatednvites = await ctx.prisma.invite.createMany({
+            data: unregisteredParticipants.map((participant) => {
+                return {
+                    ...participant,
+                    meetingId,
+                };
+            }),
+        });
+
+        try {
+            await sendEmail(unregisteredParticipants, false, meeting);
+
+            await sendEmail(registeredParticipants, true, meeting);
+        } catch (error) {
+            console.log(error);
         }
-        const participantsChanged = await Promise.all(promises);
-        return participantsChanged.filter((p) => !!p);
+
+        return creatednvites.count + createdParticipants.count;
     },
 });
 

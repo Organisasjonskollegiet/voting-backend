@@ -2,6 +2,8 @@ import { createTestContext } from '../../../lib/tests/testContext';
 import { gql } from 'graphql-request';
 import { Role, MeetingStatus } from '.prisma/client';
 import casual from 'casual';
+import { CreateMeetingInput } from '../mutation';
+import { prisma } from '@prisma/client';
 const ctx = createTestContext();
 
 interface StaticMeetingDataType {
@@ -396,18 +398,13 @@ it('should not delete meeting successfully', async () => {
 it('should add participant and invite successfully', async () => {
     const meeting = await createMeeting(ctx.userId, 'ADMIN');
     const user = await createUser();
-    const existingParticipantUser = await createUser();
-    const existingParticipant = await createParticipant(meeting.id, existingParticipantUser.id, 'PARTICIPANT');
-    const existingParticipantNewRole = 'COUNTER';
     const participantRole = 'ADMIN';
     const inviteEmail = casual.email;
     const inviteRole = 'COUNTER';
     await ctx.client.request(
         gql`
             mutation AddParticipants($meetingId: String!, $participants: [ParticipantInput!]!) {
-                addParticipants(meetingId: $meetingId, participants: $participants) {
-                    email
-                }
+                addParticipants(meetingId: $meetingId, participants: $participants)
             }
         `,
         {
@@ -423,11 +420,6 @@ it('should add participant and invite successfully', async () => {
                     role: inviteRole,
                     isVotingEligible: false,
                 },
-                {
-                    email: existingParticipantUser.email,
-                    role: existingParticipantNewRole,
-                    isVotingEligible: true,
-                },
             ],
         }
     );
@@ -435,14 +427,6 @@ it('should add participant and invite successfully', async () => {
         where: {
             userId_meetingId: {
                 userId: user.id,
-                meetingId: meeting.id,
-            },
-        },
-    });
-    const existingParticipantUpdated = await ctx.prisma.participant.findUnique({
-        where: {
-            userId_meetingId: {
-                userId: existingParticipantUser.id,
                 meetingId: meeting.id,
             },
         },
@@ -456,7 +440,6 @@ it('should add participant and invite successfully', async () => {
         },
     });
     expect(newParticipant?.role).toBe(participantRole);
-    expect(existingParticipantUpdated?.role).toBe(existingParticipantNewRole);
     expect(invite?.role).toBe(inviteRole);
 });
 
@@ -470,9 +453,7 @@ it('should return not Authorised trying to add participant and invite ', async (
         await ctx.client.request(
             gql`
                 mutation AddParticipants($meetingId: String!, $participants: [ParticipantInput!]!) {
-                    addParticipants(meetingId: $meetingId, participants: $participants) {
-                        email
-                    }
+                    addParticipants(meetingId: $meetingId, participants: $participants)
                 }
             `,
             {
@@ -489,6 +470,98 @@ it('should return not Authorised trying to add participant and invite ', async (
                         isVotingEligible: true,
                     },
                 ],
+            }
+        );
+        expect(false).toBeTruthy();
+    } catch (error) {
+        expect(error.message).toContain('Not Authorised!');
+    }
+});
+
+it('should update participant successfully', async () => {
+    const meeting = await createMeeting(ctx.userId, 'ADMIN');
+    const user = await createUser();
+    await createParticipant(meeting.id, user.id, Role.PARTICIPANT);
+    const participantInput = {
+        email: user.email,
+        role: Role.COUNTER,
+        isVotingEligible: false,
+    };
+    const response = await ctx.client.request(
+        gql`
+            mutation UpdateParticipant($meetingId: String!, $participant: ParticipantInput!) {
+                updateParticipant(meetingId: $meetingId, participant: $participant) {
+                    email
+                    role
+                    isVotingEligible
+                }
+            }
+        `,
+        {
+            meetingId: meeting.id,
+            participant: participantInput,
+        }
+    );
+    expect(response.updateParticipant).toEqual(participantInput);
+});
+
+it('should update participant successfully', async () => {
+    const meeting = await createMeeting(ctx.userId, 'ADMIN');
+    const email = casual.email;
+    await ctx.prisma.invite.create({
+        data: {
+            meetingId: meeting.id,
+            email,
+            isVotingEligible: true,
+            role: Role.PARTICIPANT,
+        },
+    });
+    const inviteInput = {
+        email,
+        role: Role.COUNTER,
+        isVotingEligible: false,
+    };
+    const response = await ctx.client.request(
+        gql`
+            mutation UpdateParticipant($meetingId: String!, $participant: ParticipantInput!) {
+                updateParticipant(meetingId: $meetingId, participant: $participant) {
+                    email
+                    role
+                    isVotingEligible
+                }
+            }
+        `,
+        {
+            meetingId: meeting.id,
+            participant: inviteInput,
+        }
+    );
+    expect(response.updateParticipant).toEqual(inviteInput);
+});
+
+it('should return Not authorised trying to update participant', async () => {
+    const meeting = await createMeeting(ctx.userId, Role.COUNTER);
+    const user = await createUser();
+    await createParticipant(meeting.id, user.id, Role.PARTICIPANT);
+    const participantInput = {
+        email: user.email,
+        role: Role.COUNTER,
+        isVotingEligible: false,
+    };
+    try {
+        await ctx.client.request(
+            gql`
+                mutation UpdateParticipant($meetingId: String!, $participant: ParticipantInput!) {
+                    updateParticipant(meetingId: $meetingId, participant: $participant) {
+                        email
+                        role
+                        isVotingEligible
+                    }
+                }
+            `,
+            {
+                meetingId: meeting.id,
+                participant: participantInput,
             }
         );
         expect(false).toBeTruthy();

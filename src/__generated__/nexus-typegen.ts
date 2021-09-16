@@ -235,7 +235,7 @@ export interface NexusGenFieldTypes {
     votations: Array<NexusGenRootTypes['Votation'] | null> | null; // [Votation]
   }
   Mutation: { // field return type
-    addParticipants: Array<NexusGenRootTypes['ParticipantOrInvite'] | null> | null; // [ParticipantOrInvite]
+    addParticipants: number | null; // Int
     castBlankVote: number | null; // Int
     castStvVote: string | null; // String
     castVote: NexusGenRootTypes['Vote'] | null; // Vote
@@ -249,6 +249,7 @@ export interface NexusGenFieldTypes {
     deleteVotations: Array<string | null> | null; // [String]
     updateAlternative: NexusGenRootTypes['Alternative'] | null; // Alternative
     updateMeeting: NexusGenRootTypes['Meeting'] | null; // Meeting
+    updateParticipant: NexusGenRootTypes['ParticipantOrInvite'] | null; // ParticipantOrInvite
     updateVotationStatus: NexusGenRootTypes['UpdateVotationStatusResult'] | null; // UpdateVotationStatusResult
     updateVotations: Array<NexusGenRootTypes['Votation'] | null> | null; // [Votation]
   }
@@ -366,7 +367,7 @@ export interface NexusGenFieldTypeNames {
     votations: 'Votation'
   }
   Mutation: { // field return type name
-    addParticipants: 'ParticipantOrInvite'
+    addParticipants: 'Int'
     castBlankVote: 'Int'
     castStvVote: 'String'
     castVote: 'Vote'
@@ -380,6 +381,7 @@ export interface NexusGenFieldTypeNames {
     deleteVotations: 'String'
     updateAlternative: 'Alternative'
     updateMeeting: 'Meeting'
+    updateParticipant: 'ParticipantOrInvite'
     updateVotationStatus: 'UpdateVotationStatusResult'
     updateVotations: 'Votation'
   }
@@ -513,6 +515,10 @@ export interface NexusGenArgTypes {
     }
     updateMeeting: { // args
       meeting: NexusGenInputs['UpdateMeetingInput']; // UpdateMeetingInput!
+    }
+    updateParticipant: { // args
+      meetingId: string; // String!
+      participant: NexusGenInputs['ParticipantInput']; // ParticipantInput!
     }
     updateVotationStatus: { // args
       status: NexusGenEnums['VotationStatus']; // VotationStatus!
