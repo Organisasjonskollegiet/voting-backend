@@ -78,8 +78,8 @@ enum MeetingStatus {
 }
 
 type Mutation {
-  """"""
-  addParticipants(meetingId: String!, participants: [ParticipantInput!]!): [ParticipantOrInvite]
+  """Creates invites and participants for the emails provided."""
+  addParticipants(meetingId: String!, participants: [ParticipantInput!]!): Int
 
   """Returns the current number of blank votes"""
   castBlankVote(votationId: String!): Int
@@ -104,14 +104,14 @@ type Mutation {
   """"""
   deleteVotations(ids: [String!]!): [String]
 
-  """Send email to all participants and invited emails. """
-  emailParticipants(meetingId: String!): [String]
-
   """"""
   updateAlternative(id: String!, text: String!): Alternative
 
   """"""
   updateMeeting(meeting: UpdateMeetingInput!): Meeting
+
+  """Update participants of a meeting."""
+  updateParticipant(meetingId: String!, participant: ParticipantInput!): ParticipantOrInvite
 
   """"""
   updateVotationStatus(status: VotationStatus!, votationId: String!): UpdateVotationStatusResult

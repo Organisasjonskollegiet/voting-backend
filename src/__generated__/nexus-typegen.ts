@@ -235,7 +235,7 @@ export interface NexusGenFieldTypes {
     votations: Array<NexusGenRootTypes['Votation'] | null> | null; // [Votation]
   }
   Mutation: { // field return type
-    addParticipants: Array<NexusGenRootTypes['ParticipantOrInvite'] | null> | null; // [ParticipantOrInvite]
+    addParticipants: number | null; // Int
     castBlankVote: number | null; // Int
     castStvVote: string | null; // String
     castVote: NexusGenRootTypes['Vote'] | null; // Vote
@@ -247,9 +247,9 @@ export interface NexusGenFieldTypes {
     deleteMeeting: NexusGenRootTypes['Meeting'] | null; // Meeting
     deleteParticipants: Array<string | null> | null; // [String]
     deleteVotations: Array<string | null> | null; // [String]
-    emailParticipants: Array<string | null> | null; // [String]
     updateAlternative: NexusGenRootTypes['Alternative'] | null; // Alternative
     updateMeeting: NexusGenRootTypes['Meeting'] | null; // Meeting
+    updateParticipant: NexusGenRootTypes['ParticipantOrInvite'] | null; // ParticipantOrInvite
     updateVotationStatus: NexusGenRootTypes['UpdateVotationStatusResult'] | null; // UpdateVotationStatusResult
     updateVotations: Array<NexusGenRootTypes['Votation'] | null> | null; // [Votation]
   }
@@ -367,7 +367,7 @@ export interface NexusGenFieldTypeNames {
     votations: 'Votation'
   }
   Mutation: { // field return type name
-    addParticipants: 'ParticipantOrInvite'
+    addParticipants: 'Int'
     castBlankVote: 'Int'
     castStvVote: 'String'
     castVote: 'Vote'
@@ -379,9 +379,9 @@ export interface NexusGenFieldTypeNames {
     deleteMeeting: 'Meeting'
     deleteParticipants: 'String'
     deleteVotations: 'String'
-    emailParticipants: 'String'
     updateAlternative: 'Alternative'
     updateMeeting: 'Meeting'
+    updateParticipant: 'ParticipantOrInvite'
     updateVotationStatus: 'UpdateVotationStatusResult'
     updateVotations: 'Votation'
   }
@@ -509,15 +509,16 @@ export interface NexusGenArgTypes {
     deleteVotations: { // args
       ids: string[]; // [String!]!
     }
-    emailParticipants: { // args
-      meetingId: string; // String!
-    }
     updateAlternative: { // args
       id: string; // String!
       text: string; // String!
     }
     updateMeeting: { // args
       meeting: NexusGenInputs['UpdateMeetingInput']; // UpdateMeetingInput!
+    }
+    updateParticipant: { // args
+      meetingId: string; // String!
+      participant: NexusGenInputs['ParticipantInput']; // ParticipantInput!
     }
     updateVotationStatus: { // args
       status: NexusGenEnums['VotationStatus']; // VotationStatus!

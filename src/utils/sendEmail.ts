@@ -1,5 +1,6 @@
-import { Invite, Meeting, Role, User } from '@prisma/client';
+import { Meeting, Role } from '@prisma/client';
 import moment from 'moment';
+import { ParticipantOrInviteType } from '../schema/meeting';
 
 const Recipient = require('mailersend').Recipient;
 const EmailParams = require('mailersend').EmailParams;
@@ -32,7 +33,7 @@ const createEmail = (email: string, role: Role, meeting: Meeting, userIsRegister
     return emailParams;
 };
 
-const sendEmail = async (invites: Invite[], participants: { role: Role; user: User }[], meeting: Meeting) => {
+const sendEmail = async (participants: ParticipantOrInviteType[], userIsRegistered: boolean, meeting: Meeting) => {
     try {
         const mailersend = new MailerSend({
             api_key: process.env.EMAIL_API_KEY,
@@ -40,24 +41,13 @@ const sendEmail = async (invites: Invite[], participants: { role: Role; user: Us
 
         const promises: Promise<string>[] = [];
 
-        invites.forEach((invite) => {
-            const emailParams = createEmail(invite.email, invite.role, meeting, false);
-            promises.push(
-                new Promise(async (resolve, reject) => {
-                    const response = await mailersend.send(emailParams);
-                    if (response.status !== 202) reject('Could not send email.');
-                    resolve(invite.email);
-                })
-            );
-        });
-
         participants.forEach((participant) => {
-            const emailParams = createEmail(participant.user.email, participant.role, meeting, true);
+            const emailParams = createEmail(participant.email, participant.role, meeting, userIsRegistered);
             promises.push(
                 new Promise(async (resolve, reject) => {
                     const response = await mailersend.send(emailParams);
                     if (response.status !== 202) reject('Could not send email.');
-                    resolve(participant.user.email);
+                    resolve(participant.email);
                 })
             );
         });
