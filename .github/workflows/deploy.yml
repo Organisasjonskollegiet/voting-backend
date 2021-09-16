@@ -33,9 +33,10 @@ jobs:
             - name: Login to Docker registry
               uses: docker/login-action@v1
               with:
-                  registry: ${{ secrets.CONTAINER_REGISTRY }}
-                  username: ${{ secrets.REGISTRY_USERNAME }}
-                  password: ${{ secrets.REGISTRY_PASSWORD }}
+                  registry: ghcr.io
+                  username: ${{ github.repository_owner }}
+                  password: ${{ secrets.CR_PAT }}
+
             # Build and push docker container
             - name: Build and push Image to Azure Container Registry
               id: docker_build
@@ -44,18 +45,8 @@ jobs:
                   context: .
                   file: ./Dockerfile
                   push: true
-                  tags: '${{ secrets.CONTAINER_REGISTRY }}/voting-backend:${{ github.sha }}'
+                  tags: ${{ steps.docker_meta.outputs.tags }},ghcr.io/organisasjonskollegiet/voting-backend:${{ github.sha }} # Add the SHA as a tag
                   cache-from: type=local,src=/tmp/.buildx-cache
                   cache-to: type=local,dest=/tmp/.buildx-cache
                   build-args: |
                       ${{ secrets.BUILD_ARGS }}
-            # Deploy to Azure
-            - name: 'Login via Azure CLI'
-              uses: azure/login@v1
-              with:
-                  creds: ${{ secrets.AZURE_CREDENTIALS }}
-            - name: Deploy to Azure Web App
-              uses: azure/webapps-deploy@v2
-              with:
-                  app-name: ecclesia-backend
-                  images: '${{ secrets.CONTAINER_REGISTRY }}/voting-backend:${{ github.sha }}'
