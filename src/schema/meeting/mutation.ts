@@ -2,8 +2,9 @@ import { Role as RoleEnum } from '@prisma/client';
 import { inputObjectType, mutationField, nonNull, stringArg, list } from 'nexus';
 import { MeetingStatus, Role } from '../enums';
 import { Meeting, ParticipantOrInvite } from './typedefs';
+import sendMail from '../../utils/sendMail';
 
-type ParticipantOrIniteType = {
+export type ParticipantOrIniteType = {
     email: string;
     role: RoleEnum;
     isVotingEligible: boolean;
@@ -243,5 +244,38 @@ export const DeleteParticipantsMutation = mutationField('deleteParticipants', {
         });
         const resolved = await Promise.all(promises);
         return resolved.filter((e) => e !== '');
+    },
+});
+
+export const EmailParticipants = mutationField('emailParticipants', {
+    type: list('String'),
+    description: 'Send email to all participants and invited emails. ',
+    args: {
+        meetingId: nonNull(stringArg()),
+    },
+    resolve: async (_, { meetingId }, ctx) => {
+        const meeting = await ctx.prisma.meeting.findUnique({
+            where: {
+                id: meetingId,
+            },
+        });
+        if (!meeting) throw new Error('Meeting does not exist.');
+        const participants = await ctx.prisma.participant.findMany({
+            where: {
+                meetingId,
+            },
+            select: {
+                user: true,
+                role: true,
+            },
+        });
+        const invites = await ctx.prisma.invite.findMany({
+            where: {
+                meetingId,
+            },
+        });
+        await sendMail(invites, participants, meeting);
+        // await sendMail(['endre.medhus@juniorconsulting.no'], meeting);
+        return ['aslak@organisasjonskollegiet.no'];
     },
 });

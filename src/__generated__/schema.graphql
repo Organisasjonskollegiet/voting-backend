@@ -104,6 +104,9 @@ type Mutation {
   """"""
   deleteVotations(ids: [String!]!): [String]
 
+  """Send email to all participants and invited emails. """
+  emailParticipants(meetingId: String!): [String]
+
   """"""
   updateAlternative(id: String!, text: String!): Alternative
 
