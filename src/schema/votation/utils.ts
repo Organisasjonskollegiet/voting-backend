@@ -218,7 +218,7 @@ const computeStvResult = async (ctx: Context, votation: Votation, alternatives: 
     // the first round everyone's first vote should be counted, and are therefore regarded as updated votes
     let updatedStvVotesWithWeightAndActiveRank = [...stvVotesWithWeightAndActiveRank];
 
-    let roundNr = 1;
+    let roundNr = 0;
     while (winners.length < votation.numberOfWinners && roundNr < alternativeIds.length) {
         // Every new round, some votes has been redistributed from the winners or losers of the last round
         // and the votecount for the alternatives receiving those votes are here updated
@@ -250,8 +250,8 @@ const computeStvResult = async (ctx: Context, votation: Votation, alternatives: 
             stvVotesWithWeightAndActiveRank = [...unchanged, ...updated];
             updatedStvVotesWithWeightAndActiveRank = updated;
         }
-        // if the round has no winners, but the number remaining alternatives (not winners or losers) plus the number of appointed winners
-        // is less than the desired number of winners, all remaining alternatives are appointed winners.
+        // if the round has no winners, but the number remaining alternatives (all alternatives minus winners and losers) plus the number of appointed winners
+        // is less than or equal to the desired number of winners, all remaining alternatives are appointed winners.
         else if (
             alternativeIds.filter((id) => !winners.includes(id) && !losers.includes(id)).length + winners.length <=
             votation.numberOfWinners
