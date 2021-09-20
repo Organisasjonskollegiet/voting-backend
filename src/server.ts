@@ -31,13 +31,16 @@ export const createApollo = (prisma: PrismaClient) => {
     return server;
 };
 
-const allowedOrigins = ['http://localhost:3000', 'http://localhost:4000', 'https://ecclesia.netlify.app'];
+const allowedOrigins = ['https://ecclesia.netlify.app', 'https://vaas.azurewebsites.net'];
 
 export const createGraphqlServer = async (server: ApolloServer, prisma: PrismaClient) => {
     const app = express();
     app.use(
         cors({
             origin: (origin, callback) => {
+                if (process.env.NODE_ENV == 'development') {
+                    allowedOrigins.push('http://localhost:4000');
+                }
                 // allow requests with no origin
                 // (like mobile apps or curl requests)
                 if (!origin) return callback(null, true);
