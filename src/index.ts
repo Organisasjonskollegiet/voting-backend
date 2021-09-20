@@ -15,6 +15,7 @@ app.then((expressApp) => {
     const server = createServer(expressApp);
     server.listen(PORT, () => {
         console.log(`🚀 GraphQL service ready at http://localhost:${PORT}/graphql`);
+        console.log(`🚀 Subscriptions ready at ws://localhost:${PORT}${apollo.subscriptionsPath}`);
         new SubscriptionServer(
             {
                 execute,
@@ -23,7 +24,7 @@ app.then((expressApp) => {
             },
             {
                 server: server,
-                path: '/subscriptions',
+                path: '/graphql',
             }
         );
     });
