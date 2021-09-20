@@ -39,7 +39,7 @@ export const createGraphqlServer = async (server: ApolloServer, prisma: PrismaCl
         cors({
             origin: (origin, callback) => {
                 if (process.env.NODE_ENV == 'development') {
-                    allowedOrigins.push('http://localhost:4000');
+                    allowedOrigins.push('http://localhost:4000', 'http://localhost:3000');
                 }
                 // allow requests with no origin
                 // (like mobile apps or curl requests)
