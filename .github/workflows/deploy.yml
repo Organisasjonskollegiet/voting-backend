@@ -51,13 +51,9 @@ jobs:
                   build-args: |
                       ${{ secrets.BUILD_ARGS }}
       
-            - name: 'Login via Azure CLI'
-              uses: azure/login@v1
-              with:
-                  creds: ${{ secrets.AZURE_CREDENTIALS }}
-                  
             - name: Deploy to Azure Web App
               uses: azure/webapps-deploy@v2
               with:
-                  app-name: ecclesia-backend
+                  app-name: vaas
                   images: 'ghcr.io/organisasjonskollegiet/voting-backend:${{ github.sha }}'
+                  publish-profile: ${{ secrets.AZURE_WEBAPP_PUBLISH_PROFILE }}
