@@ -133,6 +133,10 @@ export interface NexusGenObjects {
     title: string; // String!
   }
   Mutation: {};
+  NewVoteRegisteredResponse: { // root type
+    votationId: string; // String!
+    voteCount: number; // Int!
+  }
   OwnerCannotBeRemovedFromParticipantError: { // root type
     message: string; // String!
   }
@@ -240,7 +244,7 @@ export interface NexusGenFieldTypes {
   }
   Mutation: { // field return type
     addParticipants: number | null; // Int
-    castBlankVote: number | null; // Int
+    castBlankVote: string | null; // String
     castStvVote: string | null; // String
     castVote: NexusGenRootTypes['Vote'] | null; // Vote
     changeView: NexusGenEnums['ViewState'] | null; // ViewState
@@ -256,6 +260,10 @@ export interface NexusGenFieldTypes {
     updateParticipant: NexusGenRootTypes['ParticipantOrInvite'] | null; // ParticipantOrInvite
     updateVotationStatus: NexusGenRootTypes['UpdateVotationStatusResult'] | null; // UpdateVotationStatusResult
     updateVotations: Array<NexusGenRootTypes['Votation'] | null> | null; // [Votation]
+  }
+  NewVoteRegisteredResponse: { // field return type
+    votationId: string; // String!
+    voteCount: number; // Int!
   }
   OwnerCannotBeRemovedFromParticipantError: { // field return type
     message: string; // String!
@@ -284,7 +292,7 @@ export interface NexusGenFieldTypes {
     votationById: NexusGenRootTypes['Votation'] | null; // Votation
   }
   Subscription: { // field return type
-    newVoteRegistered: number | null; // Int
+    newVoteRegistered: NexusGenRootTypes['NewVoteRegisteredResponse'] | null; // NewVoteRegisteredResponse
     viewChanged: NexusGenEnums['ViewState'] | null; // ViewState
     votationOpenedForMeeting: string | null; // String
     votationStatusUpdated: NexusGenRootTypes['VotationStatusUpdatedResponse'] | null; // VotationStatusUpdatedResponse
@@ -376,7 +384,7 @@ export interface NexusGenFieldTypeNames {
   }
   Mutation: { // field return type name
     addParticipants: 'Int'
-    castBlankVote: 'Int'
+    castBlankVote: 'String'
     castStvVote: 'String'
     castVote: 'Vote'
     changeView: 'ViewState'
@@ -392,6 +400,10 @@ export interface NexusGenFieldTypeNames {
     updateParticipant: 'ParticipantOrInvite'
     updateVotationStatus: 'UpdateVotationStatusResult'
     updateVotations: 'Votation'
+  }
+  NewVoteRegisteredResponse: { // field return type name
+    votationId: 'String'
+    voteCount: 'Int'
   }
   OwnerCannotBeRemovedFromParticipantError: { // field return type name
     message: 'String'
@@ -420,7 +432,7 @@ export interface NexusGenFieldTypeNames {
     votationById: 'Votation'
   }
   Subscription: { // field return type name
-    newVoteRegistered: 'Int'
+    newVoteRegistered: 'NewVoteRegisteredResponse'
     viewChanged: 'ViewState'
     votationOpenedForMeeting: 'String'
     votationStatusUpdated: 'VotationStatusUpdatedResponse'
