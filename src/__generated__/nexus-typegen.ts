@@ -176,6 +176,10 @@ export interface NexusGenObjects {
     blankVoteCount: number; // Int!
     blankVotes: boolean; // Boolean!
   }
+  VotationStatusUpdatedResponse: { // root type
+    votationId: string; // String!
+    votationStatus: NexusGenEnums['VotationStatus']; // VotationStatus!
+  }
   VotationWithWinner: { // root type
     id: string; // ID!
   }
@@ -283,7 +287,7 @@ export interface NexusGenFieldTypes {
     newVoteRegistered: number | null; // Int
     viewChanged: NexusGenEnums['ViewState'] | null; // ViewState
     votationOpenedForMeeting: string | null; // String
-    votationStatusUpdated: NexusGenEnums['VotationStatus'] | null; // VotationStatus
+    votationStatusUpdated: NexusGenRootTypes['VotationStatusUpdatedResponse'] | null; // VotationStatusUpdatedResponse
   }
   User: { // field return type
     email: string; // String!
@@ -318,6 +322,10 @@ export interface NexusGenFieldTypes {
     blankVotes: boolean; // Boolean!
     voteCount: number; // Int!
     votingEligibleCount: number; // Int!
+  }
+  VotationStatusUpdatedResponse: { // field return type
+    votationId: string; // String!
+    votationStatus: NexusGenEnums['VotationStatus']; // VotationStatus!
   }
   VotationWithWinner: { // field return type
     alternatives: Array<NexusGenRootTypes['AlternativeWithWinner'] | null>; // [AlternativeWithWinner]!
@@ -415,7 +423,7 @@ export interface NexusGenFieldTypeNames {
     newVoteRegistered: 'Int'
     viewChanged: 'ViewState'
     votationOpenedForMeeting: 'String'
-    votationStatusUpdated: 'VotationStatus'
+    votationStatusUpdated: 'VotationStatusUpdatedResponse'
   }
   User: { // field return type name
     email: 'String'
@@ -450,6 +458,10 @@ export interface NexusGenFieldTypeNames {
     blankVotes: 'Boolean'
     voteCount: 'Int'
     votingEligibleCount: 'Int'
+  }
+  VotationStatusUpdatedResponse: { // field return type name
+    votationId: 'String'
+    votationStatus: 'VotationStatus'
   }
   VotationWithWinner: { // field return type name
     alternatives: 'AlternativeWithWinner'

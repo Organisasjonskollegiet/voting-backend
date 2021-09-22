@@ -177,7 +177,7 @@ export const UpdateVotationStatusMutation = mutationField('updateVotationStatus'
                 id: votationId,
             },
         });
-        await pubsub.publish(`VOTATION_STATUS_UPDATED_FOR_${votationId}`, status);
+        await pubsub.publish(`VOTATION_STATUS_UPDATED_FOR_${votationId}`, { votationId, votationStatus: status });
         return { __typename: 'Votation', ...updatedVotation };
     },
 });

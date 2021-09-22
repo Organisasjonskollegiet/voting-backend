@@ -60,7 +60,7 @@ const permissions = shield(
         },
     },
     // If rule is not defined, use isAuthenticated rule
-    { allowExternalErrors: true, fallbackRule: isAuthenticated }
+    { allowExternalErrors: true /*, fallbackRule: isAuthenticated */ }
 );
 
 export default permissions;

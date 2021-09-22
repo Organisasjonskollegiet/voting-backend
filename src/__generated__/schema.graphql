@@ -189,7 +189,7 @@ type Subscription {
   newVoteRegistered(votationId: String!): Int
   viewChanged: ViewState
   votationOpenedForMeeting(meetingId: String!): String
-  votationStatusUpdated(id: String!): VotationStatus
+  votationStatusUpdated(id: String!): VotationStatusUpdatedResponse
 }
 
 input UpdateMeetingInput {
@@ -285,6 +285,11 @@ enum VotationStatus {
   OPEN
   PUBLISHED_RESULT
   UPCOMING
+}
+
+type VotationStatusUpdatedResponse {
+  votationId: String!
+  votationStatus: VotationStatus!
 }
 
 enum VotationType {
