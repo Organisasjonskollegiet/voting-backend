@@ -119,11 +119,11 @@ model Alternative {
   votation   Votation @relation(fields: [votationId], references: [id])
   isWinner   Boolean  @default(false)
   votes      Vote[]
-  withRoundVoteCount AlternativeWithRoundVoteCount[]
-  winnerOfStvRoundId String @db.Uuid
-  winnerOfStvRound StvRoundResult @relation(name: "winnerOfStvRound", fields: [winnerOfStvRoundId], references: [id])
-  loserOfStvRoundId String @db.Uuid
-  loserOfStvRound StvRoundResult @relation(name: "loserOfStvRound", fields: [loserOfStvRoundId], references: [id])
+  roundVoteCount AlternativeRoundVoteCount[]
+  winnerOfStvRoundId String? @db.Uuid
+  winnerOfStvRound StvRoundResult? @relation(name: "winnerOfStvRound", fields: [winnerOfStvRoundId], references: [id])
+  loserOfStvRoundId String? @db.Uuid
+  loserOfStvRound StvRoundResult? @relation(name: "loserOfStvRound", fields: [loserOfStvRoundId], references: [id])
 }
 
 model StvVote {
@@ -133,7 +133,7 @@ model StvVote {
   votes Vote[]
 }
 
-model AlternativeWithRoundVoteCount {
+model AlternativeRoundVoteCount {
   alterantiveId    String @db.Uuid
   alternative      Alternative @relation(fields: [alterantiveId], references: [id])
   voteCount        Int
@@ -150,7 +150,7 @@ model StvRoundResult {
   stvResult StvResult @relation(fields: [stvResultId], references: [votationId])
   winners Alternative[] @relation(name: "winnerOfStvRound")
   losers Alternative[] @relation(name: "loserOfStvRound")
-  alternativesWithRoundVoteCount AlternativeWithRoundVoteCount[]
+  alternativesWithRoundVoteCount AlternativeRoundVoteCount[]
   @@unique([index, stvResultId])
 }
 
