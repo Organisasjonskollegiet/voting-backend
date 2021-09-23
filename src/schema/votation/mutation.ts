@@ -187,7 +187,7 @@ export const UpdateVotationStatusMutation = mutationField('updateVotationStatus'
             const openVotationsForMeeting = await ctx.prisma.votation.count({
                 where: {
                     meetingId: votation?.meetingId,
-                    status: 'OPEN',
+                    status: { in: ['OPEN', 'CHECKING_RESULT'] },
                 },
             });
             if (openVotationsForMeeting > 0 && votation?.status !== 'OPEN') {
