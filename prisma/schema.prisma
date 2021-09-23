@@ -136,7 +136,7 @@ model StvVote {
 model AlternativeRoundVoteCount {
   alterantiveId    String @db.Uuid
   alternative      Alternative @relation(fields: [alterantiveId], references: [id])
-  voteCount        Int
+  voteCount        Float
   stvRoundResultId String @db.Uuid
   stvRoundResult   StvRoundResult @relation(fields: [stvRoundResultId], references: [id])
 

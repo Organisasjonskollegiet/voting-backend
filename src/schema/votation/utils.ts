@@ -91,7 +91,8 @@ const computeQualifiedResult = async (ctx: Context, votation: Votation, alternat
 /**
  * @summary Redistributes votes from the winners or losers of this round to the next alternative on their ballot (stvVote)
  *
- * @description The votes from this round's winners or losers are redistributed to the next alternative on the ballot (stvVote).
+ * @description This function update the weight and activeRank of stvVotes, that will be used in the next round.
+ * The votes from this round's winners or losers are redistributed to the next alternative on the ballot (stvVote).
  * If the redistributed votes comes from a loser, the redistributed vote will have the same weight as the vote with the
  * loser. If the redistributed vote comes from a winner, the weight of the redistributed vote is reduced. The weight is
  * reduced so that all the votes transferred will have a combined weight equal to the vote surplus. The vote surplus is
@@ -103,7 +104,7 @@ const computeQualifiedResult = async (ctx: Context, votation: Votation, alternat
  * @param stvVotesWithWeightAndActiveRank
  * @param winners List of the ids of the alternatives declared winners so far
  * @param losers  List of the ids if the alternatives declared losers so far
- * @returns
+ * @returns an object containing both the unchanged and the updated
  */
 const redistributeVotes = (
     eliminatedAlternatives: string[],
@@ -206,6 +207,16 @@ const computeStvResult = async (ctx: Context, votation: Votation, alternatives: 
     const quota = await getQuota(ctx, votation);
     const stvVotes = await getStvVotes(ctx, votation.id);
 
+    // create result in db
+    const stvResult = await ctx.prisma.stvResult.create({
+        data: {
+            votationId: votation.id,
+            quota,
+        },
+    });
+
+    // this variable is used to keep track of each ballot/stvVote. When a stvVotes "active" vote is declared
+    // winner or loser, stvVotesWithWeightAndActiveRank is used to redistribute the votes correctly
     let stvVotesWithWeightAndActiveRank: StvVoteWithWeightAndActiveRank[] = stvVotes.map((vote) => {
         const sortedVotes = vote.votes.sort((a, b) => a.ranking - b.ranking);
         return {
@@ -215,23 +226,47 @@ const computeStvResult = async (ctx: Context, votation: Votation, alternatives: 
             activeRank: 0,
         };
     });
+
+    // When the alternative on the "active" vote of an stvVote is declared winner or loser, the votes are
+    // redistributed. updatedStvVotesWithWeightAndActiveRank tells us which one to
     // the first round everyone's first vote should be counted, and are therefore regarded as updated votes
     let updatedStvVotesWithWeightAndActiveRank = [...stvVotesWithWeightAndActiveRank];
 
     let roundNr = 0;
     while (winners.length < votation.numberOfWinners && roundNr < alternativeIds.length) {
-        // Every new round, some votes has been redistributed from the winners or losers of the last round
-        // and the votecount for the alternatives receiving those votes are here updated
+        // The vote count of the alternatives are updated with the redistributed votes.
         updatedStvVotesWithWeightAndActiveRank.forEach((stvVote) => {
-            const activeVote = stvVote.votes.filter((v) => v.ranking === stvVote.activeRank);
-            if (activeVote.length > 0 && activeVote[0]) {
-                alternativeIdToVoteCount[activeVote[0].alternativeId].voteCount += stvVote.weight;
-                alternativeIdToVoteCount[activeVote[0].alternativeId].votedBy.push({
+            const activeVote = stvVote.votes.find((v) => v.ranking === stvVote.activeRank);
+            if (activeVote) {
+                alternativeIdToVoteCount[activeVote.alternativeId].voteCount += stvVote.weight;
+                alternativeIdToVoteCount[activeVote.alternativeId].votedBy.push({
                     stvId: stvVote.id,
                     weight: stvVote.weight,
                 });
             }
         });
+
+        const stvRoundResult = await ctx.prisma.stvRoundResult.create({
+            data: {
+                stvResultId: stvResult.votationId,
+                index: roundNr,
+            },
+        });
+
+        // add this rounds alternative-to-vote-count to db
+        await Promise.all(
+            alternativeIds
+                .filter((a) => ![...winners, ...losers].includes(a))
+                .map((id) =>
+                    ctx.prisma.alternativeRoundVoteCount.create({
+                        data: {
+                            alterantiveId: id,
+                            voteCount: alternativeIdToVoteCount[id].voteCount,
+                            stvRoundResultId: stvRoundResult.id,
+                        },
+                    })
+                )
+        );
 
         // alternatives with a vote count higher than the quota are winners
         const roundWinners = alternativeIds.filter(
@@ -239,6 +274,19 @@ const computeStvResult = async (ctx: Context, votation: Votation, alternatives: 
         );
         if (roundWinners.length > 0) {
             winners.push(...roundWinners);
+            // save this rounds winners to db
+            await Promise.all(
+                roundWinners.map((alternativeId) =>
+                    ctx.prisma.alternative.update({
+                        where: {
+                            id: alternativeId,
+                        },
+                        data: {
+                            winnerOfStvRoundId: stvRoundResult.id,
+                        },
+                    })
+                )
+            );
             const { unchanged, updated } = redistributeVotes(
                 roundWinners,
                 alternativeIdToVoteCount,
@@ -256,7 +304,21 @@ const computeStvResult = async (ctx: Context, votation: Votation, alternatives: 
             alternativeIds.filter((id) => !winners.includes(id) && !losers.includes(id)).length + winners.length <=
             votation.numberOfWinners
         ) {
-            return [...winners, ...alternativeIds.filter((id) => !winners.includes(id) && !losers.includes(id))];
+            const roundWinners = alternativeIds.filter((id) => !winners.includes(id) && !losers.includes(id));
+            // save this rounds winners to db
+            await Promise.all(
+                roundWinners.map((alternativeId) =>
+                    ctx.prisma.alternative.update({
+                        where: {
+                            id: alternativeId,
+                        },
+                        data: {
+                            winnerOfStvRoundId: stvRoundResult.id,
+                        },
+                    })
+                )
+            );
+            return [...winners, ...roundWinners];
         }
         // if the round has no winners and there are too many alternatives left to appoint all as winners, the alternative with
         // least votes, is removed, and its votes are redistributed
@@ -273,6 +335,19 @@ const computeStvResult = async (ctx: Context, votation: Votation, alternatives: 
             const undecidedAlternatives = alternatives.length - winners.length - losers.length;
             const winnersLeftToPick = votation.numberOfWinners - winners.length;
             let roundLosers = trimLosers(tempRoundLosers, winnersLeftToPick, undecidedAlternatives);
+            // save this rounds losers to db
+            await Promise.all(
+                roundLosers.map((alternative) =>
+                    ctx.prisma.alternative.update({
+                        where: {
+                            id: alternative.id,
+                        },
+                        data: {
+                            loserOfStvRoundId: stvRoundResult.id,
+                        },
+                    })
+                )
+            );
             roundLosers.forEach((l) => losers.push(l.id));
             const { unchanged, updated } = redistributeVotes(
                 roundLosers.map((a) => a.id),
@@ -285,6 +360,7 @@ const computeStvResult = async (ctx: Context, votation: Votation, alternatives: 
             stvVotesWithWeightAndActiveRank = [...unchanged, ...updated];
             updatedStvVotesWithWeightAndActiveRank = updated;
         }
+
         roundNr += 1;
     }
     return winners;
