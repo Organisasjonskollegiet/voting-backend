@@ -1012,7 +1012,7 @@ it('should successfully cast a blank vote', async () => {
         `,
         { votationId: votation.id }
     );
-    expect(blankVoteCount.castBlankVote).toEqual(1);
+    expect(blankVoteCount.castBlankVote).toEqual(votation.id);
     const updatedVotation = await ctx.prisma.votation.findUnique({ where: { id: votation.id } });
     expect(updatedVotation?.blankVoteCount).toEqual(1);
 });

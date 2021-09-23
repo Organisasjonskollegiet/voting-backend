@@ -177,7 +177,7 @@ export const UpdateVotationStatusMutation = mutationField('updateVotationStatus'
                 id: votationId,
             },
         });
-        await pubsub.publish(`VOTATION_STATUS_UPDATED_FOR_${votationId}`, status);
+        await pubsub.publish(`VOTATION_STATUS_UPDATED_FOR_${votationId}`, { votationId, votationStatus: status });
         return { __typename: 'Votation', ...updatedVotation };
     },
 });
@@ -335,24 +335,27 @@ export const CastVoteMutation = mutationField('castVote', {
                 votationId: alternative.votationId,
             },
         });
-        await pubsub.publish(`NEW_VOTE_REGISTERED_FOR_${alternative.votationId}`, voteCount);
+        await pubsub.publish(`NEW_VOTE_REGISTERED_FOR_${alternative.votationId}`, {
+            votationId: alternative.votationId,
+            voteCount,
+        });
         return vote;
     },
 });
 
 export const CastBlankVoteMutation = mutationField('castBlankVote', {
-    type: 'Int',
+    type: 'String',
     args: {
         votationId: nonNull(stringArg()),
     },
-    description: 'Returns the current number of blank votes',
+    description: 'Returns the id of the votation',
     resolve: async (_, { votationId }, ctx) => {
         const [__, votation] = await ctx.prisma.$transaction([
             ctx.prisma.hasVoted.create({ data: { userId: ctx.userId, votationId: votationId } }),
             ctx.prisma.votation.update({ where: { id: votationId }, data: { blankVoteCount: { increment: 1 } } }),
         ]);
         const voteCount = await ctx.prisma.hasVoted.count({ where: { votationId: votationId } });
-        await pubsub.publish(`NEW_VOTE_REGISTERED_FOR_${votationId}`, voteCount);
-        return votation.blankVoteCount;
+        await pubsub.publish(`NEW_VOTE_REGISTERED_FOR_${votationId}`, { votationId, voteCount });
+        return votation.id;
     },
 });

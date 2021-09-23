@@ -7,7 +7,7 @@
   "author": "kharann",
   "license": "MIT",
   "scripts": {
-    "dev": "ts-node-dev --transpile-only --no-notify src/index.ts",
+    "dev": "NODE_ENV='development' ts-node-dev --transpile-only --no-notify src/index.ts",
     "build": "tsc",
     "test": "yarn nexus-generate && jest --runInBand",
     "lint": "eslint src/",
