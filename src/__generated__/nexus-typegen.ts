@@ -73,6 +73,10 @@ export interface NexusGenInputs {
     role: NexusGenEnums['Role']; // Role!
     userExists: boolean; // Boolean!
   }
+  UpdateVotationIndexInput: { // input type
+    id: string; // String!
+    index: number; // Int!
+  }
   UpdateVotationInput: { // input type
     alternatives?: NexusGenInputs['AlternativeInput'][] | null; // [AlternativeInput!]
     blankVotes: boolean; // Boolean!
@@ -258,6 +262,7 @@ export interface NexusGenFieldTypes {
     updateAlternative: NexusGenRootTypes['Alternative'] | null; // Alternative
     updateMeeting: NexusGenRootTypes['Meeting'] | null; // Meeting
     updateParticipant: NexusGenRootTypes['ParticipantOrInvite'] | null; // ParticipantOrInvite
+    updateVotationIndexes: Array<NexusGenRootTypes['Votation'] | null> | null; // [Votation]
     updateVotationStatus: NexusGenRootTypes['UpdateVotationStatusResult'] | null; // UpdateVotationStatusResult
     updateVotations: Array<NexusGenRootTypes['Votation'] | null> | null; // [Votation]
   }
@@ -398,6 +403,7 @@ export interface NexusGenFieldTypeNames {
     updateAlternative: 'Alternative'
     updateMeeting: 'Meeting'
     updateParticipant: 'ParticipantOrInvite'
+    updateVotationIndexes: 'Votation'
     updateVotationStatus: 'UpdateVotationStatusResult'
     updateVotations: 'Votation'
   }
@@ -543,6 +549,9 @@ export interface NexusGenArgTypes {
     updateParticipant: { // args
       meetingId: string; // String!
       participant: NexusGenInputs['ParticipantInput']; // ParticipantInput!
+    }
+    updateVotationIndexes: { // args
+      votations: NexusGenInputs['UpdateVotationIndexInput'][]; // [UpdateVotationIndexInput!]!
     }
     updateVotationStatus: { // args
       status: NexusGenEnums['VotationStatus']; // VotationStatus!

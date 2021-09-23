@@ -15,6 +15,7 @@ import {
     userCanVoteOnVotation,
     userCanVoteOnAlternative,
     votesNotHidden,
+    votationsAreUpcoming,
 } from './rules';
 
 const permissions = shield(
@@ -41,7 +42,8 @@ const permissions = shield(
             castBlankVote: and(userCanVoteOnVotation),
             createVotations: and(isAdminOfMeetingId),
             updateMeeting: and(isAdminOfMeetingByObject),
-            updateVotations: and(isAdminOfVotationsByObjects),
+            updateVotations: and(isAdminOfVotationsByObjects, votationsAreUpcoming),
+            updateVotationIndexes: and(isAdminOfVotationsByObjects, votationsAreUpcoming),
             updateVotationStatus: and(isAdminOfVotationById),
             updateAlternative: and(isAdminOfAlternative),
             updateParticipant: and(isAdminOfMeetingId),

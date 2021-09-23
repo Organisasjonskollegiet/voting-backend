@@ -5,6 +5,7 @@ import { string, uuid } from 'casual';
 import casual from 'casual';
 import { computeResult, setWinner } from '../utils';
 import { Vote } from '@prisma/client';
+import exp from 'constants';
 const ctx = createTestContext();
 
 interface StaticMeetingDataType {
@@ -1531,6 +1532,96 @@ it('should Not Authorised trying to get open votation', async () => {
             `,
             {
                 meetingId: meeting.id,
+            }
+        );
+        expect(false).toBeTruthy();
+    } catch (error) {
+        expect(error.message).toContain('Not Authorised!');
+    }
+});
+
+it('should update index successfully', async () => {
+    const meeting = await createMeeting(ctx.userId, Role.ADMIN, true);
+    const votation1 = await createVotation(meeting.id, VotationStatus.UPCOMING, 1);
+    const votation2 = await createVotation(meeting.id, VotationStatus.UPCOMING, 2);
+    const response = await ctx.client.request(
+        gql`
+            mutation UpdateVotationIndexes($votations: [UpdateVotationIndexInput!]!) {
+                updateVotationIndexes(votations: $votations) {
+                    id
+                    index
+                }
+            }
+        `,
+        {
+            votations: [
+                {
+                    id: votation1.id,
+                    index: 2,
+                },
+                {
+                    id: votation2.id,
+                    index: 1,
+                },
+            ],
+        }
+    );
+    expect(response.updateVotationIndexes.find((v: { id: string; index: number }) => v.id === votation1.id).index).toBe(
+        2
+    );
+    expect(response.updateVotationIndexes.find((v: { id: string; index: number }) => v.id === votation2.id).index).toBe(
+        1
+    );
+});
+
+it('should return error trying to update index of open votation', async () => {
+    const meeting = await createMeeting(ctx.userId, Role.ADMIN, true);
+    const votation1 = await createVotation(meeting.id, VotationStatus.OPEN, 1);
+    try {
+        await ctx.client.request(
+            gql`
+                mutation UpdateVotationIndexes($votations: [UpdateVotationIndexInput!]!) {
+                    updateVotationIndexes(votations: $votations) {
+                        id
+                        index
+                    }
+                }
+            `,
+            {
+                votations: [
+                    {
+                        id: votation1.id,
+                        index: 2,
+                    },
+                ],
+            }
+        );
+        expect(false).toBeTruthy();
+    } catch (error) {
+        expect(true).toBeTruthy();
+    }
+});
+
+it('should return error trying to update index of open votation', async () => {
+    const meeting = await createMeeting(ctx.userId, Role.COUNTER, true);
+    const votation1 = await createVotation(meeting.id, VotationStatus.UPCOMING, 1);
+    try {
+        await ctx.client.request(
+            gql`
+                mutation UpdateVotationIndexes($votations: [UpdateVotationIndexInput!]!) {
+                    updateVotationIndexes(votations: $votations) {
+                        id
+                        index
+                    }
+                }
+            `,
+            {
+                votations: [
+                    {
+                        id: votation1.id,
+                        index: 2,
+                    },
+                ],
             }
         );
         expect(false).toBeTruthy();

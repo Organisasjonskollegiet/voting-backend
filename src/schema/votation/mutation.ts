@@ -4,6 +4,7 @@ import { pubsub } from '../../lib/pubsub';
 import { Alternative, UpdateVotationStatusResult, Votation, MaxOneOpenVotationError } from './typedefs';
 import { VotationType, VotationStatus } from '../enums';
 import { setWinner } from './utils';
+import { VotationStatusUpdatedResponse } from './subscriptions';
 
 export const AlternativeInput = inputObjectType({
     name: 'AlternativeInput',
@@ -52,6 +53,14 @@ export const CreateVotationInput = inputObjectType({
     },
 });
 
+export const UpdateVotationIndexInput = inputObjectType({
+    name: 'UpdateVotationIndexInput',
+    definition(t) {
+        t.nonNull.string('id');
+        t.nonNull.int('index');
+    },
+});
+
 export const CreateVotationsMutation = mutationField('createVotations', {
     type: list(Votation),
     args: {
@@ -84,6 +93,28 @@ export const CreateVotationsMutation = mutationField('createVotations', {
             );
         }
         const resolved = await Promise.all(promises);
+        return resolved;
+    },
+});
+
+export const UpdateVotationIndexes = mutationField('updateVotationIndexes', {
+    type: list(Votation),
+    args: {
+        votations: nonNull(list(nonNull(UpdateVotationIndexInput))),
+    },
+    resolve: async (_, { votations }, ctx) => {
+        const resolved = await Promise.all(
+            votations.map((v) =>
+                ctx.prisma.votation.update({
+                    where: {
+                        id: v.id,
+                    },
+                    data: {
+                        index: v.index,
+                    },
+                })
+            )
+        );
         return resolved;
     },
 });

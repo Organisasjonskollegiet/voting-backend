@@ -112,6 +112,7 @@ type Mutation {
 
   """Update participants of a meeting."""
   updateParticipant(meetingId: String!, participant: ParticipantInput!): ParticipantOrInvite
+  updateVotationIndexes(votations: [UpdateVotationIndexInput!]!): [Votation]
 
   """"""
   updateVotationStatus(status: VotationStatus!, votationId: String!): UpdateVotationStatusResult
@@ -211,6 +212,11 @@ input UpdateParticipantInput {
   isVotingEligible: Boolean!
   role: Role!
   userExists: Boolean!
+}
+
+input UpdateVotationIndexInput {
+  id: String!
+  index: Int!
 }
 
 input UpdateVotationInput {
