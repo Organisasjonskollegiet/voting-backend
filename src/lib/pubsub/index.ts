@@ -4,6 +4,7 @@ import Redis from 'ioredis';
 
 const options: Redis.RedisOptions = {
     host: process.env.REDIS_HOST,
+    password: process.env.REDIS_PASSWORD,
     port: 6380,
     retryStrategy: (times: number) => {
         // reconnect after
