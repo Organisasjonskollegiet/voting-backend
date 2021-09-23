@@ -51,7 +51,6 @@ const permissions = shield(
             deleteMeeting: and(isOwnerOfMeeting),
         },
         Subscription: {
-            viewChanged: allow,
             newVoteRegistered: allow,
             votationStatusUpdated: allow,
             votationOpenedForMeeting: allow,
