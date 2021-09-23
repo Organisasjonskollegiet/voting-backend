@@ -1,9 +1,7 @@
 import { shield, and, or, allow } from 'graphql-shield';
 import {
-    isAuthenticated,
     isParticipantOfMeeting,
     isParticipantOfVotation,
-    // isParticipantOfAlternativeId,
     isCounterOfVotationById,
     isAdminOfMeetingId,
     isAdminOfMeetingByObject,
@@ -60,7 +58,7 @@ const permissions = shield(
         },
     },
     // If rule is not defined, use isAuthenticated rule
-    { allowExternalErrors: true, fallbackRule: isAuthenticated }
+    { allowExternalErrors: true }
 );
 
 export default permissions;

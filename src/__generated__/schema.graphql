@@ -81,8 +81,8 @@ type Mutation {
   """Creates invites and participants for the emails provided."""
   addParticipants(meetingId: String!, participants: [ParticipantInput!]!): Int
 
-  """Returns the current number of blank votes"""
-  castBlankVote(votationId: String!): Int
+  """Returns the id of the votation"""
+  castBlankVote(votationId: String!): String
   castStvVote(alternatives: [StvVoteAlternativeInput!]!, votationId: String!): String
   castVote(alternativeId: String!): Vote
   changeView(state: ViewState!): ViewState
@@ -118,6 +118,11 @@ type Mutation {
 
   """"""
   updateVotations(votations: [UpdateVotationInput!]!): [Votation]
+}
+
+type NewVoteRegisteredResponse {
+  votationId: String!
+  voteCount: Int!
 }
 
 type OwnerCannotBeRemovedFromParticipantError {
@@ -186,10 +191,10 @@ input StvVoteAlternativeInput {
 }
 
 type Subscription {
-  newVoteRegistered(votationId: String!): Int
+  newVoteRegistered(votationId: String!): NewVoteRegisteredResponse
   viewChanged: ViewState
   votationOpenedForMeeting(meetingId: String!): String
-  votationStatusUpdated(id: String!): VotationStatus
+  votationStatusUpdated(id: String!): VotationStatusUpdatedResponse
 }
 
 input UpdateMeetingInput {
@@ -285,6 +290,11 @@ enum VotationStatus {
   OPEN
   PUBLISHED_RESULT
   UPCOMING
+}
+
+type VotationStatusUpdatedResponse {
+  votationId: String!
+  votationStatus: VotationStatus!
 }
 
 enum VotationType {

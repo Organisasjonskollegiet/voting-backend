@@ -133,6 +133,10 @@ export interface NexusGenObjects {
     title: string; // String!
   }
   Mutation: {};
+  NewVoteRegisteredResponse: { // root type
+    votationId: string; // String!
+    voteCount: number; // Int!
+  }
   OwnerCannotBeRemovedFromParticipantError: { // root type
     message: string; // String!
   }
@@ -175,6 +179,10 @@ export interface NexusGenObjects {
   VotationResults: { // root type
     blankVoteCount: number; // Int!
     blankVotes: boolean; // Boolean!
+  }
+  VotationStatusUpdatedResponse: { // root type
+    votationId: string; // String!
+    votationStatus: NexusGenEnums['VotationStatus']; // VotationStatus!
   }
   VotationWithWinner: { // root type
     id: string; // ID!
@@ -236,7 +244,7 @@ export interface NexusGenFieldTypes {
   }
   Mutation: { // field return type
     addParticipants: number | null; // Int
-    castBlankVote: number | null; // Int
+    castBlankVote: string | null; // String
     castStvVote: string | null; // String
     castVote: NexusGenRootTypes['Vote'] | null; // Vote
     changeView: NexusGenEnums['ViewState'] | null; // ViewState
@@ -252,6 +260,10 @@ export interface NexusGenFieldTypes {
     updateParticipant: NexusGenRootTypes['ParticipantOrInvite'] | null; // ParticipantOrInvite
     updateVotationStatus: NexusGenRootTypes['UpdateVotationStatusResult'] | null; // UpdateVotationStatusResult
     updateVotations: Array<NexusGenRootTypes['Votation'] | null> | null; // [Votation]
+  }
+  NewVoteRegisteredResponse: { // field return type
+    votationId: string; // String!
+    voteCount: number; // Int!
   }
   OwnerCannotBeRemovedFromParticipantError: { // field return type
     message: string; // String!
@@ -280,10 +292,10 @@ export interface NexusGenFieldTypes {
     votationById: NexusGenRootTypes['Votation'] | null; // Votation
   }
   Subscription: { // field return type
-    newVoteRegistered: number | null; // Int
+    newVoteRegistered: NexusGenRootTypes['NewVoteRegisteredResponse'] | null; // NewVoteRegisteredResponse
     viewChanged: NexusGenEnums['ViewState'] | null; // ViewState
     votationOpenedForMeeting: string | null; // String
-    votationStatusUpdated: NexusGenEnums['VotationStatus'] | null; // VotationStatus
+    votationStatusUpdated: NexusGenRootTypes['VotationStatusUpdatedResponse'] | null; // VotationStatusUpdatedResponse
   }
   User: { // field return type
     email: string; // String!
@@ -318,6 +330,10 @@ export interface NexusGenFieldTypes {
     blankVotes: boolean; // Boolean!
     voteCount: number; // Int!
     votingEligibleCount: number; // Int!
+  }
+  VotationStatusUpdatedResponse: { // field return type
+    votationId: string; // String!
+    votationStatus: NexusGenEnums['VotationStatus']; // VotationStatus!
   }
   VotationWithWinner: { // field return type
     alternatives: Array<NexusGenRootTypes['AlternativeWithWinner'] | null>; // [AlternativeWithWinner]!
@@ -368,7 +384,7 @@ export interface NexusGenFieldTypeNames {
   }
   Mutation: { // field return type name
     addParticipants: 'Int'
-    castBlankVote: 'Int'
+    castBlankVote: 'String'
     castStvVote: 'String'
     castVote: 'Vote'
     changeView: 'ViewState'
@@ -384,6 +400,10 @@ export interface NexusGenFieldTypeNames {
     updateParticipant: 'ParticipantOrInvite'
     updateVotationStatus: 'UpdateVotationStatusResult'
     updateVotations: 'Votation'
+  }
+  NewVoteRegisteredResponse: { // field return type name
+    votationId: 'String'
+    voteCount: 'Int'
   }
   OwnerCannotBeRemovedFromParticipantError: { // field return type name
     message: 'String'
@@ -412,10 +432,10 @@ export interface NexusGenFieldTypeNames {
     votationById: 'Votation'
   }
   Subscription: { // field return type name
-    newVoteRegistered: 'Int'
+    newVoteRegistered: 'NewVoteRegisteredResponse'
     viewChanged: 'ViewState'
     votationOpenedForMeeting: 'String'
-    votationStatusUpdated: 'VotationStatus'
+    votationStatusUpdated: 'VotationStatusUpdatedResponse'
   }
   User: { // field return type name
     email: 'String'
@@ -450,6 +470,10 @@ export interface NexusGenFieldTypeNames {
     blankVotes: 'Boolean'
     voteCount: 'Int'
     votingEligibleCount: 'Int'
+  }
+  VotationStatusUpdatedResponse: { // field return type name
+    votationId: 'String'
+    votationStatus: 'VotationStatus'
   }
   VotationWithWinner: { // field return type name
     alternatives: 'AlternativeWithWinner'
