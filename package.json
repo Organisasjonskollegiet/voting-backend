@@ -19,6 +19,7 @@
   },
   "dependencies": {
     "@prisma/client": "^2.19.0",
+    "@types/ioredis": "^4.27.4",
     "apollo-server-express": "2.22.1",
     "axios": "^0.21.1",
     "bcrypt": "^5.0.1",
@@ -31,8 +32,10 @@
     "graphql": "^15.5.0",
     "graphql-iso-date": "^3.6.1",
     "graphql-middleware": "^6.0.5",
+    "graphql-redis-subscriptions": "^2.4.0",
     "graphql-shield": "^7.5.0",
     "graphql-subscriptions": "^1.2.1",
+    "ioredis": "^4.27.9",
     "jest": "^26.6.3",
     "jwks-rsa": "^2.0.1",
     "mailersend": "^1.1.0",
