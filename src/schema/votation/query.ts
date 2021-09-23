@@ -116,7 +116,7 @@ export const GetOpenVotation = queryField('getOpenVotation', {
         const openVotation = await ctx.prisma.votation.findFirst({
             where: {
                 meetingId,
-                status: VotationStatus.OPEN,
+                status: { in: [VotationStatus.OPEN, VotationStatus.CHECKING_RESULT] },
             },
         });
         return openVotation?.id ?? '';
