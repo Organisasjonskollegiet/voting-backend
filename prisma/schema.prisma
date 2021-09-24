@@ -98,7 +98,7 @@ model Votation {
   meeting           Meeting        @relation(fields: [meetingId], references: [id])
   stvVotes          StvVote[]
   alternatives      Alternative[]
-  HasVoted          HasVoted[]
+  hasVoted          HasVoted[]
   stvResults        StvResult?
 }
 

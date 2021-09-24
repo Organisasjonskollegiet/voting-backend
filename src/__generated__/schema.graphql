@@ -21,6 +21,14 @@ type AlternativeResult {
   votes: Int!
 }
 
+"""
+connects alternative to its vote count for one round when computing stv result
+"""
+type AlternativeRoundVoteCount {
+  alternative: Alternative
+  voteCount: Float!
+}
+
 type AlternativeWithWinner {
   id: ID!
   isWinner: Boolean!
@@ -154,6 +162,9 @@ type Query {
   """"""
   getOpenVotation(meetingId: String!): String
 
+  """Get results from an stv votation"""
+  getStvResult(votationId: String!): StvResult
+
   """"""
   getVotationResults(votationId: String!): VotationResults
   getVoteCount(votationId: String!): VoteCountResult
@@ -184,6 +195,24 @@ enum Role {
   ADMIN
   COUNTER
   PARTICIPANT
+}
+
+"""Results from a stv votation"""
+type StvResult {
+  quota: Int!
+  stvRoundResults: [StvRoundResult!]!
+  votationId: String!
+  voteCount: Int!
+  votingEligibleCount: Int!
+}
+
+"""Results from one round computing the result of an stv votation"""
+type StvRoundResult {
+  alternativesWithRoundVoteCount: [AlternativeRoundVoteCount!]!
+  id: String!
+  index: Int!
+  losers: [Alternative]!
+  winners: [Alternative]!
 }
 
 input StvVoteAlternativeInput {
