@@ -1,5 +1,5 @@
 import { idArg, list, nonNull, queryField, stringArg } from 'nexus';
-import { Alternative, Votation, VotationResults } from './typedefs';
+import { Alternative, StvResult, Votation, VotationResults } from './typedefs';
 import { VotationStatus } from '@prisma/client';
 
 export const GetVotationById = queryField('votationById', {
@@ -54,6 +54,40 @@ export const GetVoteCount = queryField('getVoteCount', {
             },
         });
         return { votingEligibleCount, voteCount };
+    },
+});
+
+export const GetStvResult = queryField('getStvResult', {
+    type: StvResult,
+    description: 'Get results from an stv votation',
+    args: {
+        votationId: nonNull(stringArg()),
+    },
+    resolve: async (_, { votationId }, ctx) => {
+        const votation = await ctx.prisma.votation.findUnique({
+            where: {
+                id: votationId,
+            },
+        });
+        if (!votation) throw new Error('Votation does not exist.');
+        const votingEligibleCount = await ctx.prisma.participant.count({
+            where: {
+                meetingId: votation.meetingId,
+                isVotingEligible: true,
+            },
+        });
+        const voteCount = await ctx.prisma.hasVoted.count({
+            where: {
+                votationId,
+            },
+        });
+        const stvResult = await ctx.prisma.stvResult.findUnique({
+            where: {
+                votationId,
+            },
+        });
+        if (!stvResult || !voteCount || !votingEligibleCount) throw new Error('');
+        return { ...stvResult, voteCount, votingEligibleCount };
     },
 });
 
