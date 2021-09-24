@@ -241,7 +241,7 @@ export interface NexusGenFieldTypes {
     votes: number; // Int!
   }
   AlternativeRoundVoteCount: { // field return type
-    alternative: NexusGenRootTypes['Alternative'] | null; // Alternative
+    alternative: NexusGenRootTypes['Alternative']; // Alternative!
     voteCount: number; // Float!
   }
   AlternativeWithWinner: { // field return type

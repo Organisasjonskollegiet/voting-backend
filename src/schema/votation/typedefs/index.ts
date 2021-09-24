@@ -134,7 +134,7 @@ export const AlternativeRoundVoteCount = objectType({
     name: 'AlternativeRoundVoteCount',
     description: 'connects alternative to its vote count for one round when computing stv result',
     definition(t) {
-        t.field('alternative', {
+        t.nonNull.field('alternative', {
             type: Alternative,
             resolve: async (source, __, ctx) => {
                 const { alterantiveId } = source as AlternativeRoundVoteCountModel;
@@ -143,6 +143,7 @@ export const AlternativeRoundVoteCount = objectType({
                         id: alterantiveId,
                     },
                 });
+                if (!alternative) throw new Error('Alternative does not exist.');
                 return alternative;
             },
         });

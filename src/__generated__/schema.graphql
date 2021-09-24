@@ -25,7 +25,7 @@ type AlternativeResult {
 connects alternative to its vote count for one round when computing stv result
 """
 type AlternativeRoundVoteCount {
-  alternative: Alternative
+  alternative: Alternative!
   voteCount: Float!
 }
 
