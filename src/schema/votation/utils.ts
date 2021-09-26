@@ -214,7 +214,6 @@ const trimLosers = (tempLosers: VotationResult[], winnersLeftToPick: number, alt
 
 const computeStvResult = async (ctx: Context, votation: Votation, alternatives: Alternative[]) => {
     // keep track of what alternatives has been eliminated as winners or losers
-    if (votation.numberOfWinners >= alternatives.length) return alternatives.map((a) => a.id);
     const winners: string[] = [];
     const losers: string[] = [];
 
