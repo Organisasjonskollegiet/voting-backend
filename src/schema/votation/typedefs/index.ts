@@ -157,7 +157,7 @@ export const StvRoundResults = objectType({
     definition(t) {
         t.nonNull.string('id');
         t.nonNull.int('index');
-        t.nonNull.list.field('winners', {
+        t.nonNull.list.nonNull.field('winners', {
             type: Alternative,
             resolve: async (source, __, ctx) => {
                 const { id } = source as StvRoundResultModel;
@@ -169,7 +169,7 @@ export const StvRoundResults = objectType({
                 return alternatives;
             },
         });
-        t.nonNull.list.field('losers', {
+        t.nonNull.list.nonNull.field('losers', {
             type: Alternative,
             resolve: async (source, __, ctx) => {
                 const { id } = source as StvRoundResultModel;

@@ -211,8 +211,8 @@ type StvRoundResult {
   alternativesWithRoundVoteCount: [AlternativeRoundVoteCount!]!
   id: String!
   index: Int!
-  losers: [Alternative]!
-  winners: [Alternative]!
+  losers: [Alternative!]!
+  winners: [Alternative!]!
 }
 
 input StvVoteAlternativeInput {

@@ -325,8 +325,8 @@ export interface NexusGenFieldTypes {
     alternativesWithRoundVoteCount: NexusGenRootTypes['AlternativeRoundVoteCount'][]; // [AlternativeRoundVoteCount!]!
     id: string; // String!
     index: number; // Int!
-    losers: Array<NexusGenRootTypes['Alternative'] | null>; // [Alternative]!
-    winners: Array<NexusGenRootTypes['Alternative'] | null>; // [Alternative]!
+    losers: NexusGenRootTypes['Alternative'][]; // [Alternative!]!
+    winners: NexusGenRootTypes['Alternative'][]; // [Alternative!]!
   }
   Subscription: { // field return type
     newVoteRegistered: NexusGenRootTypes['NewVoteRegisteredResponse'] | null; // NewVoteRegisteredResponse
