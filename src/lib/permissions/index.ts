@@ -29,6 +29,11 @@ const permissions = shield(
                 isCounterOfVotationById,
                 and(isParticipantOfVotation, resultIsPublished, votesNotHidden)
             ),
+            getStvResult: or(
+                isAdminOfVotationById,
+                isCounterOfVotationById,
+                and(isParticipantOfVotation, resultIsPublished, votesNotHidden)
+            ),
             getVoteCount: and(isParticipantOfVotation),
             getWinnerOfVotation: and(resultIsPublished),
             participants: and(isAdminOfMeetingId),
