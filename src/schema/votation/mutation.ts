@@ -329,6 +329,12 @@ export const CastStvVoteMutation = mutationField('castStvVote', {
                 })
             ),
         ]);
+        const voteCount = await ctx.prisma.hasVoted.count({
+            where: {
+                votationId: votationId,
+            },
+        });
+        await pubsub.publish(`NEW_VOTE_REGISTERED_FOR_${votationId}`, { votationId, voteCount });
         return 'Vote registered';
     },
 });

@@ -1,6 +1,6 @@
 import { createTestContext } from '../../../lib/tests/testContext';
 import { gql } from 'graphql-request';
-import { VotationStatus, MeetingStatus, VotationType, Role } from '.prisma/client';
+import { VotationStatus, MeetingStatus, VotationType, Role, Alternative } from '.prisma/client';
 import { string, uuid } from 'casual';
 import casual from 'casual';
 import { computeResult, setWinner } from '../utils';
@@ -79,7 +79,8 @@ const createVotation = async (
     type: VotationType = VotationType.SIMPLE,
     numberOfWinners: number = 1,
     majorityThreshold: number = 66,
-    blankVotes = false
+    blankVotes = false,
+    hiddenVotes = true
 ) => {
     return await ctx.prisma.votation.create({
         data: {
@@ -91,6 +92,7 @@ const createVotation = async (
             meetingId,
             numberOfWinners,
             blankVotes,
+            hiddenVotes,
         },
     });
 };
@@ -257,8 +259,18 @@ it('should return alternatives by votation successfully', async () => {
         }
     );
     expect(getAlternatives.alternativesByVotation).toHaveLength(2);
-    expect({ ...getAlternatives.alternativesByVotation[0], isWinner: false }).toEqual(alternative1);
-    expect({ ...getAlternatives.alternativesByVotation[1], isWinner: false }).toEqual(alternative2);
+    expect({
+        ...getAlternatives.alternativesByVotation[0],
+        isWinner: false,
+        loserOfStvRoundId: null,
+        winnerOfStvRoundId: null,
+    }).toEqual(alternative1);
+    expect({
+        ...getAlternatives.alternativesByVotation[1],
+        isWinner: false,
+        loserOfStvRoundId: null,
+        winnerOfStvRoundId: null,
+    }).toEqual(alternative2);
 });
 
 it('should return not authorized', async () => {
@@ -1075,7 +1087,7 @@ it('should return not authorised', async () => {
     const alternative = await createAlternative(votation.id, alternative1Text);
     await vote(votation.id, user1.id, alternative.id);
     try {
-        const response = await ctx.client.request(
+        await ctx.client.request(
             gql`
                 query GetVoteCount($votationId: String!) {
                     getVoteCount(votationId: $votationId) {
@@ -1128,7 +1140,11 @@ it('should return alternative1 as winner with simple majority', async () => {
             votationId: votation.id,
         }
     );
-    expect(response.getVotationResults.alternatives).toEqual(
+    expect(
+        response.getVotationResults.alternatives.map((a: Alternative) => {
+            return { ...a, loserOfStvRoundId: null, winnerOfStvRoundId: null };
+        })
+    ).toEqual(
         expect.arrayContaining([
             {
                 ...alternative1,
@@ -1177,7 +1193,11 @@ it('should return no winner with simple majority when the alternatives has equal
             votationId: votation.id,
         }
     );
-    expect(response.getVotationResults.alternatives).toEqual(
+    expect(
+        response.getVotationResults.alternatives.map((a: Alternative) => {
+            return { ...a, loserOfStvRoundId: null, winnerOfStvRoundId: null };
+        })
+    ).toEqual(
         expect.arrayContaining([
             {
                 ...alternative1,
@@ -1229,7 +1249,11 @@ it('should return alternative1 as winner with qualified over 66%', async () => {
             votationId: votation.id,
         }
     );
-    expect(response.getVotationResults.alternatives).toEqual(
+    expect(
+        response.getVotationResults.alternatives.map((a: Alternative) => {
+            return { ...a, loserOfStvRoundId: null, winnerOfStvRoundId: null };
+        })
+    ).toEqual(
         expect.arrayContaining([
             {
                 ...alternative1,
@@ -1281,17 +1305,25 @@ it('should return no winner with qualified over 67%', async () => {
             votationId: votation.id,
         }
     );
-    expect(response.getVotationResults.alternatives).toEqual(
+    expect(
+        response.getVotationResults.alternatives.map((a: Alternative) => {
+            return { ...a, loserOfStvRoundId: null, winnerOfStvRoundId: null };
+        })
+    ).toEqual(
         expect.arrayContaining([
             {
                 ...alternative1,
                 isWinner: false,
                 votes: 2,
+                loserOfStvRoundId: null,
+                winnerOfStvRoundId: null,
             },
             {
                 ...alternative2,
                 isWinner: false,
                 votes: 1,
+                loserOfStvRoundId: null,
+                winnerOfStvRoundId: null,
             },
         ])
     );
@@ -1622,6 +1654,346 @@ it('should return error trying to update index of open votation', async () => {
                         index: 2,
                     },
                 ],
+            }
+        );
+        expect(false).toBeTruthy();
+    } catch (error) {
+        expect(error.message).toContain('Not Authorised!');
+    }
+});
+
+it('should register correct round results', async () => {
+    const meeting = await createMeeting(ctx.userId, Role.ADMIN, true);
+    const votation = await createVotation(meeting.id, VotationStatus.OPEN, 0, VotationType.STV, 2);
+    const andrea = await createAlternative(votation.id, 'andrea');
+    const carter = await createAlternative(votation.id, 'carter');
+    const brad = await createAlternative(votation.id, 'brad');
+    const delilah = await createAlternative(votation.id, 'delilah');
+    const promises = [];
+    promises.push(
+        new Promise(async (resolve, reject) => {
+            try {
+                const user = await createUser();
+                const votes = await castStvVote(
+                    votation.id,
+                    [
+                        { id: andrea.id, ranking: 0 },
+                        { id: carter.id, ranking: 1 },
+                        { id: brad.id, ranking: 2 },
+                        { id: delilah.id, ranking: 3 },
+                    ],
+                    user.id
+                );
+                resolve(votes);
+            } catch (error) {
+                reject(error);
+            }
+        })
+    );
+    promises.push(
+        new Promise(async (resolve, reject) => {
+            try {
+                const user = await createUser();
+                const votes = await castStvVote(
+                    votation.id,
+                    [
+                        { id: andrea.id, ranking: 0 },
+                        { id: brad.id, ranking: 1 },
+                        { id: carter.id, ranking: 2 },
+                        { id: delilah.id, ranking: 3 },
+                    ],
+                    user.id
+                );
+                resolve(votes);
+            } catch (error) {
+                reject(error);
+            }
+        })
+    );
+    await Promise.all(promises);
+    await setWinner(ctx, votation.id);
+    const stvResult = await ctx.prisma.stvResult.findUnique({
+        where: {
+            votationId: votation.id,
+        },
+    });
+    const stvRoundResults = await ctx.prisma.stvRoundResult.findMany({
+        where: {
+            stvResultId: votation.id,
+        },
+        select: {
+            index: true,
+            winners: true,
+            losers: true,
+            alternativesWithRoundVoteCount: true,
+        },
+    });
+    expect(stvResult?.quota).toBe(1);
+    expect(stvRoundResults.find((r) => r.index === 0)?.winners.map((a) => a.id)).toContain(andrea.id);
+    expect(stvRoundResults.find((r) => r.index === 1)?.losers.map((a) => a.id)).toContain(delilah.id);
+    expect(stvRoundResults.find((r) => r.index === 2)?.losers).toHaveLength(1);
+    expect(stvRoundResults.find((r) => r.index === 3)?.winners).toHaveLength(1);
+    expect(
+        stvRoundResults
+            .find((r) => r.index === 0)
+            ?.alternativesWithRoundVoteCount.find((a) => a.alterantiveId === andrea.id)?.voteCount
+    ).toEqual(2);
+    expect(
+        stvRoundResults
+            .find((r) => r.index === 1)
+            ?.alternativesWithRoundVoteCount.find((a) => a.alterantiveId === brad.id)?.voteCount
+    ).toEqual(0.5);
+    expect(
+        stvRoundResults
+            .find((r) => r.index === 1)
+            ?.alternativesWithRoundVoteCount.find((a) => a.alterantiveId === carter.id)?.voteCount
+    ).toEqual(0.5);
+});
+
+it('should return round results for checking result stv votation as counter', async () => {
+    const meeting = await createMeeting(ctx.userId, Role.COUNTER, true);
+    const votation = await createVotation(meeting.id, VotationStatus.CHECKING_RESULT, 0, VotationType.STV, 2);
+    const andrea = await createAlternative(votation.id, 'andrea');
+    const brad = await createAlternative(votation.id, 'brad');
+    await new Promise(async (resolve, reject) => {
+        try {
+            const user = await createUser();
+            const votes = await castStvVote(
+                votation.id,
+                [
+                    { id: andrea.id, ranking: 0 },
+                    { id: brad.id, ranking: 1 },
+                ],
+                user.id
+            );
+            resolve(votes);
+        } catch (error) {
+            reject(error);
+        }
+    });
+    await setWinner(ctx, votation.id);
+    const response = await ctx.client.request(
+        gql`
+            query GetStvResult($votationId: String!) {
+                getStvResult(votationId: $votationId) {
+                    votationId
+                    quota
+                    voteCount
+                    votingEligibleCount
+                    stvRoundResults {
+                        index
+                        winners {
+                            votationId
+                            id
+                            text
+                        }
+                        losers {
+                            text
+                        }
+                        alternativesWithRoundVoteCount {
+                            alternative {
+                                id
+                                text
+                            }
+                            voteCount
+                        }
+                    }
+                }
+            }
+        `,
+        {
+            votationId: votation.id,
+        }
+    );
+    expect(response.getStvResult.stvRoundResults).toHaveLength(2);
+    expect(response.getStvResult.stvRoundResults[0].alternativesWithRoundVoteCount).toHaveLength(2);
+});
+
+it('should return round results for published result with hiddenVotes false stv votation as Participant ', async () => {
+    const meeting = await createMeeting(ctx.userId, Role.PARTICIPANT, true);
+    const votation = await createVotation(
+        meeting.id,
+        VotationStatus.PUBLISHED_RESULT,
+        0,
+        VotationType.STV,
+        2,
+        0,
+        false,
+        false
+    );
+    const andrea = await createAlternative(votation.id, 'andrea');
+    const brad = await createAlternative(votation.id, 'brad');
+    await new Promise(async (resolve, reject) => {
+        try {
+            const user = await createUser();
+            const votes = await castStvVote(
+                votation.id,
+                [
+                    { id: andrea.id, ranking: 0 },
+                    { id: brad.id, ranking: 1 },
+                ],
+                user.id
+            );
+            resolve(votes);
+        } catch (error) {
+            reject(error);
+        }
+    });
+    await setWinner(ctx, votation.id);
+    const response = await ctx.client.request(
+        gql`
+            query GetStvResult($votationId: String!) {
+                getStvResult(votationId: $votationId) {
+                    votationId
+                    quota
+                    voteCount
+                    votingEligibleCount
+                    stvRoundResults {
+                        index
+                        winners {
+                            votationId
+                            id
+                            text
+                        }
+                        losers {
+                            text
+                        }
+                        alternativesWithRoundVoteCount {
+                            alternative {
+                                id
+                                text
+                            }
+                            voteCount
+                        }
+                    }
+                }
+            }
+        `,
+        {
+            votationId: votation.id,
+        }
+    );
+    expect(response.getStvResult.stvRoundResults).toHaveLength(2);
+    expect(response.getStvResult.stvRoundResults[0].alternativesWithRoundVoteCount).toHaveLength(2);
+});
+
+it('should return not authorised trying to get round results for checking result with hiddenVotes false stv votation as Participant ', async () => {
+    const meeting = await createMeeting(ctx.userId, Role.PARTICIPANT, true);
+    const votation = await createVotation(
+        meeting.id,
+        VotationStatus.CHECKING_RESULT,
+        0,
+        VotationType.STV,
+        2,
+        0,
+        false,
+        false
+    );
+    const andrea = await createAlternative(votation.id, 'andrea');
+    const brad = await createAlternative(votation.id, 'brad');
+    await new Promise(async (resolve, reject) => {
+        try {
+            const user = await createUser();
+            const votes = await castStvVote(
+                votation.id,
+                [
+                    { id: andrea.id, ranking: 0 },
+                    { id: brad.id, ranking: 1 },
+                ],
+                user.id
+            );
+            resolve(votes);
+        } catch (error) {
+            reject(error);
+        }
+    });
+    await setWinner(ctx, votation.id);
+    try {
+        await ctx.client.request(
+            gql`
+                query GetStvResult($votationId: String!) {
+                    getStvResult(votationId: $votationId) {
+                        votationId
+                        quota
+                        voteCount
+                        votingEligibleCount
+                        stvRoundResults {
+                            index
+                            winners {
+                                votationId
+                                id
+                                text
+                            }
+                            losers {
+                                text
+                            }
+                            alternativesWithRoundVoteCount {
+                                alternative {
+                                    id
+                                    text
+                                }
+                                voteCount
+                            }
+                        }
+                    }
+                }
+            `,
+            {
+                votationId: votation.id,
+            }
+        );
+        expect(false).toBeTruthy();
+    } catch (error) {
+        expect(error.message).toContain('Not Authorised!');
+    }
+});
+
+it('should return not authorised trying to get round results for published result with hiddenVotes true stv votation as Participant ', async () => {
+    const meeting = await createMeeting(ctx.userId, Role.PARTICIPANT, true);
+    const votation = await createVotation(meeting.id, VotationStatus.CHECKING_RESULT, 0, VotationType.STV, 1);
+    const andrea = await createAlternative(votation.id, 'andrea');
+    await new Promise(async (resolve, reject) => {
+        try {
+            const user = await createUser();
+            const votes = await castStvVote(votation.id, [{ id: andrea.id, ranking: 0 }], user.id);
+            resolve(votes);
+        } catch (error) {
+            reject(error);
+        }
+    });
+    await setWinner(ctx, votation.id);
+    try {
+        await ctx.client.request(
+            gql`
+                query GetStvResult($votationId: String!) {
+                    getStvResult(votationId: $votationId) {
+                        votationId
+                        quota
+                        voteCount
+                        votingEligibleCount
+                        stvRoundResults {
+                            index
+                            winners {
+                                votationId
+                                id
+                                text
+                            }
+                            losers {
+                                text
+                            }
+                            alternativesWithRoundVoteCount {
+                                alternative {
+                                    id
+                                    text
+                                }
+                                voteCount
+                            }
+                        }
+                    }
+                }
+            `,
+            {
+                votationId: votation.id,
             }
         );
         expect(false).toBeTruthy();

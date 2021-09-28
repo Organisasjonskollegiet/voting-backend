@@ -120,6 +120,9 @@ export interface NexusGenObjects {
     text: string; // String!
     votationId: string; // String!
   }
+  AlternativeRoundVoteCount: { // root type
+    voteCount: number; // Float!
+  }
   AlternativeWithWinner: { // root type
     id: string; // ID!
     isWinner: boolean; // Boolean!
@@ -154,6 +157,16 @@ export interface NexusGenObjects {
     role: NexusGenEnums['Role']; // Role!
   }
   Query: {};
+  StvResult: { // root type
+    quota: number; // Int!
+    votationId: string; // String!
+    voteCount: number; // Int!
+    votingEligibleCount: number; // Int!
+  }
+  StvRoundResult: { // root type
+    id: string; // String!
+    index: number; // Int!
+  }
   Subscription: {};
   User: { // root type
     email: string; // String!
@@ -227,6 +240,10 @@ export interface NexusGenFieldTypes {
     votationId: string; // String!
     votes: number; // Int!
   }
+  AlternativeRoundVoteCount: { // field return type
+    alternative: NexusGenRootTypes['Alternative']; // Alternative!
+    voteCount: number; // Float!
+  }
   AlternativeWithWinner: { // field return type
     id: string; // ID!
     isWinner: boolean; // Boolean!
@@ -286,6 +303,7 @@ export interface NexusGenFieldTypes {
   Query: { // field return type
     alternativesByVotation: Array<NexusGenRootTypes['Alternative'] | null> | null; // [Alternative]
     getOpenVotation: string | null; // String
+    getStvResult: NexusGenRootTypes['StvResult'] | null; // StvResult
     getVotationResults: NexusGenRootTypes['VotationResults'] | null; // VotationResults
     getVoteCount: NexusGenRootTypes['VoteCountResult'] | null; // VoteCountResult
     getWinnerOfVotation: Array<NexusGenRootTypes['Alternative'] | null> | null; // [Alternative]
@@ -295,6 +313,20 @@ export interface NexusGenFieldTypes {
     resultsOfPublishedVotations: Array<NexusGenRootTypes['VotationWithWinner'] | null> | null; // [VotationWithWinner]
     user: NexusGenRootTypes['GetUserResult'] | null; // GetUserResult
     votationById: NexusGenRootTypes['Votation'] | null; // Votation
+  }
+  StvResult: { // field return type
+    quota: number; // Int!
+    stvRoundResults: NexusGenRootTypes['StvRoundResult'][]; // [StvRoundResult!]!
+    votationId: string; // String!
+    voteCount: number; // Int!
+    votingEligibleCount: number; // Int!
+  }
+  StvRoundResult: { // field return type
+    alternativesWithRoundVoteCount: NexusGenRootTypes['AlternativeRoundVoteCount'][]; // [AlternativeRoundVoteCount!]!
+    id: string; // String!
+    index: number; // Int!
+    losers: NexusGenRootTypes['Alternative'][]; // [Alternative!]!
+    winners: NexusGenRootTypes['Alternative'][]; // [Alternative!]!
   }
   Subscription: { // field return type
     newVoteRegistered: NexusGenRootTypes['NewVoteRegisteredResponse'] | null; // NewVoteRegisteredResponse
@@ -368,6 +400,10 @@ export interface NexusGenFieldTypeNames {
     votationId: 'String'
     votes: 'Int'
   }
+  AlternativeRoundVoteCount: { // field return type name
+    alternative: 'Alternative'
+    voteCount: 'Float'
+  }
   AlternativeWithWinner: { // field return type name
     id: 'ID'
     isWinner: 'Boolean'
@@ -427,6 +463,7 @@ export interface NexusGenFieldTypeNames {
   Query: { // field return type name
     alternativesByVotation: 'Alternative'
     getOpenVotation: 'String'
+    getStvResult: 'StvResult'
     getVotationResults: 'VotationResults'
     getVoteCount: 'VoteCountResult'
     getWinnerOfVotation: 'Alternative'
@@ -436,6 +473,20 @@ export interface NexusGenFieldTypeNames {
     resultsOfPublishedVotations: 'VotationWithWinner'
     user: 'GetUserResult'
     votationById: 'Votation'
+  }
+  StvResult: { // field return type name
+    quota: 'Int'
+    stvRoundResults: 'StvRoundResult'
+    votationId: 'String'
+    voteCount: 'Int'
+    votingEligibleCount: 'Int'
+  }
+  StvRoundResult: { // field return type name
+    alternativesWithRoundVoteCount: 'AlternativeRoundVoteCount'
+    id: 'String'
+    index: 'Int'
+    losers: 'Alternative'
+    winners: 'Alternative'
   }
   Subscription: { // field return type name
     newVoteRegistered: 'NewVoteRegisteredResponse'
@@ -567,6 +618,9 @@ export interface NexusGenArgTypes {
     }
     getOpenVotation: { // args
       meetingId: string; // String!
+    }
+    getStvResult: { // args
+      votationId: string; // String!
     }
     getVotationResults: { // args
       votationId: string; // String!

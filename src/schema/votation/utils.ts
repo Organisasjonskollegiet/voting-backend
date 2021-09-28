@@ -85,17 +85,36 @@ const computeQualifiedResult = async (ctx: Context, votation: Votation, alternat
     return [];
 };
 
-// the votes that has gone to this round's winners are redistributed for next round, with the
-// overall weight of the redistributed votes is equal to the surplus (voteCount - quota)
-// each redistributed vote will therefore have a weight of 1 / (voteCount - quota) compared to it's previous weight
+const saveRoundWinnerOrLosers = async (
+    eliminated: string[],
+    stvRoundResultId: string,
+    winnerOrLoser: 'winner' | 'loser',
+    ctx: Context
+) => {
+    return await Promise.all(
+        eliminated.map((alternativeId) =>
+            ctx.prisma.alternative.update({
+                where: {
+                    id: alternativeId,
+                },
+                data: {
+                    winnerOfStvRoundId: winnerOrLoser === 'winner' ? stvRoundResultId : undefined,
+                    loserOfStvRoundId: winnerOrLoser === 'loser' ? stvRoundResultId : undefined,
+                },
+            })
+        )
+    );
+};
+
 /**
- * @summary Redistributes votes from the winners or losers of this round to the next alternative on their ballot (stvVote)
+ * @summary Update stvVotes with new vote and active vote (which alternative this stvVote goes to for that round).
  *
- * @description The votes from this round's winners or losers are redistributed to the next alternative on the ballot (stvVote).
- * If the redistributed votes comes from a loser, the redistributed vote will have the same weight as the vote with the
- * loser. If the redistributed vote comes from a winner, the weight of the redistributed vote is reduced. The weight is
- * reduced so that all the votes transferred will have a combined weight equal to the vote surplus. The vote surplus is
- * number of votes for that alternative minus the quota.
+ * @description This function update the weight and activeRank of stvVotes, that will be used in the next round.
+ * The stvVotes that has gone to this round's winners or losers will next round go too the next alternative in line.
+ * If this round's vote goes to a loser, the next vote will have the same weight as the vote with the loser. If this
+ * round's vote goes to a winner, the weight of the next vote is reduced. The weight is reduced so that all the votes
+ * transferred to next round will have a combined weight equal to the vote-surplus. The vote-surplus is the
+ * number of votes for that alternative this round minus the quota.
  *
  * @param eliminatedAlternatives The alternatives whose votes will be redistributed. They are either winners of losers.
  * @param alternativeIdToVoteCount Mapping between the alternative and both the number of votes and which ballot (stvVote) the votes comes from.
@@ -103,9 +122,9 @@ const computeQualifiedResult = async (ctx: Context, votation: Votation, alternat
  * @param stvVotesWithWeightAndActiveRank
  * @param winners List of the ids of the alternatives declared winners so far
  * @param losers  List of the ids if the alternatives declared losers so far
- * @returns
+ * @returns an object containing both the unchanged and the updated
  */
-const redistributeVotes = (
+const updateStvVotes = (
     eliminatedAlternatives: string[],
     alternativeIdToVoteCount: AlternativeIdToVoteCount,
     quota: number,
@@ -117,12 +136,12 @@ const redistributeVotes = (
     const updatedStvVotesWithWeightAndActiveRank: StvVoteWithWeightAndActiveRank[] = [];
     // go through all winners or losers
     eliminatedAlternatives.forEach((eliminatedAlternative) => {
-        const winnerObject = alternativeIdToVoteCount[eliminatedAlternative];
-        const surplus = winnerObject.voteCount - quota;
-        const weightOfNextVotes = surplus >= 0 ? surplus / winnerObject.voteCount : 1;
+        const eliminatedObject = alternativeIdToVoteCount[eliminatedAlternative];
+        const surplus = eliminatedObject.voteCount - quota;
+        const weightOfNextVotes = surplus >= 0 ? surplus / eliminatedObject.voteCount : 1;
         // redistribute the votes for that alternative according to the next alternative
         // on the Stv votes
-        winnerObject.votedBy.forEach((votedBy) => {
+        eliminatedObject.votedBy.forEach((votedBy) => {
             const indexOfStv = unchangedStvVotesWithWeightAndActiveRank.map((stv) => stv.id).indexOf(votedBy.stvId);
             const stv = unchangedStvVotesWithWeightAndActiveRank[indexOfStv];
             unchangedStvVotesWithWeightAndActiveRank = [
@@ -195,7 +214,6 @@ const trimLosers = (tempLosers: VotationResult[], winnersLeftToPick: number, alt
 
 const computeStvResult = async (ctx: Context, votation: Votation, alternatives: Alternative[]) => {
     // keep track of what alternatives has been eliminated as winners or losers
-    if (votation.numberOfWinners >= alternatives.length) return alternatives.map((a) => a.id);
     const winners: string[] = [];
     const losers: string[] = [];
 
@@ -206,6 +224,16 @@ const computeStvResult = async (ctx: Context, votation: Votation, alternatives: 
     const quota = await getQuota(ctx, votation);
     const stvVotes = await getStvVotes(ctx, votation.id);
 
+    // create result in db
+    const stvResult = await ctx.prisma.stvResult.create({
+        data: {
+            votationId: votation.id,
+            quota,
+        },
+    });
+
+    // this variable is used to keep track of each ballot/stvVote. When a stvVotes "active" vote is declared
+    // winner or loser, stvVotesWithWeightAndActiveRank is used to redistribute the votes correctly
     let stvVotesWithWeightAndActiveRank: StvVoteWithWeightAndActiveRank[] = stvVotes.map((vote) => {
         const sortedVotes = vote.votes.sort((a, b) => a.ranking - b.ranking);
         return {
@@ -215,23 +243,47 @@ const computeStvResult = async (ctx: Context, votation: Votation, alternatives: 
             activeRank: 0,
         };
     });
+
+    // When the alternative on the "active" vote of an stvVote is declared winner or loser, the votes are
+    // redistributed. updatedStvVotesWithWeightAndActiveRank tells us which one to
     // the first round everyone's first vote should be counted, and are therefore regarded as updated votes
     let updatedStvVotesWithWeightAndActiveRank = [...stvVotesWithWeightAndActiveRank];
 
     let roundNr = 0;
     while (winners.length < votation.numberOfWinners && roundNr < alternativeIds.length) {
-        // Every new round, some votes has been redistributed from the winners or losers of the last round
-        // and the votecount for the alternatives receiving those votes are here updated
+        // The vote count of the alternatives are updated with the redistributed votes.
         updatedStvVotesWithWeightAndActiveRank.forEach((stvVote) => {
-            const activeVote = stvVote.votes.filter((v) => v.ranking === stvVote.activeRank);
-            if (activeVote.length > 0 && activeVote[0]) {
-                alternativeIdToVoteCount[activeVote[0].alternativeId].voteCount += stvVote.weight;
-                alternativeIdToVoteCount[activeVote[0].alternativeId].votedBy.push({
+            const activeVote = stvVote.votes.find((v) => v.ranking === stvVote.activeRank);
+            if (activeVote) {
+                alternativeIdToVoteCount[activeVote.alternativeId].voteCount += stvVote.weight;
+                alternativeIdToVoteCount[activeVote.alternativeId].votedBy.push({
                     stvId: stvVote.id,
                     weight: stvVote.weight,
                 });
             }
         });
+
+        const stvRoundResult = await ctx.prisma.stvRoundResult.create({
+            data: {
+                stvResultId: stvResult.votationId,
+                index: roundNr,
+            },
+        });
+
+        // add this rounds alternative-to-vote-count to db
+        await Promise.all(
+            alternativeIds
+                .filter((a) => ![...winners, ...losers].includes(a))
+                .map((id) =>
+                    ctx.prisma.alternativeRoundVoteCount.create({
+                        data: {
+                            alterantiveId: id,
+                            voteCount: alternativeIdToVoteCount[id].voteCount,
+                            stvRoundResultId: stvRoundResult.id,
+                        },
+                    })
+                )
+        );
 
         // alternatives with a vote count higher than the quota are winners
         const roundWinners = alternativeIds.filter(
@@ -239,7 +291,9 @@ const computeStvResult = async (ctx: Context, votation: Votation, alternatives: 
         );
         if (roundWinners.length > 0) {
             winners.push(...roundWinners);
-            const { unchanged, updated } = redistributeVotes(
+            // save this rounds winners to db
+            await saveRoundWinnerOrLosers(roundWinners, stvRoundResult.id, 'winner', ctx);
+            const { unchanged, updated } = updateStvVotes(
                 roundWinners,
                 alternativeIdToVoteCount,
                 quota,
@@ -256,7 +310,10 @@ const computeStvResult = async (ctx: Context, votation: Votation, alternatives: 
             alternativeIds.filter((id) => !winners.includes(id) && !losers.includes(id)).length + winners.length <=
             votation.numberOfWinners
         ) {
-            return [...winners, ...alternativeIds.filter((id) => !winners.includes(id) && !losers.includes(id))];
+            const roundWinners = alternativeIds.filter((id) => !winners.includes(id) && !losers.includes(id));
+            // save this rounds winners to db
+            await saveRoundWinnerOrLosers(roundWinners, stvRoundResult.id, 'winner', ctx);
+            return [...winners, ...roundWinners];
         }
         // if the round has no winners and there are too many alternatives left to appoint all as winners, the alternative with
         // least votes, is removed, and its votes are redistributed
@@ -273,9 +330,11 @@ const computeStvResult = async (ctx: Context, votation: Votation, alternatives: 
             const undecidedAlternatives = alternatives.length - winners.length - losers.length;
             const winnersLeftToPick = votation.numberOfWinners - winners.length;
             let roundLosers = trimLosers(tempRoundLosers, winnersLeftToPick, undecidedAlternatives);
-            roundLosers.forEach((l) => losers.push(l.id));
-            const { unchanged, updated } = redistributeVotes(
-                roundLosers.map((a) => a.id),
+            const roundLoserIds = roundLosers.map((l) => l.id);
+            roundLoserIds.forEach((l) => losers.push(l));
+            await saveRoundWinnerOrLosers(roundLoserIds, stvRoundResult.id, 'loser', ctx);
+            const { unchanged, updated } = updateStvVotes(
+                roundLoserIds,
                 alternativeIdToVoteCount,
                 quota,
                 stvVotesWithWeightAndActiveRank,
@@ -285,6 +344,7 @@ const computeStvResult = async (ctx: Context, votation: Votation, alternatives: 
             stvVotesWithWeightAndActiveRank = [...unchanged, ...updated];
             updatedStvVotesWithWeightAndActiveRank = updated;
         }
+
         roundNr += 1;
     }
     return winners;
