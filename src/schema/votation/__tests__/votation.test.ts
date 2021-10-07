@@ -238,72 +238,6 @@ it('should throw error from votation by id', async () => {
     }
 });
 
-it('should return alternatives by votation successfully', async () => {
-    const meeting = await createMeeting(ctx.userId, Role.COUNTER, true);
-    const votation = await createVotation(meeting.id, VotationStatus.UPCOMING, 1);
-    const alternative1 = await createAlternative(votation.id, alternative1Text);
-    const alternative2 = await createAlternative(votation.id, alternative2Text);
-    const votationId = votation.id;
-    const getAlternatives = await ctx.client.request(
-        gql`
-            query AlternativesByVotation($votationId: String!) {
-                alternativesByVotation(votationId: $votationId) {
-                    id
-                    text
-                    votationId
-                }
-            }
-        `,
-        {
-            votationId,
-        }
-    );
-    expect(getAlternatives.alternativesByVotation).toHaveLength(2);
-    expect({
-        ...getAlternatives.alternativesByVotation[0],
-        isWinner: false,
-        loserOfStvRoundId: null,
-        winnerOfStvRoundId: null,
-    }).toEqual(alternative1);
-    expect({
-        ...getAlternatives.alternativesByVotation[1],
-        isWinner: false,
-        loserOfStvRoundId: null,
-        winnerOfStvRoundId: null,
-    }).toEqual(alternative2);
-});
-
-it('should return not authorized', async () => {
-    const otherUser = await ctx.prisma.user.create({
-        data: {
-            email: 'test@example.com',
-            password: 'hash',
-        },
-    });
-    const meeting = await createMeeting(otherUser.id, Role.COUNTER, true);
-    const votation = await createVotation(meeting.id, VotationStatus.UPCOMING, 1);
-    await createAlternative(votation.id, alternative1Text);
-    await createAlternative(votation.id, alternative2Text);
-    try {
-        await ctx.client.request(
-            gql`
-                query AlternativesByVotation($votationId: String!) {
-                    alternativesByVotation(votationId: $votationId) {
-                        id
-                        text
-                        votationId
-                    }
-                }
-            `,
-            {
-                votationId: votation.id,
-            }
-        );
-    } catch (error) {
-        expect(error.message).toContain('Not Authorised!');
-    }
-});
-
 it('should create votations successfully', async () => {
     const meeting = await createMeeting(ctx.userId, Role.ADMIN, true);
     const variables = {
@@ -688,50 +622,6 @@ it('should not create votations successfully', async () => {
     } catch (error) {
         expect(error.message).toContain('Not Authorised!');
     }
-});
-
-it('should create alterative successfully', async () => {
-    const meeting = await createMeeting(ctx.userId, Role.ADMIN, true);
-    const votation = await createVotation(meeting.id, VotationStatus.UPCOMING, 1);
-    const variables = {
-        text: alternative1Text,
-        votationId: votation.id,
-    };
-    const createAlternative = await ctx.client.request(
-        gql`
-            mutation CreateAlternative($text: String!, $votationId: String!) {
-                createAlternative(text: $text, votationId: $votationId) {
-                    text
-                    votationId
-                }
-            }
-        `,
-        variables
-    );
-    expect(createAlternative.createAlternative).toEqual(variables);
-});
-
-it('should not create alternative successfully', async () => {
-    const meeting = await createMeeting(ctx.userId, Role.COUNTER, true);
-    const votation = await createVotation(meeting.id, VotationStatus.UPCOMING, 1);
-    const variables = {
-        text: alternative1Text,
-        votationId: votation.id,
-    };
-    expect(
-        async () =>
-            await ctx.client.request(
-                gql`
-                    mutation CreateAlternative($text: String!, $votationId: String!) {
-                        createAlternative(text: $text, votationId: $votationId) {
-                            text
-                            votationId
-                        }
-                    }
-                `,
-                variables
-            )
-    ).rejects.toThrow();
 });
 
 it('should delete alternative successfully', async () => {
