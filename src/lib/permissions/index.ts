@@ -7,7 +7,6 @@ import {
     isAdminOfMeetingByObject,
     isAdminOfVotationsByObjects,
     isAdminOfVotationsById,
-    isAdminOfAlternative,
     isAdminOfAlternatives,
     isOwnerOfMeeting,
     isAdminOfVotationById,
@@ -22,7 +21,6 @@ const permissions = shield(
     {
         Query: {
             meetingById: and(isParticipantOfMeeting),
-            alternativesByVotation: and(isParticipantOfVotation),
             votationById: and(isParticipantOfVotation),
             getVotationResults: or(
                 isAdminOfVotationById,
@@ -50,7 +48,6 @@ const permissions = shield(
             updateVotations: and(isAdminOfVotationsByObjects, votationsAreUpcoming),
             updateVotationIndexes: and(isAdminOfVotationsByObjects, votationsAreUpcoming),
             updateVotationStatus: and(isAdminOfVotationById),
-            updateAlternative: and(isAdminOfAlternative),
             updateParticipant: and(isAdminOfMeetingId),
             deleteParticipants: and(isAdminOfMeetingId),
             deleteAlternatives: and(isAdminOfAlternatives),
