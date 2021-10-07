@@ -94,7 +94,6 @@ type Mutation {
   castStvVote(alternatives: [StvVoteAlternativeInput!]!, votationId: String!): String
   castVote(alternativeId: String!): Vote
   changeView(state: ViewState!): ViewState
-  createAlternative(text: String!, votationId: String!): Alternative
 
   """"""
   createMeeting(meeting: CreateMeetingInput!): Meeting
@@ -111,9 +110,6 @@ type Mutation {
 
   """"""
   deleteVotations(ids: [String!]!): [String]
-
-  """"""
-  updateAlternative(id: String!, text: String!): Alternative
 
   """"""
   updateMeeting(meeting: UpdateMeetingInput!): Meeting
@@ -157,8 +153,6 @@ type ParticipantOrInvite {
 }
 
 type Query {
-  alternativesByVotation(votationId: String!): [Alternative]
-
   """"""
   getOpenVotation(meetingId: String!): String
 
