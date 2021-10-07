@@ -56,6 +56,7 @@ const permissions = shield(
             deleteAlternatives: and(isAdminOfAlternatives),
             deleteVotations: and(isAdminOfVotationsById),
             deleteMeeting: and(isOwnerOfMeeting),
+            reviewVotation: or(isAdminOfVotationById, isCounterOfVotationById),
         },
         Subscription: {
             newVoteRegistered: allow,

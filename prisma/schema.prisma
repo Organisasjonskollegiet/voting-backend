@@ -68,8 +68,19 @@ model Participant {
   isVotingEligible Boolean @default(true)
   user             User    @relation(fields: [userId], references: [id])
   meeting          Meeting @relation(fields: [meetingId], references: [id])
+  reviewedVotation VotationResultReview[]
 
   @@unique([userId, meetingId])
+}
+
+model VotationResultReview {
+  votationId String @db.Uuid
+  votation Votation @relation(fields: [votationId], references: [id])
+  participantId String @db.Uuid
+  participant Participant @relation(fields: [participantId], references: [id])
+  approved Boolean
+
+  @@id([votationId, participantId])
 }
 
 model Invite {
@@ -100,6 +111,7 @@ model Votation {
   alternatives      Alternative[]
   hasVoted          HasVoted[]
   stvResults        StvResult?
+  resultReview  VotationResultReview[]
 }
 
 model HasVoted {

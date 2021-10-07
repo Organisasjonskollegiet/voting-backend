@@ -1,10 +1,11 @@
-import { inputObjectType, list, mutationField, nonNull, stringArg } from 'nexus';
+import { booleanArg, inputObjectType, list, mutationField, nonNull, stringArg } from 'nexus';
 import { Vote } from './';
 import { pubsub } from '../../lib/pubsub';
 import { Alternative, UpdateVotationStatusResult, Votation, MaxOneOpenVotationError } from './typedefs';
 import { VotationType, VotationStatus } from '../enums';
 import { setWinner } from './utils';
 import { VotationStatusUpdatedResponse } from './subscriptions';
+import { boolean } from 'casual';
 
 export const AlternativeInput = inputObjectType({
     name: 'AlternativeInput',
@@ -394,5 +395,32 @@ export const CastBlankVoteMutation = mutationField('castBlankVote', {
         const voteCount = await ctx.prisma.hasVoted.count({ where: { votationId: votationId } });
         await pubsub.publish(`NEW_VOTE_REGISTERED_FOR_${votationId}`, { votationId, voteCount });
         return votation.id;
+    },
+});
+
+export const ReviewVotation = mutationField('reviewMutation', {
+    type: 'String',
+    args: {
+        votationId: nonNull(stringArg()),
+        approved: nonNull(booleanArg()),
+    },
+    description: 'Approve or disapprove a votation result',
+    resolve: async (_, { votationId, approved }, ctx) => {
+        const votation = await ctx.prisma.votation.findUnique({ where: { id: votationId } });
+        if (!votation) throw new Error('Votation does not exist.');
+        const participant = await ctx.prisma.participant.findUnique({
+            where: {
+                userId_meetingId: { userId: ctx.userId, meetingId: votation.meetingId },
+            },
+        });
+        if (!participant) throw new Error('User is not participant of votation');
+        await ctx.prisma.votationResultReview.create({
+            data: {
+                participantId: participant.id,
+                votationId: votation.id,
+                approved,
+            },
+        });
+        return `Votering ${approved ? '' : 'ikke '}godkjent.`;
     },
 });
