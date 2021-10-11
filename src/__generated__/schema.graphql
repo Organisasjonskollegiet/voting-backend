@@ -112,6 +112,9 @@ type Mutation {
   """"""
   deleteVotations(ids: [String!]!): [String]
 
+  """Approve or disapprove a votation result"""
+  reviewVotation(approved: Boolean!, votationId: String!): String
+
   """"""
   updateAlternative(id: String!, text: String!): Alternative
 

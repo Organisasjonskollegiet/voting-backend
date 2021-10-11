@@ -398,7 +398,7 @@ export const CastBlankVoteMutation = mutationField('castBlankVote', {
     },
 });
 
-export const ReviewVotation = mutationField('reviewMutation', {
+export const ReviewVotation = mutationField('reviewVotation', {
     type: 'String',
     args: {
         votationId: nonNull(stringArg()),
