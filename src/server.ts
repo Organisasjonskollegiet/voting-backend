@@ -30,8 +30,6 @@ export const createApollo = (prisma: PrismaClient) => {
     return server;
 };
 
-const allowedOrigins = ['https://ecclesia.netlify.app', 'https://vaas.azurewebsites.net'];
-
 export const createGraphqlServer = async (server: ApolloServer, prisma: PrismaClient) => {
     const app = express();
     app.use(checkJwt);
