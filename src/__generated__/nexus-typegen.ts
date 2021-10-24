@@ -157,6 +157,10 @@ export interface NexusGenObjects {
     role: NexusGenEnums['Role']; // Role!
   }
   Query: {};
+  ReviewResult: { // root type
+    approved: number; // Int!
+    disapproved: number; // Int!
+  }
   StvResult: { // root type
     quota: number; // Int!
     votationId: string; // String!
@@ -278,6 +282,7 @@ export interface NexusGenFieldTypes {
     reviewVotation: string | null; // String
     updateMeeting: NexusGenRootTypes['Meeting'] | null; // Meeting
     updateParticipant: NexusGenRootTypes['ParticipantOrInvite'] | null; // ParticipantOrInvite
+    updateReview: string | null; // String
     updateVotationIndexes: Array<NexusGenRootTypes['Votation'] | null> | null; // [Votation]
     updateVotationStatus: NexusGenRootTypes['UpdateVotationStatusResult'] | null; // UpdateVotationStatusResult
     updateVotations: Array<NexusGenRootTypes['Votation'] | null> | null; // [Votation]
@@ -312,6 +317,10 @@ export interface NexusGenFieldTypes {
     user: NexusGenRootTypes['GetUserResult'] | null; // GetUserResult
     votationById: NexusGenRootTypes['Votation'] | null; // Votation
   }
+  ReviewResult: { // field return type
+    approved: number; // Int!
+    disapproved: number; // Int!
+  }
   StvResult: { // field return type
     quota: number; // Int!
     stvRoundResults: NexusGenRootTypes['StvRoundResult'][]; // [StvRoundResult!]!
@@ -328,6 +337,7 @@ export interface NexusGenFieldTypes {
   }
   Subscription: { // field return type
     newVoteRegistered: NexusGenRootTypes['NewVoteRegisteredResponse'] | null; // NewVoteRegisteredResponse
+    revieweAdded: NexusGenRootTypes['ReviewResult'] | null; // ReviewResult
     viewChanged: NexusGenEnums['ViewState'] | null; // ViewState
     votationOpenedForMeeting: string | null; // String
     votationStatusUpdated: NexusGenRootTypes['VotationStatusUpdatedResponse'] | null; // VotationStatusUpdatedResponse
@@ -436,6 +446,7 @@ export interface NexusGenFieldTypeNames {
     reviewVotation: 'String'
     updateMeeting: 'Meeting'
     updateParticipant: 'ParticipantOrInvite'
+    updateReview: 'String'
     updateVotationIndexes: 'Votation'
     updateVotationStatus: 'UpdateVotationStatusResult'
     updateVotations: 'Votation'
@@ -470,6 +481,10 @@ export interface NexusGenFieldTypeNames {
     user: 'GetUserResult'
     votationById: 'Votation'
   }
+  ReviewResult: { // field return type name
+    approved: 'Int'
+    disapproved: 'Int'
+  }
   StvResult: { // field return type name
     quota: 'Int'
     stvRoundResults: 'StvRoundResult'
@@ -486,6 +501,7 @@ export interface NexusGenFieldTypeNames {
   }
   Subscription: { // field return type name
     newVoteRegistered: 'NewVoteRegisteredResponse'
+    revieweAdded: 'ReviewResult'
     viewChanged: 'ViewState'
     votationOpenedForMeeting: 'String'
     votationStatusUpdated: 'VotationStatusUpdatedResponse'
@@ -593,6 +609,10 @@ export interface NexusGenArgTypes {
       meetingId: string; // String!
       participant: NexusGenInputs['ParticipantInput']; // ParticipantInput!
     }
+    updateReview: { // args
+      approved: boolean; // Boolean!
+      votationId: string; // String!
+    }
     updateVotationIndexes: { // args
       votations: NexusGenInputs['UpdateVotationIndexInput'][]; // [UpdateVotationIndexInput!]!
     }
@@ -635,6 +655,9 @@ export interface NexusGenArgTypes {
   }
   Subscription: {
     newVoteRegistered: { // args
+      votationId: string; // String!
+    }
+    revieweAdded: { // args
       votationId: string; // String!
     }
     votationOpenedForMeeting: { // args

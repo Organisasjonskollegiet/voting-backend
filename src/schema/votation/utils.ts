@@ -396,3 +396,15 @@ export const setWinner = async (ctx: Context, votationId: string) => {
     }
     await Promise.all(promises);
 };
+
+export const getParticipantId = async (votationId: string, ctx: Context) => {
+    const votation = await ctx.prisma.votation.findUnique({ where: { id: votationId } });
+    if (!votation) throw new Error('Votation does not exist.');
+    const participant = await ctx.prisma.participant.findUnique({
+        where: {
+            userId_meetingId: { userId: ctx.userId, meetingId: votation.meetingId },
+        },
+    });
+    if (!participant) throw new Error('User is not participant of votation');
+    return participant.id;
+};

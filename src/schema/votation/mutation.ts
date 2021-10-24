@@ -6,6 +6,7 @@ import { VotationType, VotationStatus } from '../enums';
 import { setWinner } from './utils';
 import { VotationStatusUpdatedResponse } from './subscriptions';
 import { boolean } from 'casual';
+import { getParticipantId } from './utils';
 
 export const AlternativeInput = inputObjectType({
     name: 'AlternativeInput',
@@ -373,21 +374,37 @@ export const ReviewVotation = mutationField('reviewVotation', {
     },
     description: 'Approve or disapprove a votation result',
     resolve: async (_, { votationId, approved }, ctx) => {
-        const votation = await ctx.prisma.votation.findUnique({ where: { id: votationId } });
-        if (!votation) throw new Error('Votation does not exist.');
-        const participant = await ctx.prisma.participant.findUnique({
-            where: {
-                userId_meetingId: { userId: ctx.userId, meetingId: votation.meetingId },
-            },
-        });
-        if (!participant) throw new Error('User is not participant of votation');
+        const participantId = await getParticipantId(votationId, ctx);
         await ctx.prisma.votationResultReview.create({
             data: {
-                participantId: participant.id,
-                votationId: votation.id,
+                participantId: participantId,
+                votationId: votationId,
                 approved,
             },
         });
+        await pubsub.publish(`REVIEW_ADDED_FOR_${votationId}`, { votationId });
+        return `Votering ${approved ? '' : 'ikke '}godkjent.`;
+    },
+});
+
+export const UpdateReview = mutationField('updateReview', {
+    type: 'String',
+    args: {
+        votationId: nonNull(stringArg()),
+        approved: nonNull(booleanArg()),
+    },
+    description: 'Update a participants review',
+    resolve: async (_, { votationId, approved }, ctx) => {
+        const participantId = await getParticipantId(votationId, ctx);
+        await ctx.prisma.votationResultReview.update({
+            where: {
+                votationId_participantId: { participantId, votationId },
+            },
+            data: {
+                approved,
+            },
+        });
+        await pubsub.publish(`REVIEW_ADDED_FOR_${votationId}`, { votationId });
         return `Votering ${approved ? '' : 'ikke '}godkjent.`;
     },
 });

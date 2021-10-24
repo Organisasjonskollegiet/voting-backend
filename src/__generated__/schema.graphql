@@ -119,6 +119,9 @@ type Mutation {
 
   """Update participants of a meeting."""
   updateParticipant(meetingId: String!, participant: ParticipantInput!): ParticipantOrInvite
+
+  """Update a participants review"""
+  updateReview(approved: Boolean!, votationId: String!): String
   updateVotationIndexes(votations: [UpdateVotationIndexInput!]!): [Votation]
 
   """"""
@@ -188,6 +191,11 @@ type Query {
   votationById(votationId: String!): Votation
 }
 
+type ReviewResult {
+  approved: Int!
+  disapproved: Int!
+}
+
 enum Role {
   ADMIN
   COUNTER
@@ -219,6 +227,7 @@ input StvVoteAlternativeInput {
 
 type Subscription {
   newVoteRegistered(votationId: String!): NewVoteRegisteredResponse
+  revieweAdded(votationId: String!): ReviewResult
   viewChanged: ViewState
   votationOpenedForMeeting(meetingId: String!): String
   votationStatusUpdated(id: String!): VotationStatusUpdatedResponse

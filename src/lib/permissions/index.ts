@@ -49,6 +49,7 @@ const permissions = shield(
             updateVotationIndexes: and(isAdminOfVotationsByObjects, votationsAreUpcoming),
             updateVotationStatus: and(isAdminOfVotationById),
             updateParticipant: and(isAdminOfMeetingId),
+            updateReview: or(isAdminOfVotationsById, isCounterOfVotationById),
             deleteParticipants: and(isAdminOfMeetingId),
             deleteAlternatives: and(isAdminOfAlternatives),
             deleteVotations: and(isAdminOfVotationsById),
