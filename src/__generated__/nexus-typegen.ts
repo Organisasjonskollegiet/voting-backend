@@ -269,7 +269,6 @@ export interface NexusGenFieldTypes {
     castStvVote: string | null; // String
     castVote: NexusGenRootTypes['Vote'] | null; // Vote
     changeView: NexusGenEnums['ViewState'] | null; // ViewState
-    createAlternative: NexusGenRootTypes['Alternative'] | null; // Alternative
     createMeeting: NexusGenRootTypes['Meeting'] | null; // Meeting
     createVotations: Array<NexusGenRootTypes['Votation'] | null> | null; // [Votation]
     deleteAlternatives: Array<string | null> | null; // [String]
@@ -277,7 +276,6 @@ export interface NexusGenFieldTypes {
     deleteParticipants: Array<string | null> | null; // [String]
     deleteVotations: Array<string | null> | null; // [String]
     reviewVotation: string | null; // String
-    updateAlternative: NexusGenRootTypes['Alternative'] | null; // Alternative
     updateMeeting: NexusGenRootTypes['Meeting'] | null; // Meeting
     updateParticipant: NexusGenRootTypes['ParticipantOrInvite'] | null; // ParticipantOrInvite
     updateVotationIndexes: Array<NexusGenRootTypes['Votation'] | null> | null; // [Votation]
@@ -302,7 +300,6 @@ export interface NexusGenFieldTypes {
     role: NexusGenEnums['Role']; // Role!
   }
   Query: { // field return type
-    alternativesByVotation: Array<NexusGenRootTypes['Alternative'] | null> | null; // [Alternative]
     getOpenVotation: string | null; // String
     getStvResult: NexusGenRootTypes['StvResult'] | null; // StvResult
     getVotationResults: NexusGenRootTypes['VotationResults'] | null; // VotationResults
@@ -430,7 +427,6 @@ export interface NexusGenFieldTypeNames {
     castStvVote: 'String'
     castVote: 'Vote'
     changeView: 'ViewState'
-    createAlternative: 'Alternative'
     createMeeting: 'Meeting'
     createVotations: 'Votation'
     deleteAlternatives: 'String'
@@ -438,7 +434,6 @@ export interface NexusGenFieldTypeNames {
     deleteParticipants: 'String'
     deleteVotations: 'String'
     reviewVotation: 'String'
-    updateAlternative: 'Alternative'
     updateMeeting: 'Meeting'
     updateParticipant: 'ParticipantOrInvite'
     updateVotationIndexes: 'Votation'
@@ -463,7 +458,6 @@ export interface NexusGenFieldTypeNames {
     role: 'Role'
   }
   Query: { // field return type name
-    alternativesByVotation: 'Alternative'
     getOpenVotation: 'String'
     getStvResult: 'StvResult'
     getVotationResults: 'VotationResults'
@@ -568,10 +562,6 @@ export interface NexusGenArgTypes {
     changeView: { // args
       state: NexusGenEnums['ViewState']; // ViewState!
     }
-    createAlternative: { // args
-      text: string; // String!
-      votationId: string; // String!
-    }
     createMeeting: { // args
       meeting: NexusGenInputs['CreateMeetingInput']; // CreateMeetingInput!
     }
@@ -596,10 +586,6 @@ export interface NexusGenArgTypes {
       approved: boolean; // Boolean!
       votationId: string; // String!
     }
-    updateAlternative: { // args
-      id: string; // String!
-      text: string; // String!
-    }
     updateMeeting: { // args
       meeting: NexusGenInputs['UpdateMeetingInput']; // UpdateMeetingInput!
     }
@@ -619,9 +605,6 @@ export interface NexusGenArgTypes {
     }
   }
   Query: {
-    alternativesByVotation: { // args
-      votationId: string; // String!
-    }
     getOpenVotation: { // args
       meetingId: string; // String!
     }
