@@ -1,6 +1,7 @@
 import { idArg, list, nonNull, queryField, stringArg } from 'nexus';
 import { Alternative, StvResult, Votation, VotationResults } from './typedefs';
 import { VotationStatus } from '@prisma/client';
+import { getParticipantId } from './utils';
 
 export const GetVotationById = queryField('votationById', {
     type: Votation,
@@ -141,5 +142,26 @@ export const GetOpenVotation = queryField('getOpenVotation', {
             },
         });
         return openVotation?.id ?? '';
+    },
+});
+
+export const GetMyReview = queryField('getMyReview', {
+    type: 'MyReviewResult',
+    description: '',
+    args: {
+        votationId: nonNull(stringArg()),
+    },
+    resolve: async (_, { votationId }, ctx) => {
+        const participantId = await getParticipantId(votationId, ctx);
+        const review = await ctx.prisma.votationResultReview.findUnique({
+            where: {
+                votationId_participantId: {
+                    votationId,
+                    participantId,
+                },
+            },
+        });
+        if (review) return { __typename: 'VotationReview', ...review };
+        return { __typename: 'NoReview', message: 'There is no review for this user.' };
     },
 });

@@ -144,6 +144,9 @@ export interface NexusGenObjects {
     votationId: string; // String!
     voteCount: number; // Int!
   }
+  NoReview: { // root type
+    message: string; // String!
+  }
   OwnerCannotBeRemovedFromParticipantError: { // root type
     message: string; // String!
   }
@@ -201,6 +204,9 @@ export interface NexusGenObjects {
     blankVoteCount: number; // Int!
     blankVotes: boolean; // Boolean!
   }
+  VotationReview: { // root type
+    approved: boolean; // Boolean!
+  }
   VotationStatusUpdatedResponse: { // root type
     votationId: string; // String!
     votationStatus: NexusGenEnums['VotationStatus']; // VotationStatus!
@@ -224,6 +230,7 @@ export interface NexusGenInterfaces {
 export interface NexusGenUnions {
   DeleteParticipantResult: core.Discriminate<'OwnerCannotBeRemovedFromParticipantError', 'required'> | core.Discriminate<'Participant', 'required'>;
   GetUserResult: core.Discriminate<'User', 'required'> | core.Discriminate<'UserNotFoundError', 'required'>;
+  MyReviewResult: core.Discriminate<'NoReview', 'required'> | core.Discriminate<'VotationReview', 'required'>;
   UpdateVotationStatusResult: core.Discriminate<'MaxOneOpenVotationError', 'required'> | core.Discriminate<'Votation', 'required'>;
 }
 
@@ -291,6 +298,9 @@ export interface NexusGenFieldTypes {
     votationId: string; // String!
     voteCount: number; // Int!
   }
+  NoReview: { // field return type
+    message: string; // String!
+  }
   OwnerCannotBeRemovedFromParticipantError: { // field return type
     message: string; // String!
   }
@@ -305,6 +315,7 @@ export interface NexusGenFieldTypes {
     role: NexusGenEnums['Role']; // Role!
   }
   Query: { // field return type
+    getMyReview: NexusGenRootTypes['MyReviewResult'] | null; // MyReviewResult
     getOpenVotation: string | null; // String
     getStvResult: NexusGenRootTypes['StvResult'] | null; // StvResult
     getVotationResults: NexusGenRootTypes['VotationResults'] | null; // VotationResults
@@ -375,6 +386,9 @@ export interface NexusGenFieldTypes {
     blankVotes: boolean; // Boolean!
     voteCount: number; // Int!
     votingEligibleCount: number; // Int!
+  }
+  VotationReview: { // field return type
+    approved: boolean; // Boolean!
   }
   VotationStatusUpdatedResponse: { // field return type
     votationId: string; // String!
@@ -455,6 +469,9 @@ export interface NexusGenFieldTypeNames {
     votationId: 'String'
     voteCount: 'Int'
   }
+  NoReview: { // field return type name
+    message: 'String'
+  }
   OwnerCannotBeRemovedFromParticipantError: { // field return type name
     message: 'String'
   }
@@ -469,6 +486,7 @@ export interface NexusGenFieldTypeNames {
     role: 'Role'
   }
   Query: { // field return type name
+    getMyReview: 'MyReviewResult'
     getOpenVotation: 'String'
     getStvResult: 'StvResult'
     getVotationResults: 'VotationResults'
@@ -539,6 +557,9 @@ export interface NexusGenFieldTypeNames {
     blankVotes: 'Boolean'
     voteCount: 'Int'
     votingEligibleCount: 'Int'
+  }
+  VotationReview: { // field return type name
+    approved: 'Boolean'
   }
   VotationStatusUpdatedResponse: { // field return type name
     votationId: 'String'
@@ -625,6 +646,9 @@ export interface NexusGenArgTypes {
     }
   }
   Query: {
+    getMyReview: { // args
+      votationId: string; // String!
+    }
     getOpenVotation: { // args
       meetingId: string; // String!
     }
@@ -672,6 +696,7 @@ export interface NexusGenArgTypes {
 export interface NexusGenAbstractTypeMembers {
   DeleteParticipantResult: "OwnerCannotBeRemovedFromParticipantError" | "Participant"
   GetUserResult: "User" | "UserNotFoundError"
+  MyReviewResult: "NoReview" | "VotationReview"
   UpdateVotationStatusResult: "MaxOneOpenVotationError" | "Votation"
 }
 

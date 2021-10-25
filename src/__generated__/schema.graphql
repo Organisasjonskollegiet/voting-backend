@@ -131,9 +131,15 @@ type Mutation {
   updateVotations(votations: [UpdateVotationInput!]!): [Votation]
 }
 
+union MyReviewResult = NoReview | VotationReview
+
 type NewVoteRegisteredResponse {
   votationId: String!
   voteCount: Int!
+}
+
+type NoReview {
+  message: String!
 }
 
 type OwnerCannotBeRemovedFromParticipantError {
@@ -159,6 +165,9 @@ type ParticipantOrInvite {
 }
 
 type Query {
+  """"""
+  getMyReview(votationId: String!): MyReviewResult
+
   """"""
   getOpenVotation(meetingId: String!): String
 
@@ -323,6 +332,10 @@ type VotationResults {
   blankVotes: Boolean!
   voteCount: Int!
   votingEligibleCount: Int!
+}
+
+type VotationReview {
+  approved: Boolean!
 }
 
 enum VotationStatus {

@@ -264,4 +264,11 @@ export const VotationResults = objectType({
     },
 });
 
+export const VotationReview = objectType({
+    name: 'VotationReview',
+    definition(t) {
+        t.nonNull.boolean('approved');
+    },
+});
+
 export * from './results';
