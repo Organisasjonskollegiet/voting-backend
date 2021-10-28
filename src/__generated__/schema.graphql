@@ -119,9 +119,6 @@ type Mutation {
 
   """Update participants of a meeting."""
   updateParticipant(meetingId: String!, participant: ParticipantInput!): ParticipantOrInvite
-
-  """Update a participants review"""
-  updateReview(approved: Boolean!, votationId: String!): String
   updateVotationIndexes(votations: [UpdateVotationIndexInput!]!): [Votation]
 
   """"""

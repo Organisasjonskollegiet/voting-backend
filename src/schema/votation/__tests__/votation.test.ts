@@ -1966,8 +1966,8 @@ it('should update a review of a votation', async () => {
     });
     const response = await ctx.client.request(
         gql`
-            mutation UpdateReview($votationId: String!, $approved: Boolean!) {
-                updateReview(votationId: $votationId, approved: $approved)
+            mutation ReviewVotation($votationId: String!, $approved: Boolean!) {
+                reviewVotation(votationId: $votationId, approved: $approved)
             }
         `,
         {
@@ -1975,7 +1975,7 @@ it('should update a review of a votation', async () => {
             approved: false,
         }
     );
-    expect(response.updateReview).toBe('Votering ikke godkjent.');
+    expect(response.reviewVotation).toBe('Votering ikke godkjent.');
     const updatedReview = await ctx.prisma.votationResultReview.findUnique({
         where: {
             votationId_participantId: {
@@ -1985,30 +1985,6 @@ it('should update a review of a votation', async () => {
         },
     });
     expect(updatedReview?.approved).toBeFalsy();
-});
-
-it('should return not authorised trying to update a review of a votation', async () => {
-    const user = await createUser();
-    const meeting = await createMeeting(user.id, Role.PARTICIPANT, true);
-    const participant = await createParticipant(meeting.id, ctx.userId, true, Role.PARTICIPANT);
-    const votation = await createVotation(meeting.id, VotationStatus.CHECKING_RESULT, 0);
-    await createReview(votation.id, participant.id, true);
-    try {
-        await ctx.client.request(
-            gql`
-                mutation UpdateReview($votationId: String!, $approved: Boolean!) {
-                    updateReview(votationId: $votationId, approved: $approved)
-                }
-            `,
-            {
-                votationId: votation.id,
-                approved: false,
-            }
-        );
-        expect(false).toBeTruthy();
-    } catch (error) {
-        expect(error.message).toContain('Not Authorised!');
-    }
 });
 
 it('should return my review', async () => {

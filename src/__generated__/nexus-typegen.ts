@@ -289,7 +289,6 @@ export interface NexusGenFieldTypes {
     reviewVotation: string | null; // String
     updateMeeting: NexusGenRootTypes['Meeting'] | null; // Meeting
     updateParticipant: NexusGenRootTypes['ParticipantOrInvite'] | null; // ParticipantOrInvite
-    updateReview: string | null; // String
     updateVotationIndexes: Array<NexusGenRootTypes['Votation'] | null> | null; // [Votation]
     updateVotationStatus: NexusGenRootTypes['UpdateVotationStatusResult'] | null; // UpdateVotationStatusResult
     updateVotations: Array<NexusGenRootTypes['Votation'] | null> | null; // [Votation]
@@ -460,7 +459,6 @@ export interface NexusGenFieldTypeNames {
     reviewVotation: 'String'
     updateMeeting: 'Meeting'
     updateParticipant: 'ParticipantOrInvite'
-    updateReview: 'String'
     updateVotationIndexes: 'Votation'
     updateVotationStatus: 'UpdateVotationStatusResult'
     updateVotations: 'Votation'
@@ -629,10 +627,6 @@ export interface NexusGenArgTypes {
     updateParticipant: { // args
       meetingId: string; // String!
       participant: NexusGenInputs['ParticipantInput']; // ParticipantInput!
-    }
-    updateReview: { // args
-      approved: boolean; // Boolean!
-      votationId: string; // String!
     }
     updateVotationIndexes: { // args
       votations: NexusGenInputs['UpdateVotationIndexInput'][]; // [UpdateVotationIndexInput!]!

@@ -375,32 +375,16 @@ export const ReviewVotation = mutationField('reviewVotation', {
     description: 'Approve or disapprove a votation result',
     resolve: async (_, { votationId, approved }, ctx) => {
         const participantId = await getParticipantId(votationId, ctx);
-        await ctx.prisma.votationResultReview.create({
-            data: {
+        await ctx.prisma.votationResultReview.upsert({
+            where: {
+                votationId_participantId: { participantId, votationId },
+            },
+            create: {
                 participantId: participantId,
                 votationId: votationId,
                 approved,
             },
-        });
-        await pubsub.publish(`REVIEW_ADDED_FOR_${votationId}`, { votationId });
-        return `Votering ${approved ? '' : 'ikke '}godkjent.`;
-    },
-});
-
-export const UpdateReview = mutationField('updateReview', {
-    type: 'String',
-    args: {
-        votationId: nonNull(stringArg()),
-        approved: nonNull(booleanArg()),
-    },
-    description: 'Update a participants review',
-    resolve: async (_, { votationId, approved }, ctx) => {
-        const participantId = await getParticipantId(votationId, ctx);
-        await ctx.prisma.votationResultReview.update({
-            where: {
-                votationId_participantId: { participantId, votationId },
-            },
-            data: {
+            update: {
                 approved,
             },
         });
