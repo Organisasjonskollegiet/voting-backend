@@ -54,15 +54,7 @@ export const ReviewAdded = subscriptionField('reviewAdded', {
     subscribe: async (_, { votationId }, ctx) => {
         return pubsub.asyncIterator([`REVIEW_ADDED_FOR_${votationId}`]);
     },
-    resolve: async (votationId: string, __, ctx) => {
-        const reviews = await ctx.prisma.votationResultReview.findMany({
-            where: {
-                votationId,
-            },
-        });
-        return {
-            approved: reviews.filter((review) => review.approved).length,
-            disapproved: reviews.filter((review) => !review.approved).length,
-        };
+    resolve: async (reviews: { approved: number; disapproved: number }, __, ctx) => {
+        return reviews;
     },
 });

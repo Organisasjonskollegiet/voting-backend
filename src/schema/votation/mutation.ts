@@ -388,7 +388,15 @@ export const ReviewVotation = mutationField('reviewVotation', {
                 approved,
             },
         });
-        await pubsub.publish(`REVIEW_ADDED_FOR_${votationId}`, { votationId });
+        const reviews = await ctx.prisma.votationResultReview.findMany({
+            where: {
+                votationId,
+            },
+        });
+        await pubsub.publish(`REVIEW_ADDED_FOR_${votationId}`, {
+            approved: reviews.filter((r) => r.approved).length,
+            disapproved: reviews.filter((r) => !r.approved).length,
+        });
         return `Votering ${approved ? '' : 'ikke '}godkjent.`;
     },
 });
