@@ -236,7 +236,7 @@ input StvVoteAlternativeInput {
 
 type Subscription {
   newVoteRegistered(votationId: String!): NewVoteRegisteredResponse
-  revieweAdded(votationId: String!): ReviewResult
+  reviewAdded(votationId: String!): ReviewResult
   viewChanged: ViewState
   votationOpenedForMeeting(meetingId: String!): String
   votationStatusUpdated(id: String!): VotationStatusUpdatedResponse

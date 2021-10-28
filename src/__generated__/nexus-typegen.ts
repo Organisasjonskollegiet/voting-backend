@@ -348,7 +348,7 @@ export interface NexusGenFieldTypes {
   }
   Subscription: { // field return type
     newVoteRegistered: NexusGenRootTypes['NewVoteRegisteredResponse'] | null; // NewVoteRegisteredResponse
-    revieweAdded: NexusGenRootTypes['ReviewResult'] | null; // ReviewResult
+    reviewAdded: NexusGenRootTypes['ReviewResult'] | null; // ReviewResult
     viewChanged: NexusGenEnums['ViewState'] | null; // ViewState
     votationOpenedForMeeting: string | null; // String
     votationStatusUpdated: NexusGenRootTypes['VotationStatusUpdatedResponse'] | null; // VotationStatusUpdatedResponse
@@ -519,7 +519,7 @@ export interface NexusGenFieldTypeNames {
   }
   Subscription: { // field return type name
     newVoteRegistered: 'NewVoteRegisteredResponse'
-    revieweAdded: 'ReviewResult'
+    reviewAdded: 'ReviewResult'
     viewChanged: 'ViewState'
     votationOpenedForMeeting: 'String'
     votationStatusUpdated: 'VotationStatusUpdatedResponse'
@@ -681,7 +681,7 @@ export interface NexusGenArgTypes {
     newVoteRegistered: { // args
       votationId: string; // String!
     }
-    revieweAdded: { // args
+    reviewAdded: { // args
       votationId: string; // String!
     }
     votationOpenedForMeeting: { // args

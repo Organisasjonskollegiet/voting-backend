@@ -54,7 +54,7 @@ export const VotationStatusUpdated = subscriptionField('votationStatusUpdated', 
     },
 });
 
-export const ReviewAdded = subscriptionField('revieweAdded', {
+export const ReviewAdded = subscriptionField('reviewAdded', {
     type: 'ReviewResult',
     args: {
         votationId: nonNull(stringArg()),
