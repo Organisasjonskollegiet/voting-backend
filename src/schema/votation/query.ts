@@ -145,6 +145,25 @@ export const GetOpenVotation = queryField('getOpenVotation', {
     },
 });
 
+export const GetReviews = queryField('getReviews', {
+    type: 'ReviewResult',
+    description: 'Return the number of approvals and disapprovals of a votation',
+    args: {
+        votationId: nonNull(stringArg()),
+    },
+    resolve: async (_, { votationId }, ctx) => {
+        const reviews = await ctx.prisma.votationResultReview.findMany({
+            where: {
+                votationId,
+            },
+        });
+        return {
+            approved: reviews.filter((r) => r.approved).length,
+            disapproved: reviews.filter((r) => !r.approved).length,
+        };
+    },
+});
+
 export const GetMyReview = queryField('getMyReview', {
     type: 'MyReviewResult',
     description: '',

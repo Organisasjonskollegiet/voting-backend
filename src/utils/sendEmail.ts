@@ -45,8 +45,8 @@ const sendEmail = async (participants: ParticipantOrInviteType[], userIsRegister
             const emailParams = createEmail(participant.email, participant.role, meeting, userIsRegistered);
             promises.push(
                 new Promise(async (resolve, reject) => {
-                    // const response = await mailersend.send(emailParams);
-                    // if (response.status !== 202) reject('Could not send email.');
+                    const response = await mailersend.send(emailParams);
+                    if (response.status !== 202) reject('Could not send email.');
                     resolve(participant.email);
                 })
             );

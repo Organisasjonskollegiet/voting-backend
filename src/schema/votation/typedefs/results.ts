@@ -27,3 +27,11 @@ export const MyReviewResult = unionType({
         t.members('VotationReview', 'NoReview');
     },
 });
+
+export const ReviewResult = objectType({
+    name: 'ReviewResult',
+    definition: (t) => {
+        t.nonNull.int('approved');
+        t.nonNull.int('disapproved');
+    },
+});

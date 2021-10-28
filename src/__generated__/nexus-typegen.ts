@@ -316,6 +316,7 @@ export interface NexusGenFieldTypes {
   Query: { // field return type
     getMyReview: NexusGenRootTypes['MyReviewResult'] | null; // MyReviewResult
     getOpenVotation: string | null; // String
+    getReviews: NexusGenRootTypes['ReviewResult'] | null; // ReviewResult
     getStvResult: NexusGenRootTypes['StvResult'] | null; // StvResult
     getVotationResults: NexusGenRootTypes['VotationResults'] | null; // VotationResults
     getVoteCount: NexusGenRootTypes['VoteCountResult'] | null; // VoteCountResult
@@ -486,6 +487,7 @@ export interface NexusGenFieldTypeNames {
   Query: { // field return type name
     getMyReview: 'MyReviewResult'
     getOpenVotation: 'String'
+    getReviews: 'ReviewResult'
     getStvResult: 'StvResult'
     getVotationResults: 'VotationResults'
     getVoteCount: 'VoteCountResult'
@@ -645,6 +647,9 @@ export interface NexusGenArgTypes {
     }
     getOpenVotation: { // args
       meetingId: string; // String!
+    }
+    getReviews: { // args
+      votationId: string; // String!
     }
     getStvResult: { // args
       votationId: string; // String!

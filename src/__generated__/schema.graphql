@@ -168,6 +168,9 @@ type Query {
   """"""
   getOpenVotation(meetingId: String!): String
 
+  """Return the number of approvals and disapprovals of a votation"""
+  getReviews(votationId: String!): ReviewResult
+
   """Get results from an stv votation"""
   getStvResult(votationId: String!): StvResult
 

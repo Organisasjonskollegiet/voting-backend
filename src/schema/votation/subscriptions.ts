@@ -20,14 +20,6 @@ export const NewVoteRegisteredResponse = objectType({
     },
 });
 
-export const ReviewResult = objectType({
-    name: 'ReviewResult',
-    definition: (t) => {
-        t.nonNull.int('approved');
-        t.nonNull.int('disapproved');
-    },
-});
-
 export const NewVoteRegistered = subscriptionField('newVoteRegistered', {
     type: 'NewVoteRegisteredResponse',
     args: {
