@@ -5,8 +5,6 @@ import { string, uuid } from 'casual';
 import casual from 'casual';
 import { computeResult, setWinner } from '../utils';
 import { Vote } from '@prisma/client';
-import exp from 'constants';
-import { pathToArray } from 'graphql/jsutils/Path';
 const ctx = createTestContext();
 
 interface StaticMeetingDataType {
@@ -2036,4 +2034,49 @@ it('should return no review', async () => {
         }
     );
     expect(response.getMyReview.__typename).toEqual('NoReview');
+});
+
+it('should return reviews of votation', async () => {
+    const user = await createUser();
+    const meeting = await createMeeting(user.id, Role.ADMIN, true);
+    const votation = await createVotation(meeting.id, VotationStatus.CHECKING_RESULT, 0);
+    const participant = await createParticipant(meeting.id, ctx.userId, true, Role.ADMIN);
+    await createReview(votation.id, participant.id, true);
+    const response = await ctx.client.request(
+        gql`
+            query getReviews($votationId: String!) {
+                getReviews(votationId: $votationId) {
+                    approved
+                    disapproved
+                }
+            }
+        `,
+        {
+            votationId: votation.id,
+        }
+    );
+    expect(response.getReviews).toEqual({ approved: 1, disapproved: 0 });
+});
+
+it('should return reviews of votation', async () => {
+    const meeting = await createMeeting(ctx.userId, Role.COUNTER, true);
+    const votation = await createVotation(meeting.id, VotationStatus.CHECKING_RESULT, 0);
+    try {
+        await ctx.client.request(
+            gql`
+                query getReviews($votationId: String!) {
+                    getReviews(votationId: $votationId) {
+                        approved
+                        disapproved
+                    }
+                }
+            `,
+            {
+                votationId: votation.id,
+            }
+        );
+        expect(false).toBeTruthy();
+    } catch (error) {
+        expect(error.message).toContain('Not Authorised!');
+    }
 });

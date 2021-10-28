@@ -38,6 +38,7 @@ const permissions = shield(
             resultsOfPublishedVotations: and(isParticipantOfMeeting),
             getOpenVotation: and(isParticipantOfMeeting),
             getMyReview: and(isParticipantOfVotation),
+            getReviews: and(isAdminOfVotationById),
         },
         Mutation: {
             addParticipants: and(isAdminOfMeetingId),
