@@ -174,7 +174,7 @@ const getQuota = async (ctx: Context, votation: Votation) => {
             votationId: votation.id,
         },
     });
-    return Math.floor(hasVoted / (votation.numberOfWinners + 1)) + 1;
+    return Math.floor(hasVoted / (votation.numberOfWinners + 1)) + 0.01;
 };
 
 const getStvVotes = async (ctx: Context, votationId: string) => {
