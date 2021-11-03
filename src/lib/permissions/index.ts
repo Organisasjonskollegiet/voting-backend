@@ -37,6 +37,8 @@ const permissions = shield(
             participants: and(isAdminOfMeetingId),
             resultsOfPublishedVotations: and(isParticipantOfMeeting),
             getOpenVotation: and(isParticipantOfMeeting),
+            getMyReview: and(isParticipantOfVotation),
+            getReviews: and(isAdminOfVotationById),
         },
         Mutation: {
             addParticipants: and(isAdminOfMeetingId),
@@ -53,11 +55,13 @@ const permissions = shield(
             deleteAlternatives: and(isAdminOfAlternatives),
             deleteVotations: and(isAdminOfVotationsById),
             deleteMeeting: and(isOwnerOfMeeting),
+            reviewVotation: or(isAdminOfVotationById, isCounterOfVotationById),
         },
         Subscription: {
             newVoteRegistered: allow,
             votationStatusUpdated: allow,
             votationOpenedForMeeting: allow,
+            reviewAdded: allow,
         },
     },
     // If rule is not defined, use isAuthenticated rule

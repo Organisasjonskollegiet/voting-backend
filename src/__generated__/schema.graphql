@@ -111,6 +111,9 @@ type Mutation {
   """"""
   deleteVotations(ids: [String!]!): [String]
 
+  """Approve or disapprove a votation result"""
+  reviewVotation(approved: Boolean!, votationId: String!): String
+
   """"""
   updateMeeting(meeting: UpdateMeetingInput!): Meeting
 
@@ -125,9 +128,15 @@ type Mutation {
   updateVotations(votations: [UpdateVotationInput!]!): [Votation]
 }
 
+union MyReviewResult = NoReview | VotationReview
+
 type NewVoteRegisteredResponse {
   votationId: String!
   voteCount: Int!
+}
+
+type NoReview {
+  message: String!
 }
 
 type OwnerCannotBeRemovedFromParticipantError {
@@ -154,7 +163,13 @@ type ParticipantOrInvite {
 
 type Query {
   """"""
+  getMyReview(votationId: String!): MyReviewResult
+
+  """"""
   getOpenVotation(meetingId: String!): String
+
+  """Return the number of approvals and disapprovals of a votation"""
+  getReviews(votationId: String!): ReviewResult
 
   """Get results from an stv votation"""
   getStvResult(votationId: String!): StvResult
@@ -183,6 +198,11 @@ type Query {
   resultsOfPublishedVotations(meetingId: String!): [VotationWithWinner]
   user: GetUserResult
   votationById(votationId: String!): Votation
+}
+
+type ReviewResult {
+  approved: Int!
+  disapproved: Int!
 }
 
 enum Role {
@@ -216,6 +236,7 @@ input StvVoteAlternativeInput {
 
 type Subscription {
   newVoteRegistered(votationId: String!): NewVoteRegisteredResponse
+  reviewAdded(votationId: String!): ReviewResult
   viewChanged: ViewState
   votationOpenedForMeeting(meetingId: String!): String
   votationStatusUpdated(id: String!): VotationStatusUpdatedResponse
@@ -311,6 +332,10 @@ type VotationResults {
   blankVotes: Boolean!
   voteCount: Int!
   votingEligibleCount: Int!
+}
+
+type VotationReview {
+  approved: Boolean!
 }
 
 enum VotationStatus {

@@ -41,7 +41,20 @@ export const VotationStatusUpdated = subscriptionField('votationStatusUpdated', 
     subscribe: async (_, { id }, ctx) => {
         return pubsub.asyncIterator([`VOTATION_STATUS_UPDATED_FOR_${id}`]);
     },
-    resolve: async (status: { votationId: string; votationStatus: VotationStatus }, ctx, ___) => {
+    resolve: async (status: { votationId: string; votationStatus: VotationStatus }, __, ___) => {
         return status;
+    },
+});
+
+export const ReviewAdded = subscriptionField('reviewAdded', {
+    type: 'ReviewResult',
+    args: {
+        votationId: nonNull(stringArg()),
+    },
+    subscribe: async (_, { votationId }, ctx) => {
+        return pubsub.asyncIterator([`REVIEW_ADDED_FOR_${votationId}`]);
+    },
+    resolve: async (reviews: { approved: number; disapproved: number }, __, ctx) => {
+        return reviews;
     },
 });

@@ -5,7 +5,6 @@ import { string, uuid } from 'casual';
 import casual from 'casual';
 import { computeResult, setWinner } from '../utils';
 import { Vote } from '@prisma/client';
-import exp from 'constants';
 const ctx = createTestContext();
 
 interface StaticMeetingDataType {
@@ -173,6 +172,16 @@ const formatVotationToCompare = (votation: any) => {
         majorityThreshold: votation.majorityThreshold,
         index: votation.index,
     };
+};
+
+const createReview = async (votationId: string, participantId: string, approved: boolean) => {
+    return await ctx.prisma.votationResultReview.create({
+        data: {
+            votationId,
+            participantId,
+            approved,
+        },
+    });
 };
 
 it('should return votation by id', async () => {
@@ -1879,6 +1888,186 @@ it('should return not authorised trying to get round results for published resul
                                 voteCount
                             }
                         }
+                    }
+                }
+            `,
+            {
+                votationId: votation.id,
+            }
+        );
+        expect(false).toBeTruthy();
+    } catch (error) {
+        expect(error.message).toContain('Not Authorised!');
+    }
+});
+
+it('should create a review of a votation', async () => {
+    const user = await createUser();
+    const meeting = await createMeeting(user.id, Role.ADMIN, true);
+    const participant = await createParticipant(meeting.id, ctx.userId, true, Role.COUNTER);
+    const votation = await createVotation(meeting.id, VotationStatus.CHECKING_RESULT, 0);
+    const response = await ctx.client.request(
+        gql`
+            mutation ReviewVotation($votationId: String!, $approved: Boolean!) {
+                reviewVotation(votationId: $votationId, approved: $approved)
+            }
+        `,
+        {
+            votationId: votation.id,
+            approved: true,
+        }
+    );
+    expect(response.reviewVotation).toBe('Votering godkjent.');
+    const review = await ctx.prisma.votationResultReview.findUnique({
+        where: {
+            votationId_participantId: {
+                votationId: votation.id,
+                participantId: participant.id,
+            },
+        },
+    });
+    expect(review?.approved).toBeTruthy();
+});
+
+it('should return not authorised trying to review a votation', async () => {
+    const meeting = await createMeeting(ctx.userId, Role.PARTICIPANT, true);
+    const votation = await createVotation(meeting.id, VotationStatus.CHECKING_RESULT, 0);
+    try {
+        await ctx.client.request(
+            gql`
+                mutation ReviewVotation($votationId: String!, $approved: Boolean!) {
+                    reviewVotation(votationId: $votationId, approved: $approved)
+                }
+            `,
+            {
+                votationId: votation.id,
+                approved: true,
+            }
+        );
+        expect(false).toBeTruthy();
+    } catch (error) {
+        expect(error.message).toContain('Not Authorised!');
+    }
+});
+
+it('should update a review of a votation', async () => {
+    const user = await createUser();
+    const meeting = await createMeeting(user.id, Role.ADMIN, true);
+    const participant = await createParticipant(meeting.id, ctx.userId, true, Role.COUNTER);
+    const votation = await createVotation(meeting.id, VotationStatus.CHECKING_RESULT, 0);
+    await ctx.prisma.votationResultReview.create({
+        data: {
+            votationId: votation.id,
+            participantId: participant.id,
+            approved: true,
+        },
+    });
+    const response = await ctx.client.request(
+        gql`
+            mutation ReviewVotation($votationId: String!, $approved: Boolean!) {
+                reviewVotation(votationId: $votationId, approved: $approved)
+            }
+        `,
+        {
+            votationId: votation.id,
+            approved: false,
+        }
+    );
+    expect(response.reviewVotation).toBe('Votering ikke godkjent.');
+    const updatedReview = await ctx.prisma.votationResultReview.findUnique({
+        where: {
+            votationId_participantId: {
+                votationId: votation.id,
+                participantId: participant.id,
+            },
+        },
+    });
+    expect(updatedReview?.approved).toBeFalsy();
+});
+
+it('should return my review', async () => {
+    const user = await createUser();
+    const meeting = await createMeeting(user.id, Role.ADMIN, true);
+    const votation = await createVotation(meeting.id, VotationStatus.CHECKING_RESULT, 0);
+    const participant = await createParticipant(meeting.id, ctx.userId, true, Role.COUNTER);
+    await createReview(votation.id, participant.id, true);
+    const response = await ctx.client.request(
+        gql`
+            query getMyReview($votationId: String!) {
+                getMyReview(votationId: $votationId) {
+                    __typename
+                    ... on VotationReview {
+                        approved
+                    }
+                    ... on NoReview {
+                        message
+                    }
+                }
+            }
+        `,
+        {
+            votationId: votation.id,
+        }
+    );
+    expect(response.getMyReview).toEqual({ __typename: 'VotationReview', approved: true });
+});
+
+it('should return no review', async () => {
+    const meeting = await createMeeting(ctx.userId, Role.ADMIN, true);
+    const votation = await createVotation(meeting.id, VotationStatus.CHECKING_RESULT, 0);
+    const response = await ctx.client.request(
+        gql`
+            query getMyReview($votationId: String!) {
+                getMyReview(votationId: $votationId) {
+                    __typename
+                    ... on VotationReview {
+                        approved
+                    }
+                    ... on NoReview {
+                        message
+                    }
+                }
+            }
+        `,
+        {
+            votationId: votation.id,
+        }
+    );
+    expect(response.getMyReview.__typename).toEqual('NoReview');
+});
+
+it('should return reviews of votation', async () => {
+    const user = await createUser();
+    const meeting = await createMeeting(user.id, Role.ADMIN, true);
+    const votation = await createVotation(meeting.id, VotationStatus.CHECKING_RESULT, 0);
+    const participant = await createParticipant(meeting.id, ctx.userId, true, Role.ADMIN);
+    await createReview(votation.id, participant.id, true);
+    const response = await ctx.client.request(
+        gql`
+            query getReviews($votationId: String!) {
+                getReviews(votationId: $votationId) {
+                    approved
+                    disapproved
+                }
+            }
+        `,
+        {
+            votationId: votation.id,
+        }
+    );
+    expect(response.getReviews).toEqual({ approved: 1, disapproved: 0 });
+});
+
+it('should return reviews of votation', async () => {
+    const meeting = await createMeeting(ctx.userId, Role.COUNTER, true);
+    const votation = await createVotation(meeting.id, VotationStatus.CHECKING_RESULT, 0);
+    try {
+        await ctx.client.request(
+            gql`
+                query getReviews($votationId: String!) {
+                    getReviews(votationId: $votationId) {
+                        approved
+                        disapproved
                     }
                 }
             `,

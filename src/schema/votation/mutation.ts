@@ -1,10 +1,12 @@
-import { inputObjectType, list, mutationField, nonNull, stringArg } from 'nexus';
+import { booleanArg, inputObjectType, list, mutationField, nonNull, stringArg } from 'nexus';
 import { Vote } from './';
 import { pubsub } from '../../lib/pubsub';
 import { Alternative, UpdateVotationStatusResult, Votation, MaxOneOpenVotationError } from './typedefs';
 import { VotationType, VotationStatus } from '../enums';
 import { setWinner } from './utils';
 import { VotationStatusUpdatedResponse } from './subscriptions';
+import { boolean } from 'casual';
+import { getParticipantId } from './utils';
 
 export const AlternativeInput = inputObjectType({
     name: 'AlternativeInput',
@@ -224,6 +226,7 @@ export const DeleteVotationsMutation = mutationField('deleteVotations', {
         for (const id of ids) {
             promises.push(
                 new Promise(async (resolve) => {
+                    await ctx.prisma.votationResultReview.deleteMany({ where: { votationId: id } });
                     await ctx.prisma.hasVoted.deleteMany({ where: { votationId: id } });
                     await ctx.prisma.vote.deleteMany({ where: { alternative: { votationId: id } } });
                     await ctx.prisma.alternative.deleteMany({ where: { votationId: id } });
@@ -360,5 +363,40 @@ export const CastBlankVoteMutation = mutationField('castBlankVote', {
         const voteCount = await ctx.prisma.hasVoted.count({ where: { votationId: votationId } });
         await pubsub.publish(`NEW_VOTE_REGISTERED_FOR_${votationId}`, { votationId, voteCount });
         return votation.id;
+    },
+});
+
+export const ReviewVotation = mutationField('reviewVotation', {
+    type: 'String',
+    args: {
+        votationId: nonNull(stringArg()),
+        approved: nonNull(booleanArg()),
+    },
+    description: 'Approve or disapprove a votation result',
+    resolve: async (_, { votationId, approved }, ctx) => {
+        const participantId = await getParticipantId(votationId, ctx);
+        await ctx.prisma.votationResultReview.upsert({
+            where: {
+                votationId_participantId: { participantId, votationId },
+            },
+            create: {
+                participantId: participantId,
+                votationId: votationId,
+                approved,
+            },
+            update: {
+                approved,
+            },
+        });
+        const reviews = await ctx.prisma.votationResultReview.findMany({
+            where: {
+                votationId,
+            },
+        });
+        await pubsub.publish(`REVIEW_ADDED_FOR_${votationId}`, {
+            approved: reviews.filter((r) => r.approved).length,
+            disapproved: reviews.filter((r) => !r.approved).length,
+        });
+        return `Votering ${approved ? '' : 'ikke '}godkjent.`;
     },
 });
