@@ -47,7 +47,7 @@ const updatedStaticVotationData: StaticVotationDataType = {
     blankVotes: false,
     hiddenVotes: false,
     type: VotationType.QUALIFIED,
-    numberOfWinners: 1,
+    numberOfWinners: 2,
     majorityThreshold: 67,
 };
 

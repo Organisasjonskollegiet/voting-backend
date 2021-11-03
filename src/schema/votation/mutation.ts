@@ -162,6 +162,7 @@ export const UpdateVotationsMutation = mutationField('updateVotations', {
                         hiddenVotes: votation.hiddenVotes,
                         type: votation.type,
                         majorityThreshold: votation.majorityThreshold,
+                        numberOfWinners: votation.numberOfWinners,
                     },
                 })
             );
