@@ -15,7 +15,8 @@
     "start": "node dist/src/index.js",
     "generate": "prisma generate",
     "nexus-generate": "ts-node --transpile-only src/schema/index.ts",
-    "populatedb": "ts-node-dev --transpile-only --no-notify src/utils/populatedb"
+    "populatedb": "ts-node-dev --transpile-only --no-notify src/utils/populatedb",
+    "migrate:db" : "prisma migrate deploy"
   },
   "dependencies": {
     "@prisma/client": "^2.19.0",
