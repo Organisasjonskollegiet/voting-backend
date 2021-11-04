@@ -25,6 +25,6 @@ jobs:
               run: yarn
 
             - name: Run migrations
-              run: yarn migrate:db
+              run: ::add-mask::$DATABASE_URL yarn migrate:db
               env:
                   DATABASE_URL: ${{ secrets.DATABASE_URL }}
