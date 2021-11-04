@@ -21,7 +21,7 @@ jobs:
               with:
                   node-version: 14
             - name: Install Node.js dependencies
-              run: yarn global add @prisma/cli
+              run: yarn global add prisma
 
             - name: Run migrations
               run: yarn prisma migrate deploy
