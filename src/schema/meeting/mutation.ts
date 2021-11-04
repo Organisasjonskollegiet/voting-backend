@@ -120,6 +120,7 @@ export const DeleteMeetingMutation = mutationField('deleteMeeting', {
         await ctx.prisma.stvVote.deleteMany({ where: { votation: { meetingId: id } } });
         await ctx.prisma.hasVoted.deleteMany({ where: { votation: { meetingId: id } } });
         await ctx.prisma.alternative.deleteMany({ where: { votation: { meetingId: id } } });
+        await ctx.prisma.votationResultReview.deleteMany({ where: { votation: { meetingId: id } } });
         await ctx.prisma.votation.deleteMany({ where: { meetingId: id } });
         await ctx.prisma.participant.deleteMany({ where: { meetingId: id } });
         await ctx.prisma.invite.deleteMany({ where: { meetingId: id } });
