@@ -76,8 +76,8 @@ const createVotation = async (
     status: VotationStatus,
     index: number,
     type: VotationType = VotationType.SIMPLE,
-    numberOfWinners: number = 1,
-    majorityThreshold: number = 66,
+    numberOfWinners = 1,
+    majorityThreshold = 66,
     blankVotes = false,
     hiddenVotes = true
 ) => {
