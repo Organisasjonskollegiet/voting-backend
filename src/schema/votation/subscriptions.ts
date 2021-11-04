@@ -1,4 +1,6 @@
-import { nonNull, stringArg, subscriptionField, objectType } from 'nexus';
+import { Votation as VotationType } from '.prisma/client';
+import { nonNull, stringArg, subscriptionField, objectType, list } from 'nexus';
+import { Votation } from '.';
 import { pubsub } from '../../lib/pubsub';
 import { NexusGenEnums } from '../../__generated__/nexus-typegen';
 
@@ -56,5 +58,18 @@ export const ReviewAdded = subscriptionField('reviewAdded', {
     },
     resolve: async (reviews: { approved: number; disapproved: number }, __, ctx) => {
         return reviews;
+    },
+});
+
+export const VotationAdded = subscriptionField('votationAdded', {
+    type: list(Votation),
+    args: {
+        meetingId: nonNull(stringArg()),
+    },
+    subscribe: async (_, { meetingId }) => {
+        return pubsub.asyncIterator([`VOTATIONS_ADDED_FOR_${meetingId}`]);
+    },
+    resolve: async (votations: VotationType[], __, ___) => {
+        return votations;
     },
 });

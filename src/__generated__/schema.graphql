@@ -238,6 +238,7 @@ type Subscription {
   newVoteRegistered(votationId: String!): NewVoteRegisteredResponse
   reviewAdded(votationId: String!): ReviewResult
   viewChanged: ViewState
+  votationAdded(meetingId: String!): [Votation]
   votationOpenedForMeeting(meetingId: String!): String
   votationStatusUpdated(id: String!): VotationStatusUpdatedResponse
 }
