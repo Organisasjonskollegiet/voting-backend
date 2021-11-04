@@ -25,9 +25,9 @@ const createEmail = (email: string, role: Role, meeting: Meeting, userIsRegister
                 meeting.startTime
             ).format('dddd DD.MM.YYYY')} kl. ${moment(meeting.startTime).format('HH:MM')}. ${
                 !userIsRegistered
-                    ? `Vennligst registrer deg <a href="${process.env.FRONTEND_URL}">her</a> i forkant av møtet`
-                    : ''
-            }. Du vil finne møtet under "Mine møter".`
+                    ? `Vennligst registrer deg på <a href="${process.env.FRONTEND_URL}">vedtatt.no</a> i forkant av møtet. Du vil finne møtet under "Mine møter".`
+                    : `Møtet finner du under "Mine møter" på <a href="${process.env.FRONTEND_URL}">vedtatt.no</a>.`
+            }`
         )
         .setText('Du er lagt til i møte.');
     return emailParams;
