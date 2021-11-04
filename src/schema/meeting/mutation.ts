@@ -275,6 +275,14 @@ export const DeleteParticipantsMutation = mutationField('deleteParticipants', {
                     });
                     if (user) {
                         if (meeting?.ownerId !== user?.id) {
+                            await ctx.prisma.votationResultReview.deleteMany({
+                                where: {
+                                    participant: {
+                                        userId: user.id,
+                                        meetingId: meetingId,
+                                    },
+                                },
+                            });
                             await ctx.prisma.participant.delete({
                                 where: {
                                     userId_meetingId: { userId: user.id, meetingId },
