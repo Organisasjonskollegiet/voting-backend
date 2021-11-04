@@ -17,7 +17,7 @@ const roleToText = new Map([
 const createEmail = (email: string, role: Role, meeting: Meeting, userIsRegistered: boolean) => {
     const recipient = [new Recipient(email)];
     const emailParams = new EmailParams()
-        .setFrom('vedtatt@organisasjonskollegiet.no')
+        .setFrom('notification@vedtatt.no')
         .setRecipients(recipient)
         .setSubject('Du er invitert til et nytt møte.')
         .setHtml(
