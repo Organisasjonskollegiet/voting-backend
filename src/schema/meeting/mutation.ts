@@ -4,6 +4,7 @@ import { MeetingStatus, Role } from '../enums';
 import { Meeting, ParticipantOrInvite } from './typedefs';
 import sendEmail from '../../utils/sendEmail';
 import { string } from 'casual';
+import { pubsub } from '../../lib/pubsub';
 
 export type ParticipantOrInviteType = {
     email: string;
@@ -157,6 +158,10 @@ export const UpdateParticipant = mutationField('updateParticipant', {
                     role: true,
                     isVotingEligible: true,
                 },
+            });
+            await pubsub.publish(`PARTICIPANT_${user.id}_${meetingId}_UPDATED`, {
+                role: participant.role,
+                isVotingEligible: participant.isVotingEligible,
             });
             return {
                 email: updatedParticipant.user.email,

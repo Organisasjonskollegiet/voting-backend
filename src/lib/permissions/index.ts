@@ -35,6 +35,7 @@ const permissions = shield(
             getVoteCount: and(isParticipantOfVotation),
             getWinnerOfVotation: and(resultIsPublished),
             participants: and(isAdminOfMeetingId),
+            myParticipant: and(isParticipantOfMeeting),
             resultsOfPublishedVotations: and(isParticipantOfMeeting),
             getOpenVotation: and(isParticipantOfMeeting),
             getMyReview: and(isParticipantOfVotation),

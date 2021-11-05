@@ -159,6 +159,10 @@ export interface NexusGenObjects {
     isVotingEligible: boolean; // Boolean!
     role: NexusGenEnums['Role']; // Role!
   }
+  ParticipantUpdatedResponse: { // root type
+    isVotingEligible: boolean; // Boolean!
+    role: NexusGenEnums['Role']; // Role!
+  }
   Query: {};
   ReviewResult: { // root type
     approved: number; // Int!
@@ -313,6 +317,10 @@ export interface NexusGenFieldTypes {
     isVotingEligible: boolean; // Boolean!
     role: NexusGenEnums['Role']; // Role!
   }
+  ParticipantUpdatedResponse: { // field return type
+    isVotingEligible: boolean; // Boolean!
+    role: NexusGenEnums['Role']; // Role!
+  }
   Query: { // field return type
     getMyReview: NexusGenRootTypes['MyReviewResult'] | null; // MyReviewResult
     getOpenVotation: string | null; // String
@@ -323,6 +331,7 @@ export interface NexusGenFieldTypes {
     getWinnerOfVotation: Array<NexusGenRootTypes['Alternative'] | null> | null; // [Alternative]
     meetingById: NexusGenRootTypes['Meeting'] | null; // Meeting
     meetings: Array<NexusGenRootTypes['Meeting'] | null>; // [Meeting]!
+    myParticipant: NexusGenRootTypes['ParticipantOrInvite'] | null; // ParticipantOrInvite
     participants: Array<NexusGenRootTypes['ParticipantOrInvite'] | null> | null; // [ParticipantOrInvite]
     resultsOfPublishedVotations: Array<NexusGenRootTypes['VotationWithWinner'] | null> | null; // [VotationWithWinner]
     user: NexusGenRootTypes['GetUserResult'] | null; // GetUserResult
@@ -348,6 +357,7 @@ export interface NexusGenFieldTypes {
   }
   Subscription: { // field return type
     newVoteRegistered: NexusGenRootTypes['NewVoteRegisteredResponse'] | null; // NewVoteRegisteredResponse
+    participantUpdated: NexusGenRootTypes['ParticipantUpdatedResponse'] | null; // ParticipantUpdatedResponse
     reviewAdded: NexusGenRootTypes['ReviewResult'] | null; // ReviewResult
     viewChanged: NexusGenEnums['ViewState'] | null; // ViewState
     votationOpenedForMeeting: string | null; // String
@@ -484,6 +494,10 @@ export interface NexusGenFieldTypeNames {
     isVotingEligible: 'Boolean'
     role: 'Role'
   }
+  ParticipantUpdatedResponse: { // field return type name
+    isVotingEligible: 'Boolean'
+    role: 'Role'
+  }
   Query: { // field return type name
     getMyReview: 'MyReviewResult'
     getOpenVotation: 'String'
@@ -494,6 +508,7 @@ export interface NexusGenFieldTypeNames {
     getWinnerOfVotation: 'Alternative'
     meetingById: 'Meeting'
     meetings: 'Meeting'
+    myParticipant: 'ParticipantOrInvite'
     participants: 'ParticipantOrInvite'
     resultsOfPublishedVotations: 'VotationWithWinner'
     user: 'GetUserResult'
@@ -519,6 +534,7 @@ export interface NexusGenFieldTypeNames {
   }
   Subscription: { // field return type name
     newVoteRegistered: 'NewVoteRegisteredResponse'
+    participantUpdated: 'ParticipantUpdatedResponse'
     reviewAdded: 'ReviewResult'
     viewChanged: 'ViewState'
     votationOpenedForMeeting: 'String'
@@ -666,6 +682,9 @@ export interface NexusGenArgTypes {
     meetingById: { // args
       meetingId: string; // String!
     }
+    myParticipant: { // args
+      meetingId: string; // String!
+    }
     participants: { // args
       meetingId: string; // String!
     }
@@ -679,6 +698,10 @@ export interface NexusGenArgTypes {
   Subscription: {
     newVoteRegistered: { // args
       votationId: string; // String!
+    }
+    participantUpdated: { // args
+      meetingId: string; // String!
+      userId: string; // String!
     }
     reviewAdded: { // args
       votationId: string; // String!
