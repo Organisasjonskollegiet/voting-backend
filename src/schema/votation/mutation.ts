@@ -102,9 +102,10 @@ export const CreateVotationsMutation = mutationField('createVotations', {
 export const UpdateVotationIndexes = mutationField('updateVotationIndexes', {
     type: list(Votation),
     args: {
+        meetingId: nonNull(stringArg()),
         votations: nonNull(list(nonNull(UpdateVotationIndexInput))),
     },
-    resolve: async (_, { votations }, ctx) => {
+    resolve: async (_, { votations, meetingId }, ctx) => {
         const resolved = await Promise.all(
             votations.map((v) =>
                 ctx.prisma.votation.update({
@@ -114,20 +115,36 @@ export const UpdateVotationIndexes = mutationField('updateVotationIndexes', {
                     data: {
                         index: v.index,
                     },
+                    select: {
+                        id: true,
+                        title: true,
+                        description: true,
+                        status: true,
+                        blankVotes: true,
+                        hiddenVotes: true,
+                        type: true,
+                        majorityThreshold: true,
+                        numberOfWinners: true,
+                        index: true,
+                        alternatives: true,
+                        meetingId: true,
+                    },
                 })
             )
         );
+        await pubsub.publish(`VOTATIONS_UPDATED_FOR_${meetingId}`, resolved);
         return resolved;
     },
 });
 
 export const UpdateVotationsMutation = mutationField('updateVotations', {
     type: list(Votation),
-    description: '',
+    description: 'Update votations belonging to a meeting.',
     args: {
+        meetingId: nonNull(stringArg()),
         votations: nonNull(list(nonNull(UpdateVotationInput))),
     },
-    resolve: async (_, { votations }, ctx) => {
+    resolve: async (_, { votations, meetingId }, ctx) => {
         const promises = [];
         const alternativePromises = [];
         for (const votation of votations) {
@@ -157,18 +174,32 @@ export const UpdateVotationsMutation = mutationField('updateVotations', {
                     data: {
                         title: votation.title,
                         description: votation.description,
-                        index: votation.index,
                         blankVotes: votation.blankVotes,
                         hiddenVotes: votation.hiddenVotes,
                         type: votation.type,
                         majorityThreshold: votation.majorityThreshold,
                         numberOfWinners: votation.numberOfWinners,
                     },
+                    select: {
+                        id: true,
+                        title: true,
+                        description: true,
+                        status: true,
+                        blankVotes: true,
+                        hiddenVotes: true,
+                        type: true,
+                        majorityThreshold: true,
+                        numberOfWinners: true,
+                        index: true,
+                        alternatives: true,
+                        meetingId: true,
+                    },
                 })
             );
         }
         await Promise.all(alternativePromises);
         const resolved = await Promise.all(promises);
+        await pubsub.publish(`VOTATIONS_UPDATED_FOR_${meetingId}`, resolved);
         return resolved;
     },
 });

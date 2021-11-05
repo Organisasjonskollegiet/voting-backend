@@ -34,7 +34,6 @@ export const Votation = objectType({
         t.nonNull.id('id');
         t.nonNull.string('title');
         t.string('description');
-        t.int('order');
         t.nonNull.field('status', { type: VotationStatus });
         t.nonNull.boolean('blankVotes');
         t.nonNull.boolean('hiddenVotes');

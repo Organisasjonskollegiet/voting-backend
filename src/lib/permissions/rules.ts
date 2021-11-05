@@ -121,6 +121,19 @@ export const isAdminOfVotationsByObjects = rule({ cache: 'strict' })(async (_, {
 });
 
 /**
+ * Rule: The votations provided belong to meeting provided
+ */
+export const votationsBelongToMeeting = rule({ cache: 'strict' })(async (_, { votations, meetingId }, ctx: Context) => {
+    let votationsBelongToMeeting = true;
+    for (const votation of votations) {
+        const votationFromDB = await ctx.prisma.votation.findUnique({ where: { id: votation.id } });
+        if (!votationFromDB) return false;
+        votationsBelongToMeeting = votationsBelongToMeeting && votationFromDB.meetingId === meetingId;
+    }
+    return votationsBelongToMeeting;
+});
+
+/**
  * Rule: The votations have status Upcoming
  */
 export const votationsAreUpcoming = rule({ cache: 'strict' })(async (_, { votations }, ctx: Context) => {

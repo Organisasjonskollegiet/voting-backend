@@ -119,13 +119,13 @@ type Mutation {
 
   """Update participants of a meeting."""
   updateParticipant(meetingId: String!, participant: ParticipantInput!): ParticipantOrInvite
-  updateVotationIndexes(votations: [UpdateVotationIndexInput!]!): [Votation]
+  updateVotationIndexes(meetingId: String!, votations: [UpdateVotationIndexInput!]!): [Votation]
 
   """"""
   updateVotationStatus(status: VotationStatus!, votationId: String!): UpdateVotationStatusResult
 
-  """"""
-  updateVotations(votations: [UpdateVotationInput!]!): [Votation]
+  """Update votations belonging to a meeting."""
+  updateVotations(meetingId: String!, votations: [UpdateVotationInput!]!): [Votation]
 }
 
 union MyReviewResult = NoReview | VotationReview
@@ -249,6 +249,9 @@ type Subscription {
   viewChanged: ViewState
   votationOpenedForMeeting(meetingId: String!): String
   votationStatusUpdated(id: String!): VotationStatusUpdatedResponse
+
+  """Returns the updated votations of a meeting."""
+  votationsUpdated(meetingId: String!): [VotationWithAlternative]
 }
 
 input UpdateMeetingInput {
@@ -328,7 +331,6 @@ type Votation {
   majorityThreshold: Int!
   meetingId: String!
   numberOfWinners: Int!
-  order: Int
   status: VotationStatus!
   title: String!
   type: VotationType!
@@ -364,6 +366,21 @@ enum VotationType {
   QUALIFIED
   SIMPLE
   STV
+}
+
+type VotationWithAlternative {
+  alternatives: [Alternative]
+  blankVotes: Boolean!
+  description: String
+  hiddenVotes: Boolean!
+  id: ID!
+  index: Int!
+  majorityThreshold: Int!
+  meetingId: String!
+  numberOfWinners: Int!
+  status: VotationStatus!
+  title: String!
+  type: VotationType!
 }
 
 type VotationWithWinner {

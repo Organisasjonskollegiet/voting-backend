@@ -1,8 +1,29 @@
-import { nonNull, stringArg, subscriptionField, objectType } from 'nexus';
+import { Votation as VotationDbType } from '@prisma/client';
+import { nonNull, stringArg, subscriptionField, objectType, list } from 'nexus';
 import { pubsub } from '../../lib/pubsub';
 import { NexusGenEnums } from '../../__generated__/nexus-typegen';
+import { VotationStatus, VotationType } from '../enums';
+import { Alternative, Votation } from './typedefs';
 
 type VotationStatus = NexusGenEnums['VotationStatus'];
+
+export const VotationWithAlternative = objectType({
+    name: 'VotationWithAlternative',
+    definition: (t) => {
+        t.nonNull.id('id');
+        t.nonNull.string('title');
+        t.string('description');
+        t.nonNull.field('status', { type: VotationStatus });
+        t.nonNull.boolean('blankVotes');
+        t.nonNull.boolean('hiddenVotes');
+        t.nonNull.field('type', { type: VotationType });
+        t.nonNull.int('numberOfWinners');
+        t.nonNull.int('majorityThreshold');
+        t.nonNull.int('index');
+        t.nonNull.string('meetingId');
+        t.list.field('alternatives', { type: Alternative });
+    },
+});
 
 export const VotationStatusUpdatedResponse = objectType({
     name: 'VotationStatusUpdatedResponse',
@@ -56,5 +77,19 @@ export const ReviewAdded = subscriptionField('reviewAdded', {
     },
     resolve: async (reviews: { approved: number; disapproved: number }, __, ctx) => {
         return reviews;
+    },
+});
+
+export const VotationsUpdated = subscriptionField('votationsUpdated', {
+    type: list(VotationWithAlternative),
+    description: 'Returns the updated votations of a meeting.',
+    args: {
+        meetingId: nonNull(stringArg()),
+    },
+    subscribe: async (_, { meetingId }, ctx) => {
+        return pubsub.asyncIterator([`VOTATIONS_UPDATED_FOR_${meetingId}`]);
+    },
+    resolve: async (votations: VotationDbType[], __, ___) => {
+        return votations;
     },
 });
