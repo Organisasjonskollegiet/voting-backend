@@ -29,8 +29,8 @@ declare global {
 }
 
 export interface NexusGenInputs {
-  AlternativeInput: { // input type
-    id: string; // String!
+  CreateAlternativeInput: { // input type
+    index: number; // Int!
     text: string; // String!
   }
   CreateMeetingInput: { // input type
@@ -40,7 +40,7 @@ export interface NexusGenInputs {
     title: string; // String!
   }
   CreateVotationInput: { // input type
-    alternatives?: string[] | null; // [String!]
+    alternatives?: NexusGenInputs['CreateAlternativeInput'][] | null; // [CreateAlternativeInput!]
     blankVotes: boolean; // Boolean!
     description?: string | null; // String
     hiddenVotes: boolean; // Boolean!
@@ -58,6 +58,11 @@ export interface NexusGenInputs {
   StvVoteAlternativeInput: { // input type
     alternativeId: string; // String!
     ranking: number; // Int!
+  }
+  UpdateAlternativeInput: { // input type
+    id: string; // String!
+    index: number; // Int!
+    text: string; // String!
   }
   UpdateMeetingInput: { // input type
     description?: string | null; // String
@@ -78,7 +83,7 @@ export interface NexusGenInputs {
     index: number; // Int!
   }
   UpdateVotationInput: { // input type
-    alternatives?: NexusGenInputs['AlternativeInput'][] | null; // [AlternativeInput!]
+    alternatives?: NexusGenInputs['UpdateAlternativeInput'][] | null; // [UpdateAlternativeInput!]
     blankVotes: boolean; // Boolean!
     description?: string | null; // String
     hiddenVotes: boolean; // Boolean!
@@ -111,11 +116,13 @@ export interface NexusGenScalars {
 export interface NexusGenObjects {
   Alternative: { // root type
     id: string; // ID!
+    index: number; // Int!
     text: string; // String!
     votationId: string; // String!
   }
   AlternativeResult: { // root type
     id: string; // ID!
+    index: number; // Int!
     isWinner: boolean; // Boolean!
     text: string; // String!
     votationId: string; // String!
@@ -125,6 +132,7 @@ export interface NexusGenObjects {
   }
   AlternativeWithWinner: { // root type
     id: string; // ID!
+    index: number; // Int!
     isWinner: boolean; // Boolean!
     text: string; // String!
   }
@@ -258,11 +266,13 @@ export type NexusGenAllTypes = NexusGenRootTypes & NexusGenScalars & NexusGenEnu
 export interface NexusGenFieldTypes {
   Alternative: { // field return type
     id: string; // ID!
+    index: number; // Int!
     text: string; // String!
     votationId: string; // String!
   }
   AlternativeResult: { // field return type
     id: string; // ID!
+    index: number; // Int!
     isWinner: boolean; // Boolean!
     text: string; // String!
     votationId: string; // String!
@@ -274,6 +284,7 @@ export interface NexusGenFieldTypes {
   }
   AlternativeWithWinner: { // field return type
     id: string; // ID!
+    index: number; // Int!
     isWinner: boolean; // Boolean!
     text: string; // String!
   }
@@ -449,11 +460,13 @@ export interface NexusGenFieldTypes {
 export interface NexusGenFieldTypeNames {
   Alternative: { // field return type name
     id: 'ID'
+    index: 'Int'
     text: 'String'
     votationId: 'String'
   }
   AlternativeResult: { // field return type name
     id: 'ID'
+    index: 'Int'
     isWinner: 'Boolean'
     text: 'String'
     votationId: 'String'
@@ -465,6 +478,7 @@ export interface NexusGenFieldTypeNames {
   }
   AlternativeWithWinner: { // field return type name
     id: 'ID'
+    index: 'Int'
     isWinner: 'Boolean'
     text: 'String'
   }

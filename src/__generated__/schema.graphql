@@ -4,17 +4,14 @@
 
 type Alternative {
   id: ID!
+  index: Int!
   text: String!
   votationId: String!
 }
 
-input AlternativeInput {
-  id: String!
-  text: String!
-}
-
 type AlternativeResult {
   id: ID!
+  index: Int!
   isWinner: Boolean!
   text: String!
   votationId: String!
@@ -31,7 +28,13 @@ type AlternativeRoundVoteCount {
 
 type AlternativeWithWinner {
   id: ID!
+  index: Int!
   isWinner: Boolean!
+  text: String!
+}
+
+input CreateAlternativeInput {
+  index: Int!
   text: String!
 }
 
@@ -43,7 +46,7 @@ input CreateMeetingInput {
 }
 
 input CreateVotationInput {
-  alternatives: [String!]
+  alternatives: [CreateAlternativeInput!]
   blankVotes: Boolean!
   description: String
   hiddenVotes: Boolean!
@@ -254,6 +257,12 @@ type Subscription {
   votationsUpdated(meetingId: String!): [VotationWithAlternative]
 }
 
+input UpdateAlternativeInput {
+  id: String!
+  index: Int!
+  text: String!
+}
+
 input UpdateMeetingInput {
   description: String
   id: String!
@@ -276,7 +285,7 @@ input UpdateVotationIndexInput {
 }
 
 input UpdateVotationInput {
-  alternatives: [AlternativeInput!]
+  alternatives: [UpdateAlternativeInput!]
   blankVotes: Boolean!
   description: String
   hiddenVotes: Boolean!

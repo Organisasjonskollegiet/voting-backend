@@ -3,7 +3,7 @@ import { nonNull, stringArg, subscriptionField, objectType, list } from 'nexus';
 import { pubsub } from '../../lib/pubsub';
 import { NexusGenEnums } from '../../__generated__/nexus-typegen';
 import { VotationStatus, VotationType } from '../enums';
-import { Alternative, Votation } from './typedefs';
+import { Alternative } from './typedefs';
 
 type VotationStatus = NexusGenEnums['VotationStatus'];
 
@@ -59,7 +59,7 @@ export const VotationStatusUpdated = subscriptionField('votationStatusUpdated', 
     args: {
         id: nonNull(stringArg()),
     },
-    subscribe: async (_, { id }, ctx) => {
+    subscribe: async (_, { id }, ___) => {
         return pubsub.asyncIterator([`VOTATION_STATUS_UPDATED_FOR_${id}`]);
     },
     resolve: async (status: { votationId: string; votationStatus: VotationStatus }, __, ___) => {
@@ -72,7 +72,7 @@ export const ReviewAdded = subscriptionField('reviewAdded', {
     args: {
         votationId: nonNull(stringArg()),
     },
-    subscribe: async (_, { votationId }, ctx) => {
+    subscribe: async (_, { votationId }, ___) => {
         return pubsub.asyncIterator([`REVIEW_ADDED_FOR_${votationId}`]);
     },
     resolve: async (reviews: { approved: number; disapproved: number }, __, ctx) => {
@@ -86,7 +86,7 @@ export const VotationsUpdated = subscriptionField('votationsUpdated', {
     args: {
         meetingId: nonNull(stringArg()),
     },
-    subscribe: async (_, { meetingId }, ctx) => {
+    subscribe: async (_, { meetingId }, ___) => {
         return pubsub.asyncIterator([`VOTATIONS_UPDATED_FOR_${meetingId}`]);
     },
     resolve: async (votations: VotationDbType[], __, ___) => {

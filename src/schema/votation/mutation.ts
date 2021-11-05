@@ -8,11 +8,20 @@ import { VotationStatusUpdatedResponse } from './subscriptions';
 import { boolean } from 'casual';
 import { getParticipantId } from './utils';
 
-export const AlternativeInput = inputObjectType({
-    name: 'AlternativeInput',
+export const UpdateAlternativeInput = inputObjectType({
+    name: 'UpdateAlternativeInput',
     definition(t) {
         t.nonNull.string('id');
         t.nonNull.string('text');
+        t.nonNull.int('index');
+    },
+});
+
+export const CreateAlternativeInput = inputObjectType({
+    name: 'CreateAlternativeInput',
+    definition(t) {
+        t.nonNull.string('text');
+        t.nonNull.int('index');
     },
 });
 
@@ -36,7 +45,7 @@ export const UpdateVotationInput = inputObjectType({
         t.nonNull.int('numberOfWinners');
         t.nonNull.int('majorityThreshold');
         t.nonNull.int('index');
-        t.list.nonNull.field('alternatives', { type: AlternativeInput });
+        t.list.nonNull.field('alternatives', { type: UpdateAlternativeInput });
     },
 });
 
@@ -51,7 +60,7 @@ export const CreateVotationInput = inputObjectType({
         t.nonNull.int('numberOfWinners');
         t.nonNull.int('majorityThreshold');
         t.nonNull.int('index');
-        t.list.nonNull.string('alternatives');
+        t.list.nonNull.field('alternatives', { type: CreateAlternativeInput });
     },
 });
 
@@ -72,6 +81,9 @@ export const CreateVotationsMutation = mutationField('createVotations', {
     resolve: async (_, { votations, meetingId }, ctx) => {
         const promises = [];
         for (const votation of votations) {
+            const alternatives = votation.alternatives
+                ? votation.alternatives.filter((alternative) => alternative.text.trim().length > 0)
+                : [];
             promises.push(
                 ctx.prisma.votation.create({
                     data: {
@@ -79,15 +91,7 @@ export const CreateVotationsMutation = mutationField('createVotations', {
                         meetingId,
                         alternatives: {
                             createMany: {
-                                data: votation.alternatives
-                                    ? votation.alternatives
-                                          .filter((text) => text.trim().length > 0)
-                                          .map((alternative) => {
-                                              return {
-                                                  text: alternative,
-                                              };
-                                          })
-                                    : [],
+                                data: alternatives,
                             },
                         },
                     },
@@ -158,6 +162,7 @@ export const UpdateVotationsMutation = mutationField('updateVotations', {
                             create: {
                                 text: alternative.text,
                                 votationId: votation.id,
+                                index: alternative.index,
                             },
                             update: {
                                 text: alternative.text,

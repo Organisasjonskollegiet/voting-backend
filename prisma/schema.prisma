@@ -127,6 +127,7 @@ model HasVoted {
 model Alternative {
   id         String   @id @default(uuid()) @db.Uuid
   text       String   @db.VarChar(120)
+  index      Int      @default(0)
   votationId String   @db.Uuid
   votation   Votation @relation(fields: [votationId], references: [id])
   isWinner   Boolean  @default(false)
