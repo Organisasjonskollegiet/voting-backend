@@ -11,7 +11,6 @@ export const ViewChanged = subscriptionField('viewChanged', {
     // on ...LOADING, on ...ENDED ---> vis dette
     resolve: (payload: ViewChangedPayload, __, ctx) => {
         const currentView = payload.viewState || 'LOADING';
-        console.log(`CHANGED VIEW TO ${currentView}`);
         return currentView;
     },
 });

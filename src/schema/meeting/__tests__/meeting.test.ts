@@ -754,7 +754,6 @@ it('should return the logged in participant', async () => {
             meetingId: meeting.id,
         }
     );
-    console.log(response);
     expect(response.myParticipant.role).toBe(Role.ADMIN);
     expect(response.myParticipant.isVotingEligible).toBe(true);
 });
