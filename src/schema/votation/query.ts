@@ -2,6 +2,7 @@ import { idArg, list, nonNull, queryField, stringArg } from 'nexus';
 import { Alternative, StvResult, Votation, VotationResults } from './typedefs';
 import { VotationStatus } from '@prisma/client';
 import { getParticipantId } from './utils';
+import { getVoteCount } from '.';
 
 export const GetVotationById = queryField('votationById', {
     type: Votation,
@@ -21,27 +22,7 @@ export const GetVoteCount = queryField('getVoteCount', {
         votationId: nonNull(stringArg()),
     },
     resolve: async (_, { votationId }, ctx) => {
-        const meeting = await ctx.prisma.meeting.findFirst({
-            where: {
-                votations: {
-                    some: {
-                        id: votationId,
-                    },
-                },
-            },
-        });
-        const votingEligibleCount = await ctx.prisma.participant.count({
-            where: {
-                meetingId: meeting?.id,
-                isVotingEligible: true,
-            },
-        });
-        const voteCount = await ctx.prisma.hasVoted.count({
-            where: {
-                votationId,
-            },
-        });
-        return { votingEligibleCount, voteCount };
+        return await getVoteCount(votationId, ctx);
     },
 });
 
