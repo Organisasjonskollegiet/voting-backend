@@ -133,6 +133,7 @@ union MyReviewResult = NoReview | VotationReview
 type NewVoteRegisteredResponse {
   votationId: String!
   voteCount: Int!
+  votingEligibleCount: Int!
 }
 
 type NoReview {
