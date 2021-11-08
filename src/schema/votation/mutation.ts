@@ -95,10 +95,25 @@ export const CreateVotationsMutation = mutationField('createVotations', {
                             },
                         },
                     },
+                    select: {
+                        id: true,
+                        title: true,
+                        description: true,
+                        status: true,
+                        blankVotes: true,
+                        hiddenVotes: true,
+                        type: true,
+                        majorityThreshold: true,
+                        numberOfWinners: true,
+                        index: true,
+                        alternatives: true,
+                        meetingId: true,
+                    },
                 })
             );
         }
         const resolved = await Promise.all(promises);
+        await pubsub.publish(`VOTATIONS_UPDATED_FOR_${meetingId}`, resolved);
         return resolved;
     },
 });
