@@ -99,6 +99,7 @@ export const CreateVotationsMutation = mutationField('createVotations', {
             );
         }
         const resolved = await Promise.all(promises);
+        await pubsub.publish(`VOTATIONS_UPDATED_FOR_${meetingId}`, resolved);
         return resolved;
     },
 });
