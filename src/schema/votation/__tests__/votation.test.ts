@@ -674,12 +674,12 @@ it('should delete votation successfully', async () => {
     await createAlternative(votation1.id, 'alternative');
     await ctx.client.request(
         gql`
-            mutation DeleteVotations($ids: [String!]!) {
-                deleteVotations(ids: $ids)
+            mutation DeleteVotation($votationId: String!) {
+                deleteVotation(votationId: $votationId)
             }
         `,
         {
-            ids: [votation1.id],
+            votationId: votation1.id,
         }
     );
     const numberOfVotationsWithId1 = await ctx.prisma.votation.count({ where: { id: votation1.id } });
@@ -712,20 +712,18 @@ it('should not delete alternative successfully', async () => {
 });
 
 it('should not delete votation successfully', async () => {
-    const meeting1 = await createMeeting(ctx.userId, Role.COUNTER, true);
-    const meeting2 = await createMeeting(ctx.userId, Role.ADMIN, true);
-    const votation1 = await createVotation(meeting1.id, VotationStatus.UPCOMING, 1);
-    const votation2 = await createVotation(meeting2.id, VotationStatus.UPCOMING, 1);
-    await createAlternative(votation1.id, alternative1Text);
+    const meeting = await createMeeting(ctx.userId, Role.COUNTER, true);
+    const votation = await createVotation(meeting.id, VotationStatus.UPCOMING, 1);
+    await createAlternative(votation.id, alternative1Text);
     try {
         await ctx.client.request(
             gql`
-                mutation DeleteVotations($ids: [String!]!) {
-                    deleteVotations(ids: $ids)
+                mutation DeleteVotation($votationId: String!) {
+                    deleteVotation(votationId: $votationId)
                 }
             `,
             {
-                ids: [votation1.id, votation2.id],
+                votationId: votation.id,
             }
         );
         expect(false).toBeTruthy();
