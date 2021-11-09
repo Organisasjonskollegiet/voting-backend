@@ -216,32 +216,24 @@ export const UpdateVotationStatusMutation = mutationField('updateVotationStatus'
     },
 });
 
-export const DeleteVotationsMutation = mutationField('deleteVotations', {
-    type: list('String'),
+export const DeleteVotationMutation = mutationField('deleteVotation', {
+    type: 'String',
     description: '',
     args: {
-        ids: nonNull(list(nonNull(stringArg()))),
+        votationId: nonNull(stringArg()),
     },
-    resolve: async (_, { ids }, ctx) => {
-        const promises = [];
-        for (const id of ids) {
-            promises.push(
-                new Promise(async (resolve) => {
-                    await ctx.prisma.votationResultReview.deleteMany({ where: { votationId: id } });
-                    await ctx.prisma.hasVoted.deleteMany({ where: { votationId: id } });
-                    await ctx.prisma.vote.deleteMany({ where: { alternative: { votationId: id } } });
-                    await ctx.prisma.alternative.deleteMany({ where: { votationId: id } });
-                    const votation = await ctx.prisma.votation.delete({
-                        where: {
-                            id,
-                        },
-                    });
-                    resolve(votation.id);
-                })
-            );
-        }
-        const resolved = (await Promise.all(promises)) as string[];
-        return resolved;
+    resolve: async (_, { votationId }, ctx) => {
+        await ctx.prisma.votationResultReview.deleteMany({ where: { votationId } });
+        await ctx.prisma.hasVoted.deleteMany({ where: { votationId } });
+        await ctx.prisma.vote.deleteMany({ where: { alternative: { votationId } } });
+        await ctx.prisma.alternative.deleteMany({ where: { votationId } });
+        const votation = await ctx.prisma.votation.delete({
+            where: {
+                id: votationId,
+            },
+        });
+        await pubsub.publish(`VOTATION_DELETED_${votation.meetingId}`, votationId);
+        return votationId;
     },
 });
 

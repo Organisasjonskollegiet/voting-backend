@@ -109,7 +109,7 @@ type Mutation {
   deleteParticipants(emails: [String!]!, meetingId: String!): [String]
 
   """"""
-  deleteVotations(ids: [String!]!): [String]
+  deleteVotation(votationId: String!): String
 
   """Approve or disapprove a votation result"""
   reviewVotation(approved: Boolean!, votationId: String!): String
@@ -239,6 +239,7 @@ type Subscription {
   newVoteRegistered(votationId: String!): NewVoteRegisteredResponse
   reviewAdded(votationId: String!): ReviewResult
   viewChanged: ViewState
+  votationDeleted(meetingId: String!): String
   votationOpenedForMeeting(meetingId: String!): String
   votationStatusUpdated(id: String!): VotationStatusUpdatedResponse
 }

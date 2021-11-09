@@ -1,4 +1,4 @@
-import { Role, VotationStatus } from '.prisma/client';
+import { Role, Votation, VotationStatus } from '.prisma/client';
 import { AuthenticationError } from 'apollo-server-express';
 import { rule } from 'graphql-shield';
 import { Context } from '../../context';
@@ -129,21 +129,6 @@ export const votationsAreUpcoming = rule({ cache: 'strict' })(async (_, { votati
         if (!votationFromDB || votationFromDB.status !== VotationStatus.UPCOMING) return false;
     }
     return true;
-});
-
-/**
- * Rule: The user is Admin of all the meetings connected to the votations whose id is in the array
- */
-
-export const isAdminOfVotationsById = rule({ cache: 'strict' })(async (_, { ids }, ctx: Context) => {
-    let isAdminOfAllVotations = true;
-    for (const id of ids) {
-        const votationFromDB = await ctx.prisma.votation.findUnique({ where: { id } });
-        if (!votationFromDB) return false;
-        isAdminOfAllVotations =
-            isAdminOfAllVotations && (await checkIsRoleOfMeetingId(votationFromDB.meetingId, Role.ADMIN, ctx));
-    }
-    return isAdminOfAllVotations;
 });
 
 /**

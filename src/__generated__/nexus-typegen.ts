@@ -286,7 +286,7 @@ export interface NexusGenFieldTypes {
     deleteAlternatives: Array<string | null> | null; // [String]
     deleteMeeting: NexusGenRootTypes['Meeting'] | null; // Meeting
     deleteParticipants: Array<string | null> | null; // [String]
-    deleteVotations: Array<string | null> | null; // [String]
+    deleteVotation: string | null; // String
     reviewVotation: string | null; // String
     updateMeeting: NexusGenRootTypes['Meeting'] | null; // Meeting
     updateParticipant: NexusGenRootTypes['ParticipantOrInvite'] | null; // ParticipantOrInvite
@@ -352,6 +352,7 @@ export interface NexusGenFieldTypes {
     newVoteRegistered: NexusGenRootTypes['NewVoteRegisteredResponse'] | null; // NewVoteRegisteredResponse
     reviewAdded: NexusGenRootTypes['ReviewResult'] | null; // ReviewResult
     viewChanged: NexusGenEnums['ViewState'] | null; // ViewState
+    votationDeleted: string | null; // String
     votationOpenedForMeeting: string | null; // String
     votationStatusUpdated: NexusGenRootTypes['VotationStatusUpdatedResponse'] | null; // VotationStatusUpdatedResponse
   }
@@ -458,7 +459,7 @@ export interface NexusGenFieldTypeNames {
     deleteAlternatives: 'String'
     deleteMeeting: 'Meeting'
     deleteParticipants: 'String'
-    deleteVotations: 'String'
+    deleteVotation: 'String'
     reviewVotation: 'String'
     updateMeeting: 'Meeting'
     updateParticipant: 'ParticipantOrInvite'
@@ -524,6 +525,7 @@ export interface NexusGenFieldTypeNames {
     newVoteRegistered: 'NewVoteRegisteredResponse'
     reviewAdded: 'ReviewResult'
     viewChanged: 'ViewState'
+    votationDeleted: 'String'
     votationOpenedForMeeting: 'String'
     votationStatusUpdated: 'VotationStatusUpdatedResponse'
   }
@@ -619,8 +621,8 @@ export interface NexusGenArgTypes {
       emails: string[]; // [String!]!
       meetingId: string; // String!
     }
-    deleteVotations: { // args
-      ids: string[]; // [String!]!
+    deleteVotation: { // args
+      votationId: string; // String!
     }
     reviewVotation: { // args
       approved: boolean; // Boolean!
@@ -685,6 +687,9 @@ export interface NexusGenArgTypes {
     }
     reviewAdded: { // args
       votationId: string; // String!
+    }
+    votationDeleted: { // args
+      meetingId: string; // String!
     }
     votationOpenedForMeeting: { // args
       meetingId: string; // String!
