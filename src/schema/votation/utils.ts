@@ -408,3 +408,28 @@ export const getParticipantId = async (votationId: string, ctx: Context) => {
     if (!participant) throw new Error('User is not participant of votation');
     return participant.id;
 };
+
+export const getVoteCount = async (votationId: string, ctx: Context) => {
+    const hasVoted = await ctx.prisma.hasVoted.findMany({ where: { votationId: votationId }, select: { user: true } });
+    const participants = await ctx.prisma.participant.findMany({
+        where: {
+            meeting: {
+                votations: {
+                    some: { id: votationId },
+                },
+            },
+            isVotingEligible: true,
+        },
+        select: {
+            user: true,
+        },
+    });
+    const votingEligibleParticipantsUserIds = participants.map((p) => p.user.id);
+    // Users that has voted, but where their votingEligibility has been removed afterwards
+    const hasVotedAndNotVotingEligible = hasVoted.filter((h) => !votingEligibleParticipantsUserIds.includes(h.user.id));
+    return {
+        votationId,
+        voteCount: hasVoted.length,
+        votingEligibleCount: hasVotedAndNotVotingEligible.length + participants.length,
+    };
+};

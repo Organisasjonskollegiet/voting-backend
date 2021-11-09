@@ -143,6 +143,7 @@ export interface NexusGenObjects {
   NewVoteRegisteredResponse: { // root type
     votationId: string; // String!
     voteCount: number; // Int!
+    votingEligibleCount: number; // Int!
   }
   NoReview: { // root type
     message: string; // String!
@@ -300,6 +301,7 @@ export interface NexusGenFieldTypes {
   NewVoteRegisteredResponse: { // field return type
     votationId: string; // String!
     voteCount: number; // Int!
+    votingEligibleCount: number; // Int!
   }
   NoReview: { // field return type
     message: string; // String!
@@ -477,6 +479,7 @@ export interface NexusGenFieldTypeNames {
   NewVoteRegisteredResponse: { // field return type name
     votationId: 'String'
     voteCount: 'Int'
+    votingEligibleCount: 'Int'
   }
   NoReview: { // field return type name
     message: 'String'

@@ -17,6 +17,7 @@ export const NewVoteRegisteredResponse = objectType({
     definition: (t) => {
         t.nonNull.string('votationId');
         t.nonNull.int('voteCount');
+        t.nonNull.int('votingEligibleCount');
     },
 });
 
@@ -28,7 +29,7 @@ export const NewVoteRegistered = subscriptionField('newVoteRegistered', {
     subscribe: async (_, { votationId }, ___) => {
         return pubsub.asyncIterator([`NEW_VOTE_REGISTERED_FOR_${votationId}`]);
     },
-    resolve: async (voteCount: { votationId: string; voteCount: number }, __, ___) => {
+    resolve: async (voteCount: { votationId: string; voteCount: number; votingEligibleCount: number }, __, ___) => {
         return voteCount;
     },
 });
