@@ -196,9 +196,6 @@ export interface NexusGenObjects {
   UserNotFoundError: { // root type
     message: string; // String!
   }
-  ViewChangedPayload: { // root type
-    viewState: NexusGenEnums['ViewState']; // ViewState!
-  }
   Votation: { // root type
     blankVotes: boolean; // Boolean!
     description?: string | null; // String
@@ -308,7 +305,6 @@ export interface NexusGenFieldTypes {
     castBlankVote: string | null; // String
     castStvVote: string | null; // String
     castVote: NexusGenRootTypes['Vote'] | null; // Vote
-    changeView: NexusGenEnums['ViewState'] | null; // ViewState
     createMeeting: NexusGenRootTypes['Meeting'] | null; // Meeting
     createVotations: Array<NexusGenRootTypes['Votation'] | null> | null; // [Votation]
     deleteAlternatives: Array<string | null> | null; // [String]
@@ -385,7 +381,6 @@ export interface NexusGenFieldTypes {
     newVoteRegistered: NexusGenRootTypes['NewVoteRegisteredResponse'] | null; // NewVoteRegisteredResponse
     participantUpdated: NexusGenRootTypes['ParticipantUpdatedResponse'] | null; // ParticipantUpdatedResponse
     reviewAdded: NexusGenRootTypes['ReviewResult'] | null; // ReviewResult
-    viewChanged: NexusGenEnums['ViewState'] | null; // ViewState
     votationDeleted: string | null; // String
     votationOpenedForMeeting: string | null; // String
     votationStatusUpdated: NexusGenRootTypes['VotationStatusUpdatedResponse'] | null; // VotationStatusUpdatedResponse
@@ -398,9 +393,6 @@ export interface NexusGenFieldTypes {
   }
   UserNotFoundError: { // field return type
     message: string; // String!
-  }
-  ViewChangedPayload: { // field return type
-    viewState: NexusGenEnums['ViewState']; // ViewState!
   }
   Votation: { // field return type
     alternatives: Array<NexusGenRootTypes['Alternative'] | null> | null; // [Alternative]
@@ -504,7 +496,6 @@ export interface NexusGenFieldTypeNames {
     castBlankVote: 'String'
     castStvVote: 'String'
     castVote: 'Vote'
-    changeView: 'ViewState'
     createMeeting: 'Meeting'
     createVotations: 'Votation'
     deleteAlternatives: 'String'
@@ -581,7 +572,6 @@ export interface NexusGenFieldTypeNames {
     newVoteRegistered: 'NewVoteRegisteredResponse'
     participantUpdated: 'ParticipantUpdatedResponse'
     reviewAdded: 'ReviewResult'
-    viewChanged: 'ViewState'
     votationDeleted: 'String'
     votationOpenedForMeeting: 'String'
     votationStatusUpdated: 'VotationStatusUpdatedResponse'
@@ -594,9 +584,6 @@ export interface NexusGenFieldTypeNames {
   }
   UserNotFoundError: { // field return type name
     message: 'String'
-  }
-  ViewChangedPayload: { // field return type name
-    viewState: 'ViewState'
   }
   Votation: { // field return type name
     alternatives: 'Alternative'
@@ -671,9 +658,6 @@ export interface NexusGenArgTypes {
     }
     castVote: { // args
       alternativeId: string; // String!
-    }
-    changeView: { // args
-      state: NexusGenEnums['ViewState']; // ViewState!
     }
     createMeeting: { // args
       meeting: NexusGenInputs['CreateMeetingInput']; // CreateMeetingInput!

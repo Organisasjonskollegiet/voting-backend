@@ -96,7 +96,6 @@ type Mutation {
   castBlankVote(votationId: String!): String
   castStvVote(alternatives: [StvVoteAlternativeInput!]!, votationId: String!): String
   castVote(alternativeId: String!): Vote
-  changeView(state: ViewState!): ViewState
 
   """"""
   createMeeting(meeting: CreateMeetingInput!): Meeting
@@ -250,7 +249,6 @@ type Subscription {
   newVoteRegistered(votationId: String!): NewVoteRegisteredResponse
   participantUpdated(meetingId: String!, userId: String!): ParticipantUpdatedResponse
   reviewAdded(votationId: String!): ReviewResult
-  viewChanged: ViewState
   votationDeleted(meetingId: String!): String
   votationOpenedForMeeting(meetingId: String!): String
   votationStatusUpdated(id: String!): VotationStatusUpdatedResponse
@@ -309,11 +307,6 @@ type User {
 
 type UserNotFoundError {
   message: String!
-}
-
-"""The payload of viewChanged subscription"""
-type ViewChangedPayload {
-  viewState: ViewState!
 }
 
 """
