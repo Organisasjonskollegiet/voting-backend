@@ -408,8 +408,6 @@ it('should update votations successfully', async () => {
             id: votation1.id,
         },
     });
-    console.log('1', votation1Updated);
-    console.log('2', variables.votations[0]);
     const alternative1Updated = await ctx.prisma.alternative.findUnique({
         where: {
             id: alternative1.id,
