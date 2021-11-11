@@ -96,12 +96,13 @@ const createVotation = async (
     });
 };
 
-const createAlternative = async (votationId: string, text: string, isWinner?: boolean) => {
+const createAlternative = async (votationId: string, text: string, isWinner?: boolean, index?: number) => {
     return ctx.prisma.alternative.create({
         data: {
             text,
             votationId,
             isWinner,
+            index,
         },
     });
 };
@@ -257,7 +258,10 @@ it('should create votations successfully', async () => {
                 type: VotationType.SIMPLE,
                 majorityThreshold: 66,
                 index: 1,
-                alternatives: ['alternative1', 'alternative2'],
+                alternatives: [
+                    { text: 'alternative1', index: 0 },
+                    { text: 'alternative2', index: 1 },
+                ],
             },
             {
                 ...staticVotationData,
@@ -334,38 +338,44 @@ it('should update votations successfully', async () => {
     const alternative3 = await createAlternative(votation2.id, 'alternative3');
     const alternative4 = await createAlternative(votation2.id, 'alternative4');
     const variables = {
+        meetingId: meeting.id,
         votations: [
             {
                 id: votation1.id,
                 ...updatedStaticVotationData,
-                index: 2,
+                index: 1,
                 alternatives: [
                     {
                         id: alternative1.id,
                         text: alternative1UpdatedText,
+                        index: 0,
                     },
                     {
                         id: alternative2.id,
                         text: alternative2UpdatedText,
+                        index: 1,
                     },
                 ],
             },
             {
                 id: votation2.id,
                 ...updatedStaticVotationData,
-                index: 3,
+                index: 2,
                 alternatives: [
                     {
                         id: alternative3.id,
                         text: alternative3UpdatedText,
+                        index: 0,
                     },
                     {
                         id: alternative4.id,
                         text: alternative4UpdatedText,
+                        index: 1,
                     },
                     {
                         id: uuid,
                         text: 'alternative5',
+                        index: 2,
                     },
                 ],
             },
@@ -373,8 +383,8 @@ it('should update votations successfully', async () => {
     };
     await ctx.client.request(
         gql`
-            mutation UpdateVotations($votations: [UpdateVotationInput!]!) {
-                updateVotations(votations: $votations) {
+            mutation UpdateVotations($votations: [UpdateVotationInput!]!, $meetingId: String!) {
+                updateVotations(votations: $votations, meetingId: $meetingId) {
                     id
                     title
                     description
@@ -398,6 +408,8 @@ it('should update votations successfully', async () => {
             id: votation1.id,
         },
     });
+    console.log('1', votation1Updated);
+    console.log('2', variables.votations[0]);
     const alternative1Updated = await ctx.prisma.alternative.findUnique({
         where: {
             id: alternative1.id,
@@ -436,6 +448,7 @@ it('should not update votations successfully', async () => {
     const alternative3 = await createAlternative(votation1.id, 'alternative3');
     const alternative4 = await createAlternative(votation1.id, 'alternative4');
     const variables = {
+        meetingId: meeting.id,
         votations: [
             {
                 id: votation1.id,
@@ -445,10 +458,12 @@ it('should not update votations successfully', async () => {
                     {
                         id: alternative1.id,
                         text: alternative1UpdatedText,
+                        index: 0,
                     },
                     {
                         id: alternative2.id,
                         text: alternative2UpdatedText,
+                        index: 1,
                     },
                 ],
             },
@@ -460,14 +475,17 @@ it('should not update votations successfully', async () => {
                     {
                         id: alternative3.id,
                         text: alternative3UpdatedText,
+                        index: 0,
                     },
                     {
                         id: alternative4.id,
                         text: alternative4UpdatedText,
+                        index: 1,
                     },
                     {
                         id: uuid,
                         text: 'alternative5',
+                        index: 2,
                     },
                 ],
             },
@@ -476,8 +494,8 @@ it('should not update votations successfully', async () => {
     try {
         await ctx.client.request(
             gql`
-                mutation UpdateVotations($votations: [UpdateVotationInput!]!) {
-                    updateVotations(votations: $votations) {
+                mutation UpdateVotations($votations: [UpdateVotationInput!]!, $meetingId: String!) {
+                    updateVotations(votations: $votations, meetingId: $meetingId) {
                         id
                         title
                         description
@@ -1023,6 +1041,7 @@ it('should return alternative1 as winner with simple majority', async () => {
                     alternatives {
                         id
                         text
+                        index
                         votationId
                         isWinner
                         votes
@@ -1076,6 +1095,7 @@ it('should return no winner with simple majority when the alternatives has equal
                     alternatives {
                         id
                         text
+                        index
                         votationId
                         isWinner
                         votes
@@ -1132,6 +1152,7 @@ it('should return alternative1 as winner with qualified over 66%', async () => {
                     alternatives {
                         id
                         text
+                        index
                         votationId
                         isWinner
                         votes
@@ -1188,6 +1209,7 @@ it('should return no winner with qualified over 67%', async () => {
                     alternatives {
                         id
                         text
+                        index
                         votationId
                         isWinner
                         votes
@@ -1475,14 +1497,15 @@ it('should update index successfully', async () => {
     const votation2 = await createVotation(meeting.id, VotationStatus.UPCOMING, 2);
     const response = await ctx.client.request(
         gql`
-            mutation UpdateVotationIndexes($votations: [UpdateVotationIndexInput!]!) {
-                updateVotationIndexes(votations: $votations) {
+            mutation UpdateVotationIndexes($votations: [UpdateVotationIndexInput!]!, $meetingId: String!) {
+                updateVotationIndexes(votations: $votations, meetingId: $meetingId) {
                     id
                     index
                 }
             }
         `,
         {
+            meetingId: meeting.id,
             votations: [
                 {
                     id: votation1.id,
@@ -1509,14 +1532,15 @@ it('should return error trying to update index of open votation', async () => {
     try {
         await ctx.client.request(
             gql`
-                mutation UpdateVotationIndexes($votations: [UpdateVotationIndexInput!]!) {
-                    updateVotationIndexes(votations: $votations) {
+                mutation UpdateVotationIndexes($votations: [UpdateVotationIndexInput!]!, $meetingId: String!) {
+                    updateVotationIndexes(votations: $votations, meetingId: $meetingId) {
                         id
                         index
                     }
                 }
             `,
             {
+                meetingId: meeting.id,
                 votations: [
                     {
                         id: votation1.id,
@@ -1537,14 +1561,15 @@ it('should return error trying to update index of open votation', async () => {
     try {
         await ctx.client.request(
             gql`
-                mutation UpdateVotationIndexes($votations: [UpdateVotationIndexInput!]!) {
-                    updateVotationIndexes(votations: $votations) {
+                mutation UpdateVotationIndexes($votations: [UpdateVotationIndexInput!]!, $meetingId: String!) {
+                    updateVotationIndexes(votations: $votations, meetingId: $meetingId) {
                         id
                         index
                     }
                 }
             `,
             {
+                meetingId: meeting.id,
                 votations: [
                     {
                         id: votation1.id,

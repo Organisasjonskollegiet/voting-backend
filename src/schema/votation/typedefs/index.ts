@@ -34,7 +34,6 @@ export const Votation = objectType({
         t.nonNull.id('id');
         t.nonNull.string('title');
         t.string('description');
-        t.int('order');
         t.nonNull.field('status', { type: VotationStatus });
         t.nonNull.boolean('blankVotes');
         t.nonNull.boolean('hiddenVotes');
@@ -74,6 +73,7 @@ export const Alternative = objectType({
     definition: (t) => {
         t.nonNull.id('id');
         t.nonNull.string('text');
+        t.nonNull.int('index');
         t.nonNull.string('votationId');
     },
 });
@@ -83,6 +83,7 @@ export const AlternativeResult = objectType({
     definition: (t) => {
         t.nonNull.id('id');
         t.nonNull.string('text');
+        t.nonNull.int('index');
         t.nonNull.string('votationId');
         // must only be visible to participants when votation status is published_result
         t.nonNull.boolean('isWinner');
@@ -102,6 +103,7 @@ export const AlternativeWithWinner = objectType({
     definition: (t) => {
         t.nonNull.id('id');
         t.nonNull.string('text');
+        t.nonNull.int('index');
         t.nonNull.boolean('isWinner');
     },
 });

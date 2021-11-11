@@ -4,17 +4,14 @@
 
 type Alternative {
   id: ID!
+  index: Int!
   text: String!
   votationId: String!
 }
 
-input AlternativeInput {
-  id: String!
-  text: String!
-}
-
 type AlternativeResult {
   id: ID!
+  index: Int!
   isWinner: Boolean!
   text: String!
   votationId: String!
@@ -31,7 +28,13 @@ type AlternativeRoundVoteCount {
 
 type AlternativeWithWinner {
   id: ID!
+  index: Int!
   isWinner: Boolean!
+  text: String!
+}
+
+input CreateAlternativeInput {
+  index: Int!
   text: String!
 }
 
@@ -43,7 +46,7 @@ input CreateMeetingInput {
 }
 
 input CreateVotationInput {
-  alternatives: [String!]
+  alternatives: [CreateAlternativeInput!]
   blankVotes: Boolean!
   description: String
   hiddenVotes: Boolean!
@@ -93,7 +96,6 @@ type Mutation {
   castBlankVote(votationId: String!): String
   castStvVote(alternatives: [StvVoteAlternativeInput!]!, votationId: String!): String
   castVote(alternativeId: String!): Vote
-  changeView(state: ViewState!): ViewState
 
   """"""
   createMeeting(meeting: CreateMeetingInput!): Meeting
@@ -119,13 +121,13 @@ type Mutation {
 
   """Update participants of a meeting."""
   updateParticipant(meetingId: String!, participant: ParticipantInput!): ParticipantOrInvite
-  updateVotationIndexes(votations: [UpdateVotationIndexInput!]!): [Votation]
+  updateVotationIndexes(meetingId: String!, votations: [UpdateVotationIndexInput!]!): [Votation]
 
   """"""
   updateVotationStatus(status: VotationStatus!, votationId: String!): UpdateVotationStatusResult
 
-  """"""
-  updateVotations(votations: [UpdateVotationInput!]!): [Votation]
+  """Update votations belonging to a meeting."""
+  updateVotations(meetingId: String!, votations: [UpdateVotationInput!]!): [Votation]
 }
 
 union MyReviewResult = NoReview | VotationReview
@@ -247,10 +249,18 @@ type Subscription {
   newVoteRegistered(votationId: String!): NewVoteRegisteredResponse
   participantUpdated(meetingId: String!, userId: String!): ParticipantUpdatedResponse
   reviewAdded(votationId: String!): ReviewResult
-  viewChanged: ViewState
   votationDeleted(meetingId: String!): String
   votationOpenedForMeeting(meetingId: String!): String
   votationStatusUpdated(id: String!): VotationStatusUpdatedResponse
+
+  """Returns the updated votations of a meeting."""
+  votationsUpdated(meetingId: String!): [VotationWithAlternative]
+}
+
+input UpdateAlternativeInput {
+  id: String!
+  index: Int!
+  text: String!
 }
 
 input UpdateMeetingInput {
@@ -275,7 +285,7 @@ input UpdateVotationIndexInput {
 }
 
 input UpdateVotationInput {
-  alternatives: [AlternativeInput!]
+  alternatives: [UpdateAlternativeInput!]
   blankVotes: Boolean!
   description: String
   hiddenVotes: Boolean!
@@ -297,11 +307,6 @@ type User {
 
 type UserNotFoundError {
   message: String!
-}
-
-"""The payload of viewChanged subscription"""
-type ViewChangedPayload {
-  viewState: ViewState!
 }
 
 """
@@ -330,7 +335,6 @@ type Votation {
   majorityThreshold: Int!
   meetingId: String!
   numberOfWinners: Int!
-  order: Int
   status: VotationStatus!
   title: String!
   type: VotationType!
@@ -366,6 +370,21 @@ enum VotationType {
   QUALIFIED
   SIMPLE
   STV
+}
+
+type VotationWithAlternative {
+  alternatives: [Alternative]
+  blankVotes: Boolean!
+  description: String
+  hiddenVotes: Boolean!
+  id: ID!
+  index: Int!
+  majorityThreshold: Int!
+  meetingId: String!
+  numberOfWinners: Int!
+  status: VotationStatus!
+  title: String!
+  type: VotationType!
 }
 
 type VotationWithWinner {
