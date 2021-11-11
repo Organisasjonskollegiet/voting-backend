@@ -10,7 +10,7 @@ export const ParticipantUpdatedResponse = objectType({
     },
 });
 
-export const ViewChanged = subscriptionField('votationOpenedForMeeting', {
+export const VotationOpenedForMeeting = subscriptionField('votationOpenedForMeeting', {
     type: 'String',
     args: {
         meetingId: nonNull(stringArg()),

@@ -99,7 +99,6 @@ export interface NexusGenInputs {
 export interface NexusGenEnums {
   MeetingStatus: "ENDED" | "ONGOING" | "UPCOMING"
   Role: "ADMIN" | "COUNTER" | "PARTICIPANT"
-  ViewState: "CLOSED" | "ENDED" | "LOADING" | "ONGOING"
   VotationStatus: "CHECKING_RESULT" | "INVALID" | "OPEN" | "PUBLISHED_RESULT" | "UPCOMING"
   VotationType: "QUALIFIED" | "SIMPLE" | "STV"
 }

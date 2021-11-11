@@ -309,21 +309,6 @@ type UserNotFoundError {
   message: String!
 }
 
-"""
-
-        LOADING: When the votation is loading for a new votation,
-        ONGOING: When the Votation is in process, 
-        CLOSED: When the votation has closed and no new votes are allowed,
-        ENDED: When the votation has ended, the result will be announced and then switch to LOADING
-        
-"""
-enum ViewState {
-  CLOSED
-  ENDED
-  LOADING
-  ONGOING
-}
-
 type Votation {
   alternatives: [Alternative]
   blankVotes: Boolean!
