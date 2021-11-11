@@ -16,10 +16,10 @@
     "generate": "prisma generate",
     "nexus-generate": "ts-node --transpile-only src/schema/index.ts",
     "populatedb": "ts-node-dev --transpile-only --no-notify src/utils/populatedb",
-    "migrate:db" : "prisma migrate deploy"
+    "migrate:db": "prisma migrate deploy"
   },
   "dependencies": {
-    "@prisma/client": "^2.19.0",
+    "@prisma/client": "^3.4.2",
     "@types/ioredis": "^4.27.4",
     "apollo-server-express": "2.22.1",
     "axios": "^0.21.1",
@@ -61,7 +61,7 @@
     "get-port": "^5.1.1",
     "graphql-request": "^3.4.0",
     "prettier": "^2.2.1",
-    "prisma": "^2.19.0",
+    "prisma": "^3.4.2",
     "ts-jest": "^26.5.4",
     "ts-node-dev": "^1.1.6",
     "typescript": "^4.2.3"
