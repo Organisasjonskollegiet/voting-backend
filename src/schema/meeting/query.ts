@@ -68,3 +68,30 @@ export const GetParticipants = queryField('participants', {
         ];
     },
 });
+
+export const GetMyParticipant = queryField('myParticipant', {
+    type: ParticipantOrInvite,
+    description: 'Return participant belonging to the user for the meeting specified.',
+    args: {
+        meetingId: nonNull(stringArg()),
+    },
+    resolve: async (_, { meetingId }, ctx) => {
+        const participant = await ctx.prisma.participant.findUnique({
+            where: {
+                userId_meetingId: { userId: ctx.userId, meetingId },
+            },
+            select: {
+                role: true,
+                isVotingEligible: true,
+                user: true,
+            },
+        });
+        if (!participant) throw new Error('Not participant of meeting');
+        return {
+            email: participant.user.email,
+            role: participant.role,
+            isVotingEligible: participant.isVotingEligible,
+            userExists: true,
+        };
+    },
+});

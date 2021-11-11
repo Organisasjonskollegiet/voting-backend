@@ -162,6 +162,11 @@ type ParticipantOrInvite {
   role: Role!
 }
 
+type ParticipantUpdatedResponse {
+  isVotingEligible: Boolean!
+  role: Role!
+}
+
 type Query {
   """"""
   getMyReview(votationId: String!): MyReviewResult
@@ -187,6 +192,9 @@ type Query {
 
   """Find meetings you are participating in"""
   meetings: [Meeting]!
+
+  """Return participant belonging to the user for the meeting specified."""
+  myParticipant(meetingId: String!): ParticipantOrInvite
 
   """
   Return relevant information about invites and participants connected to meeting
@@ -237,6 +245,7 @@ input StvVoteAlternativeInput {
 
 type Subscription {
   newVoteRegistered(votationId: String!): NewVoteRegisteredResponse
+  participantUpdated(meetingId: String!, userId: String!): ParticipantUpdatedResponse
   reviewAdded(votationId: String!): ReviewResult
   viewChanged: ViewState
   votationDeleted(meetingId: String!): String

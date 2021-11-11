@@ -4,6 +4,7 @@ import { Role, MeetingStatus } from '.prisma/client';
 import casual from 'casual';
 import { CreateMeetingInput } from '../mutation';
 import { prisma } from '@prisma/client';
+import { queryField } from 'nexus';
 const ctx = createTestContext();
 
 interface StaticMeetingDataType {
@@ -723,6 +724,49 @@ it('should return not Authorised', async () => {
                 query GetParticipants($meetingId: String!) {
                     participants(meetingId: $meetingId) {
                         email
+                        role
+                        isVotingEligible
+                    }
+                }
+            `,
+            {
+                meetingId: meeting.id,
+            }
+        );
+        expect(false).toBeTruthy();
+    } catch (error) {
+        expect(error.message).toContain('Not Authorised!');
+    }
+});
+
+it('should return the logged in participant', async () => {
+    const meeting = await createMeeting(ctx.userId, Role.ADMIN);
+    const response = await ctx.client.request(
+        gql`
+            query GetParticipant($meetingId: String!) {
+                myParticipant(meetingId: $meetingId) {
+                    role
+                    isVotingEligible
+                }
+            }
+        `,
+        {
+            meetingId: meeting.id,
+        }
+    );
+    console.log(response);
+    expect(response.myParticipant.role).toBe(Role.ADMIN);
+    expect(response.myParticipant.isVotingEligible).toBe(true);
+});
+
+it('should not authorised trying to get my participant if user is not participant', async () => {
+    const user = await createUser();
+    const meeting = await createMeeting(user.id, Role.ADMIN);
+    try {
+        await ctx.client.request(
+            gql`
+                query GetParticipant($meetingId: String!) {
+                    myParticipant(meetingId: $meetingId) {
                         role
                         isVotingEligible
                     }
