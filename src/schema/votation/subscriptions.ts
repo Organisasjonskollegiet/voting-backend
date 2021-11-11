@@ -1,4 +1,4 @@
-import { nonNull, stringArg, subscriptionField, objectType } from 'nexus';
+import { nonNull, stringArg, subscriptionField, objectType, list } from 'nexus';
 import { pubsub } from '../../lib/pubsub';
 import { NexusGenEnums } from '../../__generated__/nexus-typegen';
 
@@ -57,5 +57,18 @@ export const ReviewAdded = subscriptionField('reviewAdded', {
     },
     resolve: async (reviews: { approved: number; disapproved: number }, __, ctx) => {
         return reviews;
+    },
+});
+
+export const VotationDeleted = subscriptionField('votationDeleted', {
+    type: 'String',
+    args: {
+        meetingId: nonNull(stringArg()),
+    },
+    subscribe: async (_, { meetingId }, ___) => {
+        return pubsub.asyncIterator([`VOTATION_DELETED_${meetingId}`]);
+    },
+    resolve: async (votationId: string, __, ___) => {
+        return votationId;
     },
 });
