@@ -4,7 +4,6 @@ import * as UserSchema from './auth/';
 import * as VotationSchema from './votation/';
 import * as MeetingSchema from './meeting';
 import * as Enums from './enums';
-import * as ViewSchema from './views/index';
 import { GQLDateTime } from './scalars';
 import { applyMiddleware } from 'graphql-middleware';
 import permissions from '../lib/permissions';
