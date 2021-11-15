@@ -211,6 +211,7 @@ export interface NexusGenObjects {
   VotationResults: { // root type
     blankVoteCount: number; // Int!
     blankVotes: boolean; // Boolean!
+    id: string; // String!
   }
   VotationReview: { // root type
     approved: boolean; // Boolean!
@@ -412,6 +413,7 @@ export interface NexusGenFieldTypes {
     alternatives: Array<NexusGenRootTypes['AlternativeResult'] | null>; // [AlternativeResult]!
     blankVoteCount: number; // Int!
     blankVotes: boolean; // Boolean!
+    id: string; // String!
     voteCount: number; // Int!
     votingEligibleCount: number; // Int!
   }
@@ -603,6 +605,7 @@ export interface NexusGenFieldTypeNames {
     alternatives: 'AlternativeResult'
     blankVoteCount: 'Int'
     blankVotes: 'Boolean'
+    id: 'String'
     voteCount: 'Int'
     votingEligibleCount: 'Int'
   }
