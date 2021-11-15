@@ -330,6 +330,7 @@ type VotationResults {
   alternatives: [AlternativeResult]!
   blankVoteCount: Int!
   blankVotes: Boolean!
+  id: String!
   voteCount: Int!
   votingEligibleCount: Int!
 }
