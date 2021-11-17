@@ -212,6 +212,8 @@ export interface NexusGenObjects {
     blankVoteCount: number; // Int!
     blankVotes: boolean; // Boolean!
     id: string; // String!
+    voteCount: number; // Int!
+    votingEligibleCount: number; // Int!
   }
   VotationReview: { // root type
     approved: boolean; // Boolean!

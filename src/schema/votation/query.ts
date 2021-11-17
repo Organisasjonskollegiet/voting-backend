@@ -39,24 +39,14 @@ export const GetStvResult = queryField('getStvResult', {
             },
         });
         if (!votation) throw new Error('Votation does not exist.');
-        const votingEligibleCount = await ctx.prisma.participant.count({
-            where: {
-                meetingId: votation.meetingId,
-                isVotingEligible: true,
-            },
-        });
-        const voteCount = await ctx.prisma.hasVoted.count({
-            where: {
-                votationId,
-            },
-        });
+        const voteCount = await getVoteCount(votationId, ctx);
         const stvResult = await ctx.prisma.stvResult.findUnique({
             where: {
                 votationId,
             },
         });
-        if (!stvResult || !voteCount || !votingEligibleCount) throw new Error('');
-        return { ...stvResult, voteCount, votingEligibleCount };
+        if (!stvResult || !voteCount) throw new Error('');
+        return { ...stvResult, ...voteCount };
     },
 });
 
@@ -88,7 +78,9 @@ export const GetVotationResults = queryField('getVotationResults', {
                 id: votationId,
             },
         });
-        return votation;
+        if (!votation) throw new Error('Votation does not exist.');
+        const voteCount = await getVoteCount(votationId, ctx);
+        return { ...votation, voteCount: voteCount.voteCount, votingEligibleCount: voteCount.votingEligibleCount };
     },
 });
 

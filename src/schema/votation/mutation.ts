@@ -342,7 +342,7 @@ export const CastStvVoteMutation = mutationField('castStvVote', {
                 })
             ),
         ]);
-        const subscriptionResponse = getVoteCount(votationId, ctx);
+        const subscriptionResponse = await getVoteCount(votationId, ctx);
         await pubsub.publish(`NEW_VOTE_REGISTERED_FOR_${votationId}`, subscriptionResponse);
         return 'Vote registered';
     },
@@ -376,7 +376,7 @@ export const CastVoteMutation = mutationField('castVote', {
                 },
             }),
         ]);
-        const subscriptionResponse = getVoteCount(alternative.votationId, ctx);
+        const subscriptionResponse = await getVoteCount(alternative.votationId, ctx);
         await pubsub.publish(`NEW_VOTE_REGISTERED_FOR_${alternative.votationId}`, subscriptionResponse);
         return vote;
     },
@@ -393,7 +393,7 @@ export const CastBlankVoteMutation = mutationField('castBlankVote', {
             ctx.prisma.hasVoted.create({ data: { userId: ctx.userId, votationId: votationId } }),
             ctx.prisma.votation.update({ where: { id: votationId }, data: { blankVoteCount: { increment: 1 } } }),
         ]);
-        const subscriptionResponse = getVoteCount(votationId, ctx);
+        const subscriptionResponse = await getVoteCount(votationId, ctx);
         await pubsub.publish(`NEW_VOTE_REGISTERED_FOR_${votationId}`, subscriptionResponse);
         return votation.id;
     },

@@ -228,7 +228,7 @@ export const VotationResults = objectType({
         t.nonNull.list.field('alternatives', {
             type: AlternativeResult,
             resolve: async (source, __, ctx) => {
-                const { id } = source as VotationModel;
+                const { id } = source;
                 const alternatives = await ctx.prisma.alternative.findMany({ where: { votationId: id } });
                 return alternatives;
             },
@@ -236,34 +236,8 @@ export const VotationResults = objectType({
         t.nonNull.string('id');
         t.nonNull.boolean('blankVotes');
         t.nonNull.int('blankVoteCount');
-        t.nonNull.field('voteCount', {
-            type: 'Int',
-            resolve: async (source, __, ctx) => {
-                const { id } = source as VotationModel;
-                return await ctx.prisma.hasVoted.count({
-                    where: {
-                        votationId: id,
-                    },
-                });
-            },
-        });
-        t.nonNull.field('votingEligibleCount', {
-            type: 'Int',
-            resolve: async (source, __, ctx) => {
-                const { id } = source as VotationModel;
-                const votation = await ctx.prisma.votation.findUnique({
-                    where: {
-                        id,
-                    },
-                });
-                return await ctx.prisma.participant.count({
-                    where: {
-                        meetingId: votation?.meetingId,
-                        isVotingEligible: true,
-                    },
-                });
-            },
-        });
+        t.nonNull.int('voteCount');
+        t.nonNull.int('votingEligibleCount');
     },
 });
 
