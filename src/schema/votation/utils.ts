@@ -66,19 +66,14 @@ const computeSimpleResult = async (ctx: Context, alternatives: Alternative[]) =>
 };
 
 const computeQualifiedResult = async (ctx: Context, votation: Votation, alternatives: Alternative[]) => {
-    const votingEligibleParticipants = await ctx.prisma.participant.count({
-        where: {
-            meetingId: votation?.meetingId,
-            isVotingEligible: true,
-        },
-    });
+    const { votingEligibleCount } = await getVoteCount(votation.id, ctx);
     for (const alternative of alternatives) {
-        const voteCount = await ctx.prisma.vote.count({
+        const votesForAlternative = await ctx.prisma.vote.count({
             where: {
                 alternativeId: alternative.id,
             },
         });
-        if (voteCount > (votingEligibleParticipants * votation.majorityThreshold) / 100) {
+        if (votesForAlternative > (votingEligibleCount * votation.majorityThreshold) / 100) {
             return [alternative.id];
         }
     }
@@ -223,15 +218,6 @@ const computeStvResult = async (ctx: Context, votation: Votation, alternatives: 
 
     const quota = await getQuota(ctx, votation);
     const stvVotes = await getStvVotes(ctx, votation.id);
-    const voteCount = await getVoteCount(votation.id, ctx);
-
-    // create result in db
-    const result = await ctx.prisma.votationResult.create({
-        data: {
-            quota,
-            ...voteCount,
-        },
-    });
 
     // this variable is used to keep track of each ballot/stvVote. When a stvVotes "active" vote is declared
     // winner or loser, stvVotesWithWeightAndActiveRank is used to redistribute the votes correctly
@@ -263,10 +249,9 @@ const computeStvResult = async (ctx: Context, votation: Votation, alternatives: 
                 });
             }
         });
-
         const stvRoundResult = await ctx.prisma.stvRoundResult.create({
             data: {
-                stvResultId: result.votationId,
+                resultId: votation.id,
                 index: roundNr,
             },
         });
@@ -376,6 +361,12 @@ export const setWinner = async (ctx: Context, votationId: string) => {
         },
     });
     if (!votation) throw new Error('Votation does not exist.');
+    const voteCount = await getVoteCount(votationId, ctx);
+    await ctx.prisma.votationResult.create({
+        data: {
+            ...voteCount,
+        },
+    });
     const winners = await computeResult(ctx, votation);
     const promises: Promise<Alternative>[] = [];
     if (
@@ -390,6 +381,7 @@ export const setWinner = async (ctx: Context, votationId: string) => {
                     },
                     data: {
                         isWinner: true,
+                        winnerOfVotationId: votation.id,
                     },
                 })
             )
