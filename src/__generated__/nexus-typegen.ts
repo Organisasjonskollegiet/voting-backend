@@ -172,6 +172,12 @@ export interface NexusGenObjects {
     role: NexusGenEnums['Role']; // Role!
   }
   Query: {};
+  Result: { // root type
+    quota?: number | null; // Float
+    votationId: string; // String!
+    voteCount: number; // Int!
+    votingEligibleCount: number; // Int!
+  }
   ReviewResult: { // root type
     approved: number; // Int!
     disapproved: number; // Int!
@@ -357,9 +363,18 @@ export interface NexusGenFieldTypes {
     meetings: Array<NexusGenRootTypes['Meeting'] | null>; // [Meeting]!
     myParticipant: NexusGenRootTypes['ParticipantOrInvite'] | null; // ParticipantOrInvite
     participants: Array<NexusGenRootTypes['ParticipantOrInvite'] | null> | null; // [ParticipantOrInvite]
+    result: NexusGenRootTypes['Result'] | null; // Result
     resultsOfPublishedVotations: Array<NexusGenRootTypes['VotationWithWinner'] | null> | null; // [VotationWithWinner]
     user: NexusGenRootTypes['GetUserResult'] | null; // GetUserResult
     votationById: NexusGenRootTypes['Votation'] | null; // Votation
+  }
+  Result: { // field return type
+    quota: number | null; // Float
+    stvRoundResults: NexusGenRootTypes['StvRoundResult'][]; // [StvRoundResult!]!
+    votationId: string; // String!
+    voteCount: number; // Int!
+    votingEligibleCount: number; // Int!
+    winners: NexusGenRootTypes['Alternative'][]; // [Alternative!]!
   }
   ReviewResult: { // field return type
     approved: number; // Int!
@@ -549,9 +564,18 @@ export interface NexusGenFieldTypeNames {
     meetings: 'Meeting'
     myParticipant: 'ParticipantOrInvite'
     participants: 'ParticipantOrInvite'
+    result: 'Result'
     resultsOfPublishedVotations: 'VotationWithWinner'
     user: 'GetUserResult'
     votationById: 'Votation'
+  }
+  Result: { // field return type name
+    quota: 'Float'
+    stvRoundResults: 'StvRoundResult'
+    votationId: 'String'
+    voteCount: 'Int'
+    votingEligibleCount: 'Int'
+    winners: 'Alternative'
   }
   ReviewResult: { // field return type name
     approved: 'Int'
@@ -737,6 +761,9 @@ export interface NexusGenArgTypes {
     }
     participants: { // args
       meetingId: string; // String!
+    }
+    result: { // args
+      votationId: string; // String!
     }
     resultsOfPublishedVotations: { // args
       meetingId: string; // String!

@@ -223,12 +223,13 @@ const computeStvResult = async (ctx: Context, votation: Votation, alternatives: 
 
     const quota = await getQuota(ctx, votation);
     const stvVotes = await getStvVotes(ctx, votation.id);
+    const voteCount = await getVoteCount(votation.id, ctx);
 
     // create result in db
-    const stvResult = await ctx.prisma.stvResult.create({
+    const result = await ctx.prisma.votationResult.create({
         data: {
-            votationId: votation.id,
             quota,
+            ...voteCount,
         },
     });
 
@@ -265,7 +266,7 @@ const computeStvResult = async (ctx: Context, votation: Votation, alternatives: 
 
         const stvRoundResult = await ctx.prisma.stvRoundResult.create({
             data: {
-                stvResultId: stvResult.votationId,
+                stvResultId: result.votationId,
                 index: roundNr,
             },
         });

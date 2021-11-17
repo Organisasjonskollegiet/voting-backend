@@ -203,12 +203,25 @@ type Query {
   """
   participants(meetingId: String!): [ParticipantOrInvite]
 
+  """Returns result of a votation"""
+  result(votationId: String!): Result
+
   """
   Return the results of all the votations with votationStatus === "PUBLISHED_RESULT" of that meeting
   """
   resultsOfPublishedVotations(meetingId: String!): [VotationWithWinner]
   user: GetUserResult
   votationById(votationId: String!): Votation
+}
+
+"""The result of a votation"""
+type Result {
+  quota: Float
+  stvRoundResults: [StvRoundResult!]!
+  votationId: String!
+  voteCount: Int!
+  votingEligibleCount: Int!
+  winners: [Alternative!]!
 }
 
 type ReviewResult {

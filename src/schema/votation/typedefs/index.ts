@@ -6,6 +6,7 @@ import {
     StvRoundResult as StvRoundResultModel,
     AlternativeRoundVoteCount as AlternativeRoundVoteCountModel,
     StvResult as StvResultModel,
+    VotationResult as ResultModel,
 } from '@prisma/client';
 import { VotationType, VotationStatus } from '../../enums';
 
@@ -218,6 +219,42 @@ export const StvResult = objectType({
         });
         t.nonNull.int('voteCount');
         t.nonNull.int('votingEligibleCount');
+    },
+});
+
+export const Result = objectType({
+    name: 'Result',
+    description: 'The result of a votation',
+    definition(t) {
+        t.nonNull.string('votationId');
+        t.nonNull.int('votingEligibleCount');
+        t.nonNull.int('voteCount');
+        t.float('quota');
+        t.nonNull.list.nonNull.field('stvRoundResults', {
+            type: StvRoundResults,
+            resolve: async (source, __, ctx) => {
+                const { votationId } = source as StvResultModel;
+                const stvRoundResults = await ctx.prisma.stvRoundResult.findMany({
+                    where: {
+                        stvResultId: votationId,
+                    },
+                });
+                return stvRoundResults;
+            },
+        });
+        t.nonNull.list.nonNull.field('winners', {
+            type: Alternative,
+            resolve: async (source, __, ctx) => {
+                const { votationId } = source as ResultModel;
+                const winners = await ctx.prisma.alternative.findMany({
+                    where: {
+                        votationId,
+                        isWinner: true,
+                    },
+                });
+                return winners;
+            },
+        });
     },
 });
 
