@@ -74,7 +74,7 @@ function prismaTestContext() {
     return {
         async before() {
             // Run the migrations to ensure our schema has the required structure
-            execSync(`${prismaBinary} db push --preview-feature`);
+            execSync(`${prismaBinary} db push`);
             // Construct a new Prisma Client connected to the generated schema
             prismaClient = prisma;
             return prismaClient;
