@@ -219,6 +219,16 @@ const computeStvResult = async (ctx: Context, votation: Votation, alternatives: 
     const quota = await getQuota(ctx, votation);
     const stvVotes = await getStvVotes(ctx, votation.id);
 
+    await ctx.prisma.votationResult.update({
+        where: {
+            votationId: votation.id,
+        },
+        data: {
+            quota,
+            blankVoteCount: stvVotes.filter((s) => s.votes.length === 0).length,
+        },
+    });
+
     // this variable is used to keep track of each ballot/stvVote. When a stvVotes "active" vote is declared
     // winner or loser, stvVotesWithWeightAndActiveRank is used to redistribute the votes correctly
     let stvVotesWithWeightAndActiveRank: StvVoteWithWeightAndActiveRank[] = stvVotes.map((vote) => {
@@ -365,6 +375,7 @@ export const setWinner = async (ctx: Context, votationId: string) => {
     await ctx.prisma.votationResult.create({
         data: {
             ...voteCount,
+            blankVoteCount: votation.blankVotes ? votation.blankVoteCount : null,
         },
     });
     const winners = await computeResult(ctx, votation);
@@ -381,7 +392,6 @@ export const setWinner = async (ctx: Context, votationId: string) => {
                     },
                     data: {
                         isWinner: true,
-                        winnerOfVotationId: votation.id,
                     },
                 })
             )

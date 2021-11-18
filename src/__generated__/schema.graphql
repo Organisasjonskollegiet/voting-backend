@@ -216,12 +216,13 @@ type Query {
 
 """The result of a votation"""
 type Result {
+  alternatives: [AlternativeResult!]!
+  blankVoteCount: Int
   quota: Float
-  stvRoundResults: [StvRoundResult!]!
+  stvRoundResults: [StvRoundResult!]
   votationId: String!
   voteCount: Int!
   votingEligibleCount: Int!
-  winners: [Alternative!]!
 }
 
 type ReviewResult {
@@ -237,6 +238,7 @@ enum Role {
 
 """Results from a stv votation"""
 type StvResult {
+  alternatives: [AlternativeResult!]!
   quota: Int!
   stvRoundResults: [StvRoundResult!]!
   votationId: String!

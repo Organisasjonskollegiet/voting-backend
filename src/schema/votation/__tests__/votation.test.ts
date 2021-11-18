@@ -5,6 +5,7 @@ import { string, uuid } from 'casual';
 import casual from 'casual';
 import { computeResult, setWinner } from '../utils';
 import { Vote } from '@prisma/client';
+import { StvResult } from '..';
 const ctx = createTestContext();
 
 interface StaticMeetingDataType {
@@ -993,368 +994,7 @@ it('should return correct vote count', async () => {
     expect(voteCount.getVoteCount.voteCount).toEqual(2);
 });
 
-it('should return not authorised', async () => {
-    const user1 = await createUser();
-    const meeting = await createMeeting(user1.id, Role.ADMIN, false);
-    const votation = await createVotation(meeting.id, VotationStatus.OPEN, 1);
-    const alternative = await createAlternative(votation.id, alternative1Text);
-    await vote(votation.id, user1.id, alternative.id);
-    try {
-        await ctx.client.request(
-            gql`
-                query GetVoteCount($votationId: String!) {
-                    getVoteCount(votationId: $votationId) {
-                        votingEligibleCount
-                        voteCount
-                    }
-                }
-            `,
-            {
-                votationId: votation.id,
-            }
-        );
-        expect(true).toBeFalsy();
-    } catch (error) {
-        expect(error.message).toContain('Not Authorised!');
-    }
-});
-
-it('should return alternative1 as winner with simple majority', async () => {
-    const user1 = await createUser();
-    const user2 = await createUser();
-    const meeting = await createMeeting(ctx.userId, Role.ADMIN, true);
-    await createParticipant(meeting.id, user1.id, true, Role.PARTICIPANT);
-    await createParticipant(meeting.id, user2.id, true, Role.PARTICIPANT);
-    const votation = await createVotation(meeting.id, VotationStatus.CHECKING_RESULT, 1, VotationType.SIMPLE);
-    const alternative1 = await createAlternative(votation.id, alternative1Text);
-    const alternative2 = await createAlternative(votation.id, alternative2Text);
-    await vote(votation.id, ctx.userId, alternative1.id);
-    await vote(votation.id, user1.id, alternative1.id);
-    await vote(votation.id, user2.id, alternative2.id);
-    await setWinner(ctx, votation.id);
-    const response = await ctx.client.request(
-        gql`
-            query GetVotationResults($votationId: String!) {
-                getVotationResults(votationId: $votationId) {
-                    alternatives {
-                        id
-                        text
-                        index
-                        votationId
-                        isWinner
-                        votes
-                    }
-                    blankVoteCount
-                    votingEligibleCount
-                    voteCount
-                }
-            }
-        `,
-        {
-            votationId: votation.id,
-        }
-    );
-    expect(
-        response.getVotationResults.alternatives.map((a: Alternative) => {
-            return { ...a, loserOfStvRoundId: null, winnerOfStvRoundId: null };
-        })
-    ).toEqual(
-        expect.arrayContaining([
-            {
-                ...alternative1,
-                isWinner: true,
-                votes: 2,
-            },
-            {
-                ...alternative2,
-                isWinner: false,
-                votes: 1,
-            },
-        ])
-    );
-    expect(response.getVotationResults.votingEligibleCount).toEqual(3);
-    expect(response.getVotationResults.voteCount).toEqual(3);
-});
-
-it('should return no winner with simple majority when the alternatives has equal amount of votes', async () => {
-    const user1 = await createUser();
-    const meeting = await createMeeting(ctx.userId, Role.ADMIN, true);
-    await createParticipant(meeting.id, user1.id, true, Role.PARTICIPANT);
-    const votation = await createVotation(meeting.id, VotationStatus.CHECKING_RESULT, 1, VotationType.SIMPLE);
-    const alternative1 = await createAlternative(votation.id, alternative1Text);
-    const alternative2 = await createAlternative(votation.id, alternative2Text);
-    await vote(votation.id, ctx.userId, alternative1.id);
-    await vote(votation.id, user1.id, alternative2.id);
-    await setWinner(ctx, votation.id);
-    const response = await ctx.client.request(
-        gql`
-            query GetVotationResults($votationId: String!) {
-                getVotationResults(votationId: $votationId) {
-                    alternatives {
-                        id
-                        text
-                        index
-                        votationId
-                        isWinner
-                        votes
-                    }
-                    blankVoteCount
-                    votingEligibleCount
-                    voteCount
-                }
-            }
-        `,
-        {
-            votationId: votation.id,
-        }
-    );
-    expect(
-        response.getVotationResults.alternatives.map((a: Alternative) => {
-            return { ...a, loserOfStvRoundId: null, winnerOfStvRoundId: null };
-        })
-    ).toEqual(
-        expect.arrayContaining([
-            {
-                ...alternative1,
-                isWinner: false,
-                votes: 1,
-            },
-            {
-                ...alternative2,
-                isWinner: false,
-                votes: 1,
-            },
-        ])
-    );
-    expect(response.getVotationResults.votingEligibleCount).toEqual(2);
-    expect(response.getVotationResults.voteCount).toEqual(2);
-});
-
-it('should return alternative1 as winner with qualified over 66%', async () => {
-    const user1 = await createUser();
-    const user2 = await createUser();
-    const meeting = await createMeeting(ctx.userId, Role.ADMIN, true);
-    await createParticipant(meeting.id, user1.id, true, Role.PARTICIPANT);
-    await createParticipant(meeting.id, user2.id, true, Role.PARTICIPANT);
-    const votation = await createVotation(meeting.id, VotationStatus.CHECKING_RESULT, 1, VotationType.QUALIFIED, 1, 66);
-    const alternative1 = await createAlternative(votation.id, alternative1Text);
-    const alternative2 = await createAlternative(votation.id, alternative2Text);
-    await vote(votation.id, ctx.userId, alternative1.id);
-    await vote(votation.id, user1.id, alternative1.id);
-    await vote(votation.id, user2.id, alternative2.id);
-    await setWinner(ctx, votation.id);
-    const response = await ctx.client.request(
-        gql`
-            query GetVotationResults($votationId: String!) {
-                getVotationResults(votationId: $votationId) {
-                    alternatives {
-                        id
-                        text
-                        index
-                        votationId
-                        isWinner
-                        votes
-                    }
-                    blankVoteCount
-                    votingEligibleCount
-                    voteCount
-                }
-            }
-        `,
-        {
-            votationId: votation.id,
-        }
-    );
-    expect(
-        response.getVotationResults.alternatives.map((a: Alternative) => {
-            return { ...a, loserOfStvRoundId: null, winnerOfStvRoundId: null };
-        })
-    ).toEqual(
-        expect.arrayContaining([
-            {
-                ...alternative1,
-                isWinner: true,
-                votes: 2,
-            },
-            {
-                ...alternative2,
-                isWinner: false,
-                votes: 1,
-            },
-        ])
-    );
-    expect(response.getVotationResults.votingEligibleCount).toEqual(3);
-    expect(response.getVotationResults.voteCount).toEqual(3);
-});
-
-it('should return no winner with qualified over 67%', async () => {
-    const user1 = await createUser();
-    const user2 = await createUser();
-    const meeting = await createMeeting(ctx.userId, Role.COUNTER, true);
-    await createParticipant(meeting.id, user1.id, true, Role.PARTICIPANT);
-    await createParticipant(meeting.id, user2.id, true, Role.PARTICIPANT);
-    const votation = await createVotation(meeting.id, VotationStatus.CHECKING_RESULT, 1, VotationType.QUALIFIED, 1, 67);
-    const alternative1 = await createAlternative(votation.id, alternative1Text);
-    const alternative2 = await createAlternative(votation.id, alternative2Text);
-    await vote(votation.id, ctx.userId, alternative1.id);
-    await vote(votation.id, user1.id, alternative1.id);
-    await vote(votation.id, user2.id, alternative2.id);
-    await setWinner(ctx, votation.id);
-    const response = await ctx.client.request(
-        gql`
-            query GetVotationResults($votationId: String!) {
-                getVotationResults(votationId: $votationId) {
-                    alternatives {
-                        id
-                        text
-                        index
-                        votationId
-                        isWinner
-                        votes
-                    }
-                    blankVoteCount
-                    votingEligibleCount
-                    voteCount
-                }
-            }
-        `,
-        {
-            votationId: votation.id,
-        }
-    );
-    expect(
-        response.getVotationResults.alternatives.map((a: Alternative) => {
-            return { ...a, loserOfStvRoundId: null, winnerOfStvRoundId: null };
-        })
-    ).toEqual(
-        expect.arrayContaining([
-            {
-                ...alternative1,
-                isWinner: false,
-                votes: 2,
-                loserOfStvRoundId: null,
-                winnerOfStvRoundId: null,
-            },
-            {
-                ...alternative2,
-                isWinner: false,
-                votes: 1,
-                loserOfStvRoundId: null,
-                winnerOfStvRoundId: null,
-            },
-        ])
-    );
-    expect(response.getVotationResults.votingEligibleCount).toEqual(3);
-    expect(response.getVotationResults.voteCount).toEqual(3);
-});
-
-it('should return not authorised trying to get votation results', async () => {
-    const meeting = await createMeeting(ctx.userId, Role.PARTICIPANT, true);
-    const votation = await createVotation(meeting.id, VotationStatus.CHECKING_RESULT, 1, VotationType.QUALIFIED, 1, 67);
-    const alternative1 = await createAlternative(votation.id, alternative1Text);
-    await vote(votation.id, ctx.userId, alternative1.id);
-    await setWinner(ctx, votation.id);
-    try {
-        await ctx.client.request(
-            gql`
-                query GetVotationResults($votationId: String!) {
-                    getVotationResults(votationId: $votationId) {
-                        alternatives {
-                            id
-                            text
-                            votationId
-                            isWinner
-                            votes
-                        }
-                        blankVoteCount
-                        votingEligibleCount
-                        voteCount
-                    }
-                }
-            `,
-            {
-                votationId: votation.id,
-            }
-        );
-        expect(false).toBeTruthy();
-    } catch (error) {
-        expect(error.message).toContain('Not Authorised!');
-    }
-});
-
-it('should return votation id with results (alternative with isWinner) for all votatons of meeting', async () => {
-    const meeting = await createMeeting(ctx.userId, Role.PARTICIPANT, true);
-    const publishedVotation = await createVotation(meeting.id, VotationStatus.PUBLISHED_RESULT, 1);
-    await createVotation(meeting.id, VotationStatus.CHECKING_RESULT, 1);
-    const winner = await createAlternative(publishedVotation.id, casual.title, true);
-    const loser = await createAlternative(publishedVotation.id, casual.title, false);
-    const response = await ctx.client.request(
-        gql`
-            query GetResultsOfPublishedVotations($meetingId: String!) {
-                resultsOfPublishedVotations(meetingId: $meetingId) {
-                    id
-                    alternatives {
-                        id
-                        text
-                        isWinner
-                    }
-                }
-            }
-        `,
-        {
-            meetingId: meeting.id,
-        }
-    );
-    const result = response.resultsOfPublishedVotations[0];
-    expect(result.id).toEqual(publishedVotation.id);
-    expect(result.alternatives.length).toEqual(2);
-    expect(result.alternatives).toEqual(
-        expect.arrayContaining([
-            {
-                id: winner.id,
-                text: winner.text,
-                isWinner: true,
-            },
-            {
-                id: loser.id,
-                text: loser.text,
-                isWinner: false,
-            },
-        ])
-    );
-});
-
-it('should return not authorised trying to get results of published votations', async () => {
-    const otherUser = await createUser();
-    const meeting = await createMeeting(otherUser.id, Role.PARTICIPANT, true);
-    const publishedVotation = await createVotation(meeting.id, VotationStatus.PUBLISHED_RESULT, 1);
-    await createAlternative(publishedVotation.id, casual.title, true);
-    await createAlternative(publishedVotation.id, casual.title, false);
-    try {
-        await ctx.client.request(
-            gql`
-                query GetResultsOfPublishedVotations($meetingId: String!) {
-                    resultsOfPublishedVotations(meetingId: $meetingId) {
-                        id
-                        alternatives {
-                            id
-                            text
-                            isWinner
-                        }
-                    }
-                }
-            `,
-            {
-                meetingId: meeting.id,
-            }
-        );
-        expect(false).toBeTruthy();
-    } catch (error) {
-        expect(error.message).toContain('Not Authorised!');
-    }
-});
-
-it('should return andrea and carter as winners', async () => {
+it('should return andrea and carter as winners for stv votation', async () => {
     const meeting = await createMeeting(ctx.userId, Role.ADMIN, true);
     const votation = await createVotation(meeting.id, VotationStatus.PUBLISHED_RESULT, 1, VotationType.STV, 2);
     const andrea = await createAlternative(votation.id, casual.title);
@@ -1429,10 +1069,649 @@ it('should return andrea and carter as winners', async () => {
         );
     }
     await Promise.all(promises);
-    const result = await computeResult(ctx, votation);
-    expect(result.length).toBe(2);
-    expect(result.includes(andrea.id)).toBeTruthy();
-    expect(result.includes(carter.id)).toBeTruthy();
+    await setWinner(ctx, votation.id);
+    const alternatives = await ctx.prisma.alternative.findMany({ where: { votationId: votation.id, isWinner: true } });
+    const winnerIds = alternatives.map((a) => a.id);
+    expect(alternatives.length).toBe(2);
+    expect(winnerIds.includes(andrea.id)).toBeTruthy();
+    expect(winnerIds.includes(carter.id)).toBeTruthy();
+});
+
+it('should return not authorised', async () => {
+    const user1 = await createUser();
+    const meeting = await createMeeting(user1.id, Role.ADMIN, false);
+    const votation = await createVotation(meeting.id, VotationStatus.OPEN, 1);
+    const alternative = await createAlternative(votation.id, alternative1Text);
+    await vote(votation.id, user1.id, alternative.id);
+    try {
+        await ctx.client.request(
+            gql`
+                query GetVoteCount($votationId: String!) {
+                    getVoteCount(votationId: $votationId) {
+                        votingEligibleCount
+                        voteCount
+                    }
+                }
+            `,
+            {
+                votationId: votation.id,
+            }
+        );
+        expect(true).toBeFalsy();
+    } catch (error) {
+        expect(error.message).toContain('Not Authorised!');
+    }
+});
+
+it('should return alternative1 as winner with simple majority', async () => {
+    const user1 = await createUser();
+    const user2 = await createUser();
+    const meeting = await createMeeting(ctx.userId, Role.ADMIN, true);
+    await createParticipant(meeting.id, user1.id, true, Role.PARTICIPANT);
+    await createParticipant(meeting.id, user2.id, true, Role.PARTICIPANT);
+    const votation = await createVotation(meeting.id, VotationStatus.CHECKING_RESULT, 1, VotationType.SIMPLE);
+    const alternative1 = await createAlternative(votation.id, alternative1Text);
+    const alternative2 = await createAlternative(votation.id, alternative2Text);
+    await vote(votation.id, ctx.userId, alternative1.id);
+    await vote(votation.id, user1.id, alternative1.id);
+    await vote(votation.id, user2.id, alternative2.id);
+    await setWinner(ctx, votation.id);
+    const response = await ctx.client.request(
+        gql`
+            query GetVotationResults($votationId: String!) {
+                result(votationId: $votationId) {
+                    alternatives {
+                        id
+                        text
+                        index
+                        votationId
+                        isWinner
+                        votes
+                    }
+                    blankVoteCount
+                    votingEligibleCount
+                    voteCount
+                }
+            }
+        `,
+        {
+            votationId: votation.id,
+        }
+    );
+    expect(
+        response.result.alternatives.map((a: Alternative) => {
+            return { ...a, loserOfStvRoundId: null, winnerOfStvRoundId: null };
+        })
+    ).toEqual(
+        expect.arrayContaining([
+            {
+                ...alternative1,
+                isWinner: true,
+                votes: 2,
+            },
+            {
+                ...alternative2,
+                isWinner: false,
+                votes: 1,
+            },
+        ])
+    );
+    expect(response.result.votingEligibleCount).toEqual(3);
+    expect(response.result.voteCount).toEqual(3);
+});
+
+it('should return no winner with simple majority when the alternatives has equal amount of votes', async () => {
+    const user1 = await createUser();
+    const meeting = await createMeeting(ctx.userId, Role.ADMIN, true);
+    await createParticipant(meeting.id, user1.id, true, Role.PARTICIPANT);
+    const votation = await createVotation(meeting.id, VotationStatus.CHECKING_RESULT, 1, VotationType.SIMPLE);
+    const alternative1 = await createAlternative(votation.id, alternative1Text);
+    const alternative2 = await createAlternative(votation.id, alternative2Text);
+    await vote(votation.id, ctx.userId, alternative1.id);
+    await vote(votation.id, user1.id, alternative2.id);
+    await setWinner(ctx, votation.id);
+    const response = await ctx.client.request(
+        gql`
+            query GetVotationResults($votationId: String!) {
+                result(votationId: $votationId) {
+                    alternatives {
+                        id
+                        text
+                        index
+                        votationId
+                        isWinner
+                        votes
+                    }
+                    blankVoteCount
+                    votingEligibleCount
+                    voteCount
+                }
+            }
+        `,
+        {
+            votationId: votation.id,
+        }
+    );
+    expect(
+        response.result.alternatives.map((a: Alternative) => {
+            return { ...a, loserOfStvRoundId: null, winnerOfStvRoundId: null };
+        })
+    ).toEqual(
+        expect.arrayContaining([
+            {
+                ...alternative1,
+                isWinner: false,
+                votes: 1,
+            },
+            {
+                ...alternative2,
+                isWinner: false,
+                votes: 1,
+            },
+        ])
+    );
+    expect(response.result.votingEligibleCount).toEqual(2);
+    expect(response.result.voteCount).toEqual(2);
+});
+
+it('should return alternative1 as winner with qualified over 66%', async () => {
+    const user1 = await createUser();
+    const user2 = await createUser();
+    const meeting = await createMeeting(ctx.userId, Role.ADMIN, true);
+    await createParticipant(meeting.id, user1.id, true, Role.PARTICIPANT);
+    await createParticipant(meeting.id, user2.id, true, Role.PARTICIPANT);
+    const votation = await createVotation(meeting.id, VotationStatus.CHECKING_RESULT, 1, VotationType.QUALIFIED, 1, 66);
+    const alternative1 = await createAlternative(votation.id, alternative1Text);
+    const alternative2 = await createAlternative(votation.id, alternative2Text);
+    await vote(votation.id, ctx.userId, alternative1.id);
+    await vote(votation.id, user1.id, alternative1.id);
+    await vote(votation.id, user2.id, alternative2.id);
+    await setWinner(ctx, votation.id);
+    const response = await ctx.client.request(
+        gql`
+            query GetVotationResults($votationId: String!) {
+                result(votationId: $votationId) {
+                    alternatives {
+                        id
+                        text
+                        index
+                        votationId
+                        isWinner
+                        votes
+                    }
+                    blankVoteCount
+                    votingEligibleCount
+                    voteCount
+                }
+            }
+        `,
+        {
+            votationId: votation.id,
+        }
+    );
+    expect(
+        response.result.alternatives.map((a: Alternative) => {
+            return { ...a, loserOfStvRoundId: null, winnerOfStvRoundId: null };
+        })
+    ).toEqual(
+        expect.arrayContaining([
+            {
+                ...alternative1,
+                isWinner: true,
+                votes: 2,
+            },
+            {
+                ...alternative2,
+                isWinner: false,
+                votes: 1,
+            },
+        ])
+    );
+    expect(response.result.votingEligibleCount).toEqual(3);
+    expect(response.result.voteCount).toEqual(3);
+});
+
+it('should return no winner with qualified over 67%', async () => {
+    const user1 = await createUser();
+    const user2 = await createUser();
+    const meeting = await createMeeting(ctx.userId, Role.COUNTER, true);
+    await createParticipant(meeting.id, user1.id, true, Role.PARTICIPANT);
+    await createParticipant(meeting.id, user2.id, true, Role.PARTICIPANT);
+    const votation = await createVotation(meeting.id, VotationStatus.CHECKING_RESULT, 1, VotationType.QUALIFIED, 1, 67);
+    const alternative1 = await createAlternative(votation.id, alternative1Text);
+    const alternative2 = await createAlternative(votation.id, alternative2Text);
+    await vote(votation.id, ctx.userId, alternative1.id);
+    await vote(votation.id, user1.id, alternative1.id);
+    await vote(votation.id, user2.id, alternative2.id);
+    await setWinner(ctx, votation.id);
+    const response = await ctx.client.request(
+        gql`
+            query GetVotationResults($votationId: String!) {
+                result(votationId: $votationId) {
+                    alternatives {
+                        id
+                        text
+                        index
+                        votationId
+                        isWinner
+                        votes
+                    }
+                    blankVoteCount
+                    votingEligibleCount
+                    voteCount
+                }
+            }
+        `,
+        {
+            votationId: votation.id,
+        }
+    );
+    expect(
+        response.result.alternatives.map((a: Alternative) => {
+            return { ...a, loserOfStvRoundId: null, winnerOfStvRoundId: null };
+        })
+    ).toEqual(
+        expect.arrayContaining([
+            {
+                ...alternative1,
+                isWinner: false,
+                votes: 2,
+                loserOfStvRoundId: null,
+                winnerOfStvRoundId: null,
+            },
+            {
+                ...alternative2,
+                isWinner: false,
+                votes: 1,
+                loserOfStvRoundId: null,
+                winnerOfStvRoundId: null,
+            },
+        ])
+    );
+    expect(response.result.votingEligibleCount).toEqual(3);
+    expect(response.result.voteCount).toEqual(3);
+});
+
+it('should register correct round results', async () => {
+    const meeting = await createMeeting(ctx.userId, Role.ADMIN, true);
+    const votation = await createVotation(meeting.id, VotationStatus.OPEN, 0, VotationType.STV, 2);
+    const andrea = await createAlternative(votation.id, 'andrea');
+    const carter = await createAlternative(votation.id, 'carter');
+    const brad = await createAlternative(votation.id, 'brad');
+    const delilah = await createAlternative(votation.id, 'delilah');
+    const promises = [];
+    promises.push(
+        new Promise(async (resolve, reject) => {
+            try {
+                const user = await createUser();
+                const votes = await castStvVote(
+                    votation.id,
+                    [
+                        { id: andrea.id, ranking: 0 },
+                        { id: carter.id, ranking: 1 },
+                        { id: brad.id, ranking: 2 },
+                        { id: delilah.id, ranking: 3 },
+                    ],
+                    user.id
+                );
+                resolve(votes);
+            } catch (error) {
+                reject(error);
+            }
+        })
+    );
+    promises.push(
+        new Promise(async (resolve, reject) => {
+            try {
+                const user = await createUser();
+                const votes = await castStvVote(
+                    votation.id,
+                    [
+                        { id: andrea.id, ranking: 0 },
+                        { id: brad.id, ranking: 1 },
+                        { id: carter.id, ranking: 2 },
+                        { id: delilah.id, ranking: 3 },
+                    ],
+                    user.id
+                );
+                resolve(votes);
+            } catch (error) {
+                reject(error);
+            }
+        })
+    );
+    await Promise.all(promises);
+    await setWinner(ctx, votation.id);
+    const stvResult = await ctx.prisma.votationResult.findUnique({
+        where: {
+            votationId: votation.id,
+        },
+    });
+    const stvRoundResults = await ctx.prisma.stvRoundResult.findMany({
+        where: {
+            resultId: votation.id,
+        },
+        select: {
+            index: true,
+            winners: true,
+            losers: true,
+            alternativesWithRoundVoteCount: true,
+        },
+    });
+    expect(stvResult?.quota).toBe(1);
+    expect(stvRoundResults.find((r) => r.index === 0)?.winners.map((a) => a.id)).toContain(andrea.id);
+    expect(stvRoundResults.find((r) => r.index === 1)?.losers.map((a) => a.id)).toContain(delilah.id);
+    expect(stvRoundResults.find((r) => r.index === 2)?.losers).toHaveLength(1);
+    expect(stvRoundResults.find((r) => r.index === 3)?.winners).toHaveLength(1);
+    expect(
+        stvRoundResults
+            .find((r) => r.index === 0)
+            ?.alternativesWithRoundVoteCount.find((a) => a.alterantiveId === andrea.id)?.voteCount
+    ).toEqual(2);
+    expect(
+        stvRoundResults
+            .find((r) => r.index === 1)
+            ?.alternativesWithRoundVoteCount.find((a) => a.alterantiveId === brad.id)?.voteCount
+    ).toEqual(0.5);
+    expect(
+        stvRoundResults
+            .find((r) => r.index === 1)
+            ?.alternativesWithRoundVoteCount.find((a) => a.alterantiveId === carter.id)?.voteCount
+    ).toEqual(0.5);
+});
+
+it('should return round results for checking result stv votation as counter', async () => {
+    const meeting = await createMeeting(ctx.userId, Role.COUNTER, true);
+    const votation = await createVotation(meeting.id, VotationStatus.CHECKING_RESULT, 0, VotationType.STV, 2);
+    const andrea = await createAlternative(votation.id, 'andrea');
+    const brad = await createAlternative(votation.id, 'brad');
+    await new Promise(async (resolve, reject) => {
+        try {
+            const user = await createUser();
+            const votes = await castStvVote(
+                votation.id,
+                [
+                    { id: andrea.id, ranking: 0 },
+                    { id: brad.id, ranking: 1 },
+                ],
+                user.id
+            );
+            resolve(votes);
+        } catch (error) {
+            reject(error);
+        }
+    });
+    await setWinner(ctx, votation.id);
+    const response = await ctx.client.request(
+        gql`
+            query GetVotationResult($votationId: String!) {
+                result(votationId: $votationId) {
+                    votationId
+                    quota
+                    voteCount
+                    votingEligibleCount
+                    stvRoundResults {
+                        index
+                        winners {
+                            votationId
+                            id
+                            text
+                        }
+                        losers {
+                            text
+                        }
+                        alternativesWithRoundVoteCount {
+                            alternative {
+                                id
+                                text
+                            }
+                            voteCount
+                        }
+                    }
+                }
+            }
+        `,
+        {
+            votationId: votation.id,
+        }
+    );
+    expect(response.result.stvRoundResults).toHaveLength(2);
+    expect(response.result.stvRoundResults[0].alternativesWithRoundVoteCount).toHaveLength(2);
+});
+
+it('should return not authorised trying to get votation results of published votataion as participant with hiddenvotes true', async () => {
+    const meeting = await createMeeting(ctx.userId, Role.PARTICIPANT, true);
+    const votation = await createVotation(
+        meeting.id,
+        VotationStatus.PUBLISHED_RESULT,
+        1,
+        VotationType.QUALIFIED,
+        1,
+        67
+    );
+    const alternative1 = await createAlternative(votation.id, alternative1Text);
+    await vote(votation.id, ctx.userId, alternative1.id);
+    await setWinner(ctx, votation.id);
+    try {
+        await ctx.client.request(
+            gql`
+                query GetVotationResults($votationId: String!) {
+                    result(votationId: $votationId) {
+                        alternatives {
+                            id
+                            text
+                            votationId
+                            isWinner
+                            votes
+                        }
+                        blankVoteCount
+                        votingEligibleCount
+                        voteCount
+                    }
+                }
+            `,
+            {
+                votationId: votation.id,
+            }
+        );
+        expect(false).toBeTruthy();
+    } catch (error) {
+        expect(error.message).toContain('Not Authorised!');
+    }
+});
+
+it('should return round results for published result with hiddenVotes false stv votation as Participant ', async () => {
+    const meeting = await createMeeting(ctx.userId, Role.PARTICIPANT, true);
+    const votation = await createVotation(
+        meeting.id,
+        VotationStatus.PUBLISHED_RESULT,
+        0,
+        VotationType.STV,
+        2,
+        0,
+        false,
+        false
+    );
+    const andrea = await createAlternative(votation.id, 'andrea');
+    const brad = await createAlternative(votation.id, 'brad');
+    await new Promise(async (resolve, reject) => {
+        try {
+            const user = await createUser();
+            const votes = await castStvVote(
+                votation.id,
+                [
+                    { id: andrea.id, ranking: 0 },
+                    { id: brad.id, ranking: 1 },
+                ],
+                user.id
+            );
+            resolve(votes);
+        } catch (error) {
+            reject(error);
+        }
+    });
+    await setWinner(ctx, votation.id);
+    const response = await ctx.client.request(
+        gql`
+            query GetVotationResult($votationId: String!) {
+                result(votationId: $votationId) {
+                    votationId
+                    quota
+                    voteCount
+                    votingEligibleCount
+                    stvRoundResults {
+                        index
+                        winners {
+                            votationId
+                            id
+                            text
+                        }
+                        losers {
+                            text
+                        }
+                        alternativesWithRoundVoteCount {
+                            alternative {
+                                id
+                                text
+                            }
+                            voteCount
+                        }
+                    }
+                }
+            }
+        `,
+        {
+            votationId: votation.id,
+        }
+    );
+    expect(response.result.stvRoundResults).toHaveLength(2);
+    expect(response.result.stvRoundResults[0].alternativesWithRoundVoteCount).toHaveLength(2);
+});
+
+it('should return not authorised trying to get round results for checking result with hiddenVotes true stv votation as Participant ', async () => {
+    const meeting = await createMeeting(ctx.userId, Role.PARTICIPANT, true);
+    const votation = await createVotation(meeting.id, VotationStatus.CHECKING_RESULT, 0, VotationType.STV, 1);
+    const andrea = await createAlternative(votation.id, 'andrea');
+    await new Promise(async (resolve, reject) => {
+        try {
+            const user = await createUser();
+            const votes = await castStvVote(votation.id, [{ id: andrea.id, ranking: 0 }], user.id);
+            resolve(votes);
+        } catch (error) {
+            reject(error);
+        }
+    });
+    await setWinner(ctx, votation.id);
+    try {
+        await ctx.client.request(
+            gql`
+                query GetVotationResult($votationId: String!) {
+                    result(votationId: $votationId) {
+                        votationId
+                        quota
+                        voteCount
+                        votingEligibleCount
+                        stvRoundResults {
+                            index
+                            winners {
+                                votationId
+                                id
+                                text
+                            }
+                            losers {
+                                text
+                            }
+                            alternativesWithRoundVoteCount {
+                                alternative {
+                                    id
+                                    text
+                                }
+                                voteCount
+                            }
+                        }
+                    }
+                }
+            `,
+            {
+                votationId: votation.id,
+            }
+        );
+        expect(false).toBeTruthy();
+    } catch (error) {
+        expect(error.message).toContain('Not Authorised!');
+    }
+});
+
+it('should return votation id with results (alternative with isWinner) for all votatons of meeting', async () => {
+    const meeting = await createMeeting(ctx.userId, Role.PARTICIPANT, true);
+    const publishedVotation = await createVotation(meeting.id, VotationStatus.PUBLISHED_RESULT, 1);
+    await createVotation(meeting.id, VotationStatus.CHECKING_RESULT, 1);
+    const winner = await createAlternative(publishedVotation.id, casual.title, true);
+    const loser = await createAlternative(publishedVotation.id, casual.title, false);
+    const response = await ctx.client.request(
+        gql`
+            query GetResultsOfPublishedVotations($meetingId: String!) {
+                resultsOfPublishedVotations(meetingId: $meetingId) {
+                    id
+                    alternatives {
+                        id
+                        text
+                        isWinner
+                    }
+                }
+            }
+        `,
+        {
+            meetingId: meeting.id,
+        }
+    );
+    const result = response.resultsOfPublishedVotations[0];
+    expect(result.id).toEqual(publishedVotation.id);
+    expect(result.alternatives.length).toEqual(2);
+    expect(result.alternatives).toEqual(
+        expect.arrayContaining([
+            {
+                id: winner.id,
+                text: winner.text,
+                isWinner: true,
+            },
+            {
+                id: loser.id,
+                text: loser.text,
+                isWinner: false,
+            },
+        ])
+    );
+});
+
+it('should return not authorised trying to get results of published votations for user that is not participant', async () => {
+    const otherUser = await createUser();
+    const meeting = await createMeeting(otherUser.id, Role.PARTICIPANT, true);
+    const publishedVotation = await createVotation(meeting.id, VotationStatus.PUBLISHED_RESULT, 1);
+    await createAlternative(publishedVotation.id, casual.title, true);
+    await createAlternative(publishedVotation.id, casual.title, false);
+    try {
+        await ctx.client.request(
+            gql`
+                query GetResultsOfPublishedVotations($meetingId: String!) {
+                    resultsOfPublishedVotations(meetingId: $meetingId) {
+                        id
+                        alternatives {
+                            id
+                            text
+                            isWinner
+                        }
+                    }
+                }
+            `,
+            {
+                meetingId: meeting.id,
+            }
+        );
+        expect(false).toBeTruthy();
+    } catch (error) {
+        expect(error.message).toContain('Not Authorised!');
+    }
 });
 
 it('should return id of open votation', async () => {
@@ -1574,346 +1853,6 @@ it('should return error trying to update index of open votation', async () => {
                         index: 2,
                     },
                 ],
-            }
-        );
-        expect(false).toBeTruthy();
-    } catch (error) {
-        expect(error.message).toContain('Not Authorised!');
-    }
-});
-
-it('should register correct round results', async () => {
-    const meeting = await createMeeting(ctx.userId, Role.ADMIN, true);
-    const votation = await createVotation(meeting.id, VotationStatus.OPEN, 0, VotationType.STV, 2);
-    const andrea = await createAlternative(votation.id, 'andrea');
-    const carter = await createAlternative(votation.id, 'carter');
-    const brad = await createAlternative(votation.id, 'brad');
-    const delilah = await createAlternative(votation.id, 'delilah');
-    const promises = [];
-    promises.push(
-        new Promise(async (resolve, reject) => {
-            try {
-                const user = await createUser();
-                const votes = await castStvVote(
-                    votation.id,
-                    [
-                        { id: andrea.id, ranking: 0 },
-                        { id: carter.id, ranking: 1 },
-                        { id: brad.id, ranking: 2 },
-                        { id: delilah.id, ranking: 3 },
-                    ],
-                    user.id
-                );
-                resolve(votes);
-            } catch (error) {
-                reject(error);
-            }
-        })
-    );
-    promises.push(
-        new Promise(async (resolve, reject) => {
-            try {
-                const user = await createUser();
-                const votes = await castStvVote(
-                    votation.id,
-                    [
-                        { id: andrea.id, ranking: 0 },
-                        { id: brad.id, ranking: 1 },
-                        { id: carter.id, ranking: 2 },
-                        { id: delilah.id, ranking: 3 },
-                    ],
-                    user.id
-                );
-                resolve(votes);
-            } catch (error) {
-                reject(error);
-            }
-        })
-    );
-    await Promise.all(promises);
-    await setWinner(ctx, votation.id);
-    const stvResult = await ctx.prisma.stvResult.findUnique({
-        where: {
-            votationId: votation.id,
-        },
-    });
-    const stvRoundResults = await ctx.prisma.stvRoundResult.findMany({
-        where: {
-            stvResultId: votation.id,
-        },
-        select: {
-            index: true,
-            winners: true,
-            losers: true,
-            alternativesWithRoundVoteCount: true,
-        },
-    });
-    expect(stvResult?.quota).toBe(1);
-    expect(stvRoundResults.find((r) => r.index === 0)?.winners.map((a) => a.id)).toContain(andrea.id);
-    expect(stvRoundResults.find((r) => r.index === 1)?.losers.map((a) => a.id)).toContain(delilah.id);
-    expect(stvRoundResults.find((r) => r.index === 2)?.losers).toHaveLength(1);
-    expect(stvRoundResults.find((r) => r.index === 3)?.winners).toHaveLength(1);
-    expect(
-        stvRoundResults
-            .find((r) => r.index === 0)
-            ?.alternativesWithRoundVoteCount.find((a) => a.alterantiveId === andrea.id)?.voteCount
-    ).toEqual(2);
-    expect(
-        stvRoundResults
-            .find((r) => r.index === 1)
-            ?.alternativesWithRoundVoteCount.find((a) => a.alterantiveId === brad.id)?.voteCount
-    ).toEqual(0.5);
-    expect(
-        stvRoundResults
-            .find((r) => r.index === 1)
-            ?.alternativesWithRoundVoteCount.find((a) => a.alterantiveId === carter.id)?.voteCount
-    ).toEqual(0.5);
-});
-
-it('should return round results for checking result stv votation as counter', async () => {
-    const meeting = await createMeeting(ctx.userId, Role.COUNTER, true);
-    const votation = await createVotation(meeting.id, VotationStatus.CHECKING_RESULT, 0, VotationType.STV, 2);
-    const andrea = await createAlternative(votation.id, 'andrea');
-    const brad = await createAlternative(votation.id, 'brad');
-    await new Promise(async (resolve, reject) => {
-        try {
-            const user = await createUser();
-            const votes = await castStvVote(
-                votation.id,
-                [
-                    { id: andrea.id, ranking: 0 },
-                    { id: brad.id, ranking: 1 },
-                ],
-                user.id
-            );
-            resolve(votes);
-        } catch (error) {
-            reject(error);
-        }
-    });
-    await setWinner(ctx, votation.id);
-    const response = await ctx.client.request(
-        gql`
-            query GetStvResult($votationId: String!) {
-                getStvResult(votationId: $votationId) {
-                    votationId
-                    quota
-                    voteCount
-                    votingEligibleCount
-                    stvRoundResults {
-                        index
-                        winners {
-                            votationId
-                            id
-                            text
-                        }
-                        losers {
-                            text
-                        }
-                        alternativesWithRoundVoteCount {
-                            alternative {
-                                id
-                                text
-                            }
-                            voteCount
-                        }
-                    }
-                }
-            }
-        `,
-        {
-            votationId: votation.id,
-        }
-    );
-    expect(response.getStvResult.stvRoundResults).toHaveLength(2);
-    expect(response.getStvResult.stvRoundResults[0].alternativesWithRoundVoteCount).toHaveLength(2);
-});
-
-it('should return round results for published result with hiddenVotes false stv votation as Participant ', async () => {
-    const meeting = await createMeeting(ctx.userId, Role.PARTICIPANT, true);
-    const votation = await createVotation(
-        meeting.id,
-        VotationStatus.PUBLISHED_RESULT,
-        0,
-        VotationType.STV,
-        2,
-        0,
-        false,
-        false
-    );
-    const andrea = await createAlternative(votation.id, 'andrea');
-    const brad = await createAlternative(votation.id, 'brad');
-    await new Promise(async (resolve, reject) => {
-        try {
-            const user = await createUser();
-            const votes = await castStvVote(
-                votation.id,
-                [
-                    { id: andrea.id, ranking: 0 },
-                    { id: brad.id, ranking: 1 },
-                ],
-                user.id
-            );
-            resolve(votes);
-        } catch (error) {
-            reject(error);
-        }
-    });
-    await setWinner(ctx, votation.id);
-    const response = await ctx.client.request(
-        gql`
-            query GetStvResult($votationId: String!) {
-                getStvResult(votationId: $votationId) {
-                    votationId
-                    quota
-                    voteCount
-                    votingEligibleCount
-                    stvRoundResults {
-                        index
-                        winners {
-                            votationId
-                            id
-                            text
-                        }
-                        losers {
-                            text
-                        }
-                        alternativesWithRoundVoteCount {
-                            alternative {
-                                id
-                                text
-                            }
-                            voteCount
-                        }
-                    }
-                }
-            }
-        `,
-        {
-            votationId: votation.id,
-        }
-    );
-    expect(response.getStvResult.stvRoundResults).toHaveLength(2);
-    expect(response.getStvResult.stvRoundResults[0].alternativesWithRoundVoteCount).toHaveLength(2);
-});
-
-it('should return not authorised trying to get round results for checking result with hiddenVotes false stv votation as Participant ', async () => {
-    const meeting = await createMeeting(ctx.userId, Role.PARTICIPANT, true);
-    const votation = await createVotation(
-        meeting.id,
-        VotationStatus.CHECKING_RESULT,
-        0,
-        VotationType.STV,
-        2,
-        0,
-        false,
-        false
-    );
-    const andrea = await createAlternative(votation.id, 'andrea');
-    const brad = await createAlternative(votation.id, 'brad');
-    await new Promise(async (resolve, reject) => {
-        try {
-            const user = await createUser();
-            const votes = await castStvVote(
-                votation.id,
-                [
-                    { id: andrea.id, ranking: 0 },
-                    { id: brad.id, ranking: 1 },
-                ],
-                user.id
-            );
-            resolve(votes);
-        } catch (error) {
-            reject(error);
-        }
-    });
-    await setWinner(ctx, votation.id);
-    try {
-        await ctx.client.request(
-            gql`
-                query GetStvResult($votationId: String!) {
-                    getStvResult(votationId: $votationId) {
-                        votationId
-                        quota
-                        voteCount
-                        votingEligibleCount
-                        stvRoundResults {
-                            index
-                            winners {
-                                votationId
-                                id
-                                text
-                            }
-                            losers {
-                                text
-                            }
-                            alternativesWithRoundVoteCount {
-                                alternative {
-                                    id
-                                    text
-                                }
-                                voteCount
-                            }
-                        }
-                    }
-                }
-            `,
-            {
-                votationId: votation.id,
-            }
-        );
-        expect(false).toBeTruthy();
-    } catch (error) {
-        expect(error.message).toContain('Not Authorised!');
-    }
-});
-
-it('should return not authorised trying to get round results for published result with hiddenVotes true stv votation as Participant ', async () => {
-    const meeting = await createMeeting(ctx.userId, Role.PARTICIPANT, true);
-    const votation = await createVotation(meeting.id, VotationStatus.CHECKING_RESULT, 0, VotationType.STV, 1);
-    const andrea = await createAlternative(votation.id, 'andrea');
-    await new Promise(async (resolve, reject) => {
-        try {
-            const user = await createUser();
-            const votes = await castStvVote(votation.id, [{ id: andrea.id, ranking: 0 }], user.id);
-            resolve(votes);
-        } catch (error) {
-            reject(error);
-        }
-    });
-    await setWinner(ctx, votation.id);
-    try {
-        await ctx.client.request(
-            gql`
-                query GetStvResult($votationId: String!) {
-                    getStvResult(votationId: $votationId) {
-                        votationId
-                        quota
-                        voteCount
-                        votingEligibleCount
-                        stvRoundResults {
-                            index
-                            winners {
-                                votationId
-                                id
-                                text
-                            }
-                            losers {
-                                text
-                            }
-                            alternativesWithRoundVoteCount {
-                                alternative {
-                                    id
-                                    text
-                                }
-                                voteCount
-                            }
-                        }
-                    }
-                }
-            `,
-            {
-                votationId: votation.id,
             }
         );
         expect(false).toBeTruthy();

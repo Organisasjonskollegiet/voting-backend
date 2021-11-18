@@ -173,6 +173,7 @@ export interface NexusGenObjects {
   }
   Query: {};
   Result: { // root type
+    blankVoteCount?: number | null; // Int
     quota?: number | null; // Float
     votationId: string; // String!
     voteCount: number; // Int!
@@ -369,18 +370,20 @@ export interface NexusGenFieldTypes {
     votationById: NexusGenRootTypes['Votation'] | null; // Votation
   }
   Result: { // field return type
+    alternatives: NexusGenRootTypes['AlternativeResult'][]; // [AlternativeResult!]!
+    blankVoteCount: number | null; // Int
     quota: number | null; // Float
-    stvRoundResults: NexusGenRootTypes['StvRoundResult'][]; // [StvRoundResult!]!
+    stvRoundResults: NexusGenRootTypes['StvRoundResult'][] | null; // [StvRoundResult!]
     votationId: string; // String!
     voteCount: number; // Int!
     votingEligibleCount: number; // Int!
-    winners: NexusGenRootTypes['Alternative'][]; // [Alternative!]!
   }
   ReviewResult: { // field return type
     approved: number; // Int!
     disapproved: number; // Int!
   }
   StvResult: { // field return type
+    alternatives: NexusGenRootTypes['AlternativeResult'][]; // [AlternativeResult!]!
     quota: number; // Int!
     stvRoundResults: NexusGenRootTypes['StvRoundResult'][]; // [StvRoundResult!]!
     votationId: string; // String!
@@ -570,18 +573,20 @@ export interface NexusGenFieldTypeNames {
     votationById: 'Votation'
   }
   Result: { // field return type name
+    alternatives: 'AlternativeResult'
+    blankVoteCount: 'Int'
     quota: 'Float'
     stvRoundResults: 'StvRoundResult'
     votationId: 'String'
     voteCount: 'Int'
     votingEligibleCount: 'Int'
-    winners: 'Alternative'
   }
   ReviewResult: { // field return type name
     approved: 'Int'
     disapproved: 'Int'
   }
   StvResult: { // field return type name
+    alternatives: 'AlternativeResult'
     quota: 'Int'
     stvRoundResults: 'StvRoundResult'
     votationId: 'String'

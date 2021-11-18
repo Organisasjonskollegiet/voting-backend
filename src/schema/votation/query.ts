@@ -45,7 +45,7 @@ export const GetStvResult = queryField('getStvResult', {
                 votationId,
             },
         });
-        if (!stvResult || !voteCount) throw new Error('');
+        if (!stvResult || !voteCount) return null;
         return { ...stvResult, ...voteCount };
     },
 });
