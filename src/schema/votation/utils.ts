@@ -66,19 +66,14 @@ const computeSimpleResult = async (ctx: Context, alternatives: Alternative[]) =>
 };
 
 const computeQualifiedResult = async (ctx: Context, votation: Votation, alternatives: Alternative[]) => {
-    const votingEligibleParticipants = await ctx.prisma.participant.count({
-        where: {
-            meetingId: votation?.meetingId,
-            isVotingEligible: true,
-        },
-    });
+    const { votingEligibleCount } = await getVoteCount(votation.id, ctx);
     for (const alternative of alternatives) {
-        const voteCount = await ctx.prisma.vote.count({
+        const votesForAlternative = await ctx.prisma.vote.count({
             where: {
                 alternativeId: alternative.id,
             },
         });
-        if (voteCount > (votingEligibleParticipants * votation.majorityThreshold) / 100) {
+        if (votesForAlternative > (votingEligibleCount * votation.majorityThreshold) / 100) {
             return [alternative.id];
         }
     }
@@ -224,11 +219,13 @@ const computeStvResult = async (ctx: Context, votation: Votation, alternatives: 
     const quota = await getQuota(ctx, votation);
     const stvVotes = await getStvVotes(ctx, votation.id);
 
-    // create result in db
-    const stvResult = await ctx.prisma.stvResult.create({
-        data: {
+    await ctx.prisma.votationResult.update({
+        where: {
             votationId: votation.id,
+        },
+        data: {
             quota,
+            blankVoteCount: stvVotes.filter((s) => s.votes.length === 0).length,
         },
     });
 
@@ -262,10 +259,9 @@ const computeStvResult = async (ctx: Context, votation: Votation, alternatives: 
                 });
             }
         });
-
         const stvRoundResult = await ctx.prisma.stvRoundResult.create({
             data: {
-                stvResultId: stvResult.votationId,
+                resultId: votation.id,
                 index: roundNr,
             },
         });
@@ -375,6 +371,13 @@ export const setWinner = async (ctx: Context, votationId: string) => {
         },
     });
     if (!votation) throw new Error('Votation does not exist.');
+    const voteCount = await getVoteCount(votationId, ctx);
+    await ctx.prisma.votationResult.create({
+        data: {
+            ...voteCount,
+            blankVoteCount: votation.blankVotes ? votation.blankVoteCount : null,
+        },
+    });
     const winners = await computeResult(ctx, votation);
     const promises: Promise<Alternative>[] = [];
     if (

@@ -172,6 +172,13 @@ export interface NexusGenObjects {
     role: NexusGenEnums['Role']; // Role!
   }
   Query: {};
+  Result: { // root type
+    blankVoteCount?: number | null; // Int
+    quota?: number | null; // Float
+    votationId: string; // String!
+    voteCount: number; // Int!
+    votingEligibleCount: number; // Int!
+  }
   ReviewResult: { // root type
     approved: number; // Int!
     disapproved: number; // Int!
@@ -357,15 +364,26 @@ export interface NexusGenFieldTypes {
     meetings: Array<NexusGenRootTypes['Meeting'] | null>; // [Meeting]!
     myParticipant: NexusGenRootTypes['ParticipantOrInvite'] | null; // ParticipantOrInvite
     participants: Array<NexusGenRootTypes['ParticipantOrInvite'] | null> | null; // [ParticipantOrInvite]
+    result: NexusGenRootTypes['Result'] | null; // Result
     resultsOfPublishedVotations: Array<NexusGenRootTypes['VotationWithWinner'] | null> | null; // [VotationWithWinner]
     user: NexusGenRootTypes['GetUserResult'] | null; // GetUserResult
     votationById: NexusGenRootTypes['Votation'] | null; // Votation
+  }
+  Result: { // field return type
+    alternatives: NexusGenRootTypes['AlternativeResult'][]; // [AlternativeResult!]!
+    blankVoteCount: number | null; // Int
+    quota: number | null; // Float
+    stvRoundResults: NexusGenRootTypes['StvRoundResult'][] | null; // [StvRoundResult!]
+    votationId: string; // String!
+    voteCount: number; // Int!
+    votingEligibleCount: number; // Int!
   }
   ReviewResult: { // field return type
     approved: number; // Int!
     disapproved: number; // Int!
   }
   StvResult: { // field return type
+    alternatives: NexusGenRootTypes['AlternativeResult'][]; // [AlternativeResult!]!
     quota: number; // Int!
     stvRoundResults: NexusGenRootTypes['StvRoundResult'][]; // [StvRoundResult!]!
     votationId: string; // String!
@@ -549,15 +567,26 @@ export interface NexusGenFieldTypeNames {
     meetings: 'Meeting'
     myParticipant: 'ParticipantOrInvite'
     participants: 'ParticipantOrInvite'
+    result: 'Result'
     resultsOfPublishedVotations: 'VotationWithWinner'
     user: 'GetUserResult'
     votationById: 'Votation'
+  }
+  Result: { // field return type name
+    alternatives: 'AlternativeResult'
+    blankVoteCount: 'Int'
+    quota: 'Float'
+    stvRoundResults: 'StvRoundResult'
+    votationId: 'String'
+    voteCount: 'Int'
+    votingEligibleCount: 'Int'
   }
   ReviewResult: { // field return type name
     approved: 'Int'
     disapproved: 'Int'
   }
   StvResult: { // field return type name
+    alternatives: 'AlternativeResult'
     quota: 'Int'
     stvRoundResults: 'StvRoundResult'
     votationId: 'String'
@@ -737,6 +766,9 @@ export interface NexusGenArgTypes {
     }
     participants: { // args
       meetingId: string; // String!
+    }
+    result: { // args
+      votationId: string; // String!
     }
     resultsOfPublishedVotations: { // args
       meetingId: string; // String!

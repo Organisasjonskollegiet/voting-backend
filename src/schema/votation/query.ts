@@ -1,5 +1,5 @@
 import { idArg, list, nonNull, queryField, stringArg } from 'nexus';
-import { Alternative, StvResult, Votation, VotationResults } from './typedefs';
+import { Alternative, StvResult, Votation, VotationResults, Result } from './typedefs';
 import { VotationStatus } from '@prisma/client';
 import { getParticipantId } from './utils';
 import { getVoteCount } from '.';
@@ -45,8 +45,23 @@ export const GetStvResult = queryField('getStvResult', {
                 votationId,
             },
         });
-        if (!stvResult || !voteCount) throw new Error('');
+        if (!stvResult || !voteCount) return null;
         return { ...stvResult, ...voteCount };
+    },
+});
+
+export const GetResult = queryField('result', {
+    type: Result,
+    description: 'Returns result of a votation',
+    args: {
+        votationId: nonNull(stringArg()),
+    },
+    resolve: async (_, { votationId }, ctx) => {
+        return await ctx.prisma.votationResult.findUnique({
+            where: {
+                votationId,
+            },
+        });
     },
 });
 

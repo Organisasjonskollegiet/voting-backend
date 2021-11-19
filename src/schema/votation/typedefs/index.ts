@@ -6,6 +6,7 @@ import {
     StvRoundResult as StvRoundResultModel,
     AlternativeRoundVoteCount as AlternativeRoundVoteCountModel,
     StvResult as StvResultModel,
+    VotationResult as ResultModel,
 } from '@prisma/client';
 import { VotationType, VotationStatus } from '../../enums';
 
@@ -198,12 +199,25 @@ export const StvRoundResults = objectType({
     },
 });
 
+// Will become deprecated when results from before 18th of November is no longer needed
 export const StvResult = objectType({
     name: 'StvResult',
     description: 'Results from a stv votation',
     definition(t) {
         t.nonNull.string('votationId');
         t.nonNull.int('quota');
+        t.nonNull.list.nonNull.field('alternatives', {
+            type: AlternativeResult,
+            resolve: async (source, __, ctx) => {
+                const { votationId } = source as ResultModel;
+                const alternatives = await ctx.prisma.alternative.findMany({
+                    where: {
+                        votationId,
+                    },
+                });
+                return alternatives;
+            },
+        });
         t.nonNull.list.nonNull.field('stvRoundResults', {
             type: StvRoundResults,
             resolve: async (source, __, ctx) => {
@@ -221,6 +235,44 @@ export const StvResult = objectType({
     },
 });
 
+export const Result = objectType({
+    name: 'Result',
+    description: 'The result of a votation',
+    definition(t) {
+        t.nonNull.string('votationId');
+        t.nonNull.int('votingEligibleCount');
+        t.nonNull.int('voteCount');
+        t.float('quota');
+        t.int('blankVoteCount');
+        t.list.nonNull.field('stvRoundResults', {
+            type: StvRoundResults,
+            resolve: async (source, __, ctx) => {
+                const { votationId } = source as StvResultModel;
+                const stvRoundResults = await ctx.prisma.stvRoundResult.findMany({
+                    where: {
+                        resultId: votationId,
+                    },
+                });
+                return stvRoundResults;
+            },
+        });
+        t.nonNull.list.nonNull.field('alternatives', {
+            type: AlternativeResult,
+            resolve: async (source, __, ctx) => {
+                const { votationId } = source as ResultModel;
+                const alternatives = await ctx.prisma.alternative.findMany({
+                    where: {
+                        votationId,
+                    },
+                });
+                return alternatives;
+            },
+        });
+        t.int('blankVoteCount');
+    },
+});
+
+// Will become deprecated when results from before 18th of November is no longer needed
 export const VotationResults = objectType({
     name: 'VotationResults',
     description: 'The results of a votation',
