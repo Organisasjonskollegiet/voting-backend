@@ -12,7 +12,7 @@ import casual from 'casual';
 
 const prisma = new PrismaClient();
 
-type TestContext = {
+export type TestContext = {
     client: GraphQLClient;
     prisma: PrismaClient;
     userId: string;
