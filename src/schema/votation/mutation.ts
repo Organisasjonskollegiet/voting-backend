@@ -1,7 +1,8 @@
 import { booleanArg, inputObjectType, list, mutationField, nonNull, stringArg } from 'nexus';
 import { Vote } from './';
 import { pubsub } from '../../lib/pubsub';
-import { Alternative, UpdateVotationStatusResult, Votation, MaxOneOpenVotationError } from './typedefs';
+import { VotationStatus as VotationStatusDb } from '.prisma/client';
+import { Alternative, Votation, MaxOneOpenVotationError, OpenVotationResult } from './typedefs';
 import { VotationType, VotationStatus } from '../enums';
 import { getVoteCount, setWinner } from './utils';
 import { VotationStatusUpdatedResponse } from './subscriptions';
@@ -224,34 +225,64 @@ export const UpdateVotationsMutation = mutationField('updateVotations', {
     },
 });
 
+export const StartNextVotation = mutationField('startNextVotation', {
+    type: OpenVotationResult,
+    description: 'Start the next votation in line for a meeting.',
+    args: {
+        meetingId: nonNull(stringArg()),
+    },
+    resolve: async (_, { meetingId }, ctx) => {
+        const openVotation = await ctx.prisma.votation.count({
+            where: {
+                meetingId,
+                status: VotationStatusDb.OPEN,
+            },
+        });
+        if (openVotation !== 0)
+            return {
+                __typename: 'MaxOneOpenVotationError',
+                message: 'Møtet kan kun ha en åpen votering om gangen',
+            };
+        const votation = await ctx.prisma.votation.findFirst({
+            where: {
+                meetingId,
+                status: VotationStatusDb.UPCOMING,
+            },
+            orderBy: {
+                index: 'asc',
+            },
+            select: {
+                id: true,
+            },
+        });
+        if (!votation)
+            return {
+                __typename: 'NoUpcomingVotations',
+                message: 'Møtet har ingen kommende voteringer.',
+            };
+        await ctx.prisma.votation.update({
+            where: {
+                id: votation.id,
+            },
+            data: {
+                status: VotationStatusDb.OPEN,
+            },
+        });
+        await pubsub.publish(`VOTATION_OPENED_FOR_MEETING_${meetingId}`, votation.id);
+        return { __typename: 'OpenedVotation', votationId: votation.id };
+    },
+});
+
 export const UpdateVotationStatusMutation = mutationField('updateVotationStatus', {
-    type: UpdateVotationStatusResult,
-    description: '',
+    type: Votation,
+    description: 'Update status of a votation, to anything other than OPEN.',
     args: {
         votationId: nonNull(stringArg()),
         status: nonNull(VotationStatus),
     },
     resolve: async (_, { votationId, status }, ctx) => {
-        const votation = await ctx.prisma.votation.findUnique({
-            where: {
-                id: votationId,
-            },
-        });
-        if (status === 'OPEN') {
-            const openVotationsForMeeting = await ctx.prisma.votation.count({
-                where: {
-                    meetingId: votation?.meetingId,
-                    status: { in: ['OPEN', 'CHECKING_RESULT'] },
-                },
-            });
-            if (openVotationsForMeeting > 0 && votation?.status !== 'OPEN') {
-                return {
-                    __typename: 'MaxOneOpenVotationError',
-                    message: 'Møtet kan kun ha en åpen votering om gangen',
-                };
-            }
-            await pubsub.publish(`VOTATION_OPENED_FOR_MEETING_${votation?.meetingId}`, votationId);
-        } else if (status === 'CHECKING_RESULT') {
+        if (status === VotationStatusDb.OPEN) throw new Error('Use startNextVotation mutation to open a votation.');
+        if (status === 'CHECKING_RESULT') {
             await setWinner(ctx, votationId);
         }
         const updatedVotation = await ctx.prisma.votation.update({

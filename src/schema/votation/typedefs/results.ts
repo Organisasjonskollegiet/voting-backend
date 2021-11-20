@@ -7,10 +7,24 @@ export const MaxOneOpenVotationError = objectType({
     },
 });
 
-export const UpdateVotationStatusResult = unionType({
-    name: 'UpdateVotationStatusResult',
+export const NoUpcomingVotations = objectType({
+    name: 'NoUpcomingVotations',
     definition(t) {
-        t.members('Votation', 'MaxOneOpenVotationError');
+        t.nonNull.string('message');
+    },
+});
+
+export const OpenedVotation = objectType({
+    name: 'OpenedVotation',
+    definition(t) {
+        t.nonNull.string('votationId');
+    },
+});
+
+export const OpenVotationResult = unionType({
+    name: 'OpenVotationResult',
+    definition(t) {
+        t.members('OpenedVotation', 'MaxOneOpenVotationError', 'NoUpcomingVotations');
     },
 });
 

@@ -116,6 +116,9 @@ type Mutation {
   """Approve or disapprove a votation result"""
   reviewVotation(approved: Boolean!, votationId: String!): String
 
+  """Start the next votation in line for a meeting."""
+  startNextVotation(meetingId: String!): OpenVotationResult
+
   """"""
   updateMeeting(meeting: UpdateMeetingInput!): Meeting
 
@@ -123,8 +126,8 @@ type Mutation {
   updateParticipant(meetingId: String!, participant: ParticipantInput!): ParticipantOrInvite
   updateVotationIndexes(meetingId: String!, votations: [UpdateVotationIndexInput!]!): [Votation]
 
-  """"""
-  updateVotationStatus(status: VotationStatus!, votationId: String!): UpdateVotationStatusResult
+  """Update status of a votation, to anything other than OPEN."""
+  updateVotationStatus(status: VotationStatus!, votationId: String!): Votation
 
   """Update votations belonging to a meeting."""
   updateVotations(meetingId: String!, votations: [UpdateVotationInput!]!): [Votation]
@@ -140,6 +143,16 @@ type NewVoteRegisteredResponse {
 
 type NoReview {
   message: String!
+}
+
+type NoUpcomingVotations {
+  message: String!
+}
+
+union OpenVotationResult = MaxOneOpenVotationError | NoUpcomingVotations | OpenedVotation
+
+type OpenedVotation {
+  votationId: String!
 }
 
 type OwnerCannotBeRemovedFromParticipantError {
@@ -311,8 +324,6 @@ input UpdateVotationInput {
   title: String!
   type: VotationType!
 }
-
-union UpdateVotationStatusResult = MaxOneOpenVotationError | Votation
 
 type User {
   email: String!

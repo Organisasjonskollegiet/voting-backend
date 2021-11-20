@@ -155,6 +155,12 @@ export interface NexusGenObjects {
   NoReview: { // root type
     message: string; // String!
   }
+  NoUpcomingVotations: { // root type
+    message: string; // String!
+  }
+  OpenedVotation: { // root type
+    votationId: string; // String!
+  }
   OwnerCannotBeRemovedFromParticipantError: { // root type
     message: string; // String!
   }
@@ -263,7 +269,7 @@ export interface NexusGenUnions {
   DeleteParticipantResult: core.Discriminate<'OwnerCannotBeRemovedFromParticipantError', 'required'> | core.Discriminate<'Participant', 'required'>;
   GetUserResult: core.Discriminate<'User', 'required'> | core.Discriminate<'UserNotFoundError', 'required'>;
   MyReviewResult: core.Discriminate<'NoReview', 'required'> | core.Discriminate<'VotationReview', 'required'>;
-  UpdateVotationStatusResult: core.Discriminate<'MaxOneOpenVotationError', 'required'> | core.Discriminate<'Votation', 'required'>;
+  OpenVotationResult: core.Discriminate<'MaxOneOpenVotationError', 'required'> | core.Discriminate<'NoUpcomingVotations', 'required'> | core.Discriminate<'OpenedVotation', 'required'>;
 }
 
 export type NexusGenRootTypes = NexusGenObjects & NexusGenUnions
@@ -321,10 +327,11 @@ export interface NexusGenFieldTypes {
     deleteParticipants: Array<string | null> | null; // [String]
     deleteVotation: string | null; // String
     reviewVotation: string | null; // String
+    startNextVotation: NexusGenRootTypes['OpenVotationResult'] | null; // OpenVotationResult
     updateMeeting: NexusGenRootTypes['Meeting'] | null; // Meeting
     updateParticipant: NexusGenRootTypes['ParticipantOrInvite'] | null; // ParticipantOrInvite
     updateVotationIndexes: Array<NexusGenRootTypes['Votation'] | null> | null; // [Votation]
-    updateVotationStatus: NexusGenRootTypes['UpdateVotationStatusResult'] | null; // UpdateVotationStatusResult
+    updateVotationStatus: NexusGenRootTypes['Votation'] | null; // Votation
     updateVotations: Array<NexusGenRootTypes['Votation'] | null> | null; // [Votation]
   }
   NewVoteRegisteredResponse: { // field return type
@@ -334,6 +341,12 @@ export interface NexusGenFieldTypes {
   }
   NoReview: { // field return type
     message: string; // String!
+  }
+  NoUpcomingVotations: { // field return type
+    message: string; // String!
+  }
+  OpenedVotation: { // field return type
+    votationId: string; // String!
   }
   OwnerCannotBeRemovedFromParticipantError: { // field return type
     message: string; // String!
@@ -524,10 +537,11 @@ export interface NexusGenFieldTypeNames {
     deleteParticipants: 'String'
     deleteVotation: 'String'
     reviewVotation: 'String'
+    startNextVotation: 'OpenVotationResult'
     updateMeeting: 'Meeting'
     updateParticipant: 'ParticipantOrInvite'
     updateVotationIndexes: 'Votation'
-    updateVotationStatus: 'UpdateVotationStatusResult'
+    updateVotationStatus: 'Votation'
     updateVotations: 'Votation'
   }
   NewVoteRegisteredResponse: { // field return type name
@@ -537,6 +551,12 @@ export interface NexusGenFieldTypeNames {
   }
   NoReview: { // field return type name
     message: 'String'
+  }
+  NoUpcomingVotations: { // field return type name
+    message: 'String'
+  }
+  OpenedVotation: { // field return type name
+    votationId: 'String'
   }
   OwnerCannotBeRemovedFromParticipantError: { // field return type name
     message: 'String'
@@ -716,6 +736,9 @@ export interface NexusGenArgTypes {
       approved: boolean; // Boolean!
       votationId: string; // String!
     }
+    startNextVotation: { // args
+      meetingId: string; // String!
+    }
     updateMeeting: { // args
       meeting: NexusGenInputs['UpdateMeetingInput']; // UpdateMeetingInput!
     }
@@ -807,7 +830,7 @@ export interface NexusGenAbstractTypeMembers {
   DeleteParticipantResult: "OwnerCannotBeRemovedFromParticipantError" | "Participant"
   GetUserResult: "User" | "UserNotFoundError"
   MyReviewResult: "NoReview" | "VotationReview"
-  UpdateVotationStatusResult: "MaxOneOpenVotationError" | "Votation"
+  OpenVotationResult: "MaxOneOpenVotationError" | "NoUpcomingVotations" | "OpenedVotation"
 }
 
 export interface NexusGenTypeInterfaces {
