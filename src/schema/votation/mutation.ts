@@ -4,7 +4,7 @@ import { pubsub } from '../../lib/pubsub';
 import { VotationStatus as VotationStatusDb } from '.prisma/client';
 import { Alternative, Votation, MaxOneOpenVotationError, OpenVotationResult } from './typedefs';
 import { VotationType, VotationStatus } from '../enums';
-import { getVoteCount, setWinner } from './utils';
+import { checkIfValidStatusUpdate, getVoteCount, setWinner } from './utils';
 import { VotationStatusUpdatedResponse } from './subscriptions';
 import { boolean } from 'casual';
 import { getParticipantId } from './utils';
@@ -253,12 +253,19 @@ export const StartNextVotation = mutationField('startNextVotation', {
             },
             select: {
                 id: true,
+                title: true,
+                alternatives: true,
             },
         });
         if (!votation)
             return {
                 __typename: 'NoUpcomingVotations',
                 message: 'Møtet har ingen kommende voteringer.',
+            };
+        if (votation.alternatives.length === 0)
+            return {
+                __typename: 'VotationHasNoAlternatives',
+                message: 'Voteringen kan kan ikke åpnes da den ikke har noen alternativer.',
             };
         await ctx.prisma.votation.update({
             where: {
@@ -269,7 +276,7 @@ export const StartNextVotation = mutationField('startNextVotation', {
             },
         });
         await pubsub.publish(`VOTATION_OPENED_FOR_MEETING_${meetingId}`, votation.id);
-        return { __typename: 'OpenedVotation', votationId: votation.id };
+        return { __typename: 'OpenedVotation', votationId: votation.id, title: votation.title };
     },
 });
 
@@ -281,7 +288,13 @@ export const UpdateVotationStatusMutation = mutationField('updateVotationStatus'
         status: nonNull(VotationStatus),
     },
     resolve: async (_, { votationId, status }, ctx) => {
-        if (status === VotationStatusDb.OPEN) throw new Error('Use startNextVotation mutation to open a votation.');
+        const votation = await ctx.prisma.votation.findUnique({
+            where: {
+                id: votationId,
+            },
+        });
+        if (!votation) throw new Error('Votation doess not exist.');
+        checkIfValidStatusUpdate(votation.status, status);
         if (status === 'CHECKING_RESULT') {
             await setWinner(ctx, votationId);
         }

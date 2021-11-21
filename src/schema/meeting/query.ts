@@ -1,3 +1,4 @@
+import { VotationStatus } from '.prisma/client';
 import { list, nonNull, queryField, stringArg } from 'nexus';
 import { Meeting, ParticipantOrInvite } from './';
 
@@ -66,6 +67,22 @@ export const GetParticipants = queryField('participants', {
                 };
             }),
         ];
+    },
+});
+
+export const GetNumberOfUpcomingVotations = queryField('numberOfUpcomingVotations', {
+    type: 'Int',
+    description: 'Get number of upcoming votations for a meeting.',
+    args: {
+        meetingId: nonNull(stringArg()),
+    },
+    resolve: async (_, { meetingId }, ctx) => {
+        return await ctx.prisma.votation.count({
+            where: {
+                meetingId,
+                status: VotationStatus.UPCOMING,
+            },
+        });
     },
 });
 

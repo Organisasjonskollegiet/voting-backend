@@ -149,9 +149,10 @@ type NoUpcomingVotations {
   message: String!
 }
 
-union OpenVotationResult = MaxOneOpenVotationError | NoUpcomingVotations | OpenedVotation
+union OpenVotationResult = MaxOneOpenVotationError | NoUpcomingVotations | OpenedVotation | VotationHasNoAlternatives
 
 type OpenedVotation {
+  title: String!
   votationId: String!
 }
 
@@ -210,6 +211,9 @@ type Query {
 
   """Return participant belonging to the user for the meeting specified."""
   myParticipant(meetingId: String!): ParticipantOrInvite
+
+  """Get number of upcoming votations for a meeting."""
+  numberOfUpcomingVotations(meetingId: String!): Int
 
   """
   Return relevant information about invites and participants connected to meeting
@@ -349,6 +353,10 @@ type Votation {
   status: VotationStatus!
   title: String!
   type: VotationType!
+}
+
+type VotationHasNoAlternatives {
+  message: String!
 }
 
 """The results of a votation"""

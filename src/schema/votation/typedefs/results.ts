@@ -14,17 +14,25 @@ export const NoUpcomingVotations = objectType({
     },
 });
 
+export const VotationHasNoAlternatives = objectType({
+    name: 'VotationHasNoAlternatives',
+    definition(t) {
+        t.nonNull.string('message');
+    },
+});
+
 export const OpenedVotation = objectType({
     name: 'OpenedVotation',
     definition(t) {
         t.nonNull.string('votationId');
+        t.nonNull.string('title');
     },
 });
 
 export const OpenVotationResult = unionType({
     name: 'OpenVotationResult',
     definition(t) {
-        t.members('OpenedVotation', 'MaxOneOpenVotationError', 'NoUpcomingVotations');
+        t.members('OpenedVotation', 'MaxOneOpenVotationError', 'NoUpcomingVotations', 'VotationHasNoAlternatives');
     },
 });
 
