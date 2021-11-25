@@ -1,4 +1,4 @@
-import { Alternative, Votation, VotationType, Vote } from '@prisma/client';
+import { Alternative, Votation, VotationStatus, VotationType, Vote } from '@prisma/client';
 import { Context } from '../../context';
 /**
  * @description Object consisting of alternative id and the current vote count.
@@ -34,6 +34,24 @@ type StvVoteWithWeightAndActiveRank = {
     votes: Vote[];
     weight: number;
     activeRank: number;
+};
+
+export const checkIfValidStatusUpdate = (oldStatus: VotationStatus, newStatus: VotationStatus) => {
+    switch (newStatus) {
+        case VotationStatus.UPCOMING:
+            throw new Error('Cannot update votation status to be UPCOMING.');
+        case VotationStatus.OPEN:
+            throw new Error('Use startNextVotation mutation in order to start a votation.');
+        case VotationStatus.CHECKING_RESULT:
+            if (oldStatus === VotationStatus.OPEN) return true;
+            throw new Error('Votation must be of status OPEN to update to CHECKING_RESULT.');
+        case VotationStatus.INVALID:
+            if (oldStatus === VotationStatus.OPEN || oldStatus === VotationStatus.CHECKING_RESULT) return true;
+            throw new Error('Votation must be of status OPEN or CHECKING_RESULT to update to INVALID.');
+        case VotationStatus.PUBLISHED_RESULT:
+            if (oldStatus === VotationStatus.CHECKING_RESULT) return true;
+            throw new Error('Votation must be of status CHECKING_RESULT to update to PUBLISHED_RESULT.');
+    }
 };
 
 export const userHasVoted = async (ctx: Context, votationId: string) => {

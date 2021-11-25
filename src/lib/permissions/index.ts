@@ -5,7 +5,6 @@ import {
     isCounterOfVotationById,
     isAdminOfMeetingId,
     isAdminOfMeetingByObject,
-    isAdminOfVotationsByObjects,
     isAdminOfAlternatives,
     isOwnerOfMeeting,
     isAdminOfVotationById,
@@ -45,6 +44,7 @@ const permissions = shield(
                 isCounterOfVotationById,
                 and(isParticipantOfVotation, resultIsPublished, votesNotHidden)
             ),
+            numberOfUpcomingVotations: and(isParticipantOfMeeting),
         },
         Mutation: {
             addParticipants: and(isAdminOfMeetingId),
@@ -62,6 +62,7 @@ const permissions = shield(
             deleteVotation: and(isAdminOfVotationById),
             deleteMeeting: and(isOwnerOfMeeting),
             reviewVotation: or(isAdminOfVotationById, isCounterOfVotationById),
+            startNextVotation: and(isAdminOfMeetingId),
         },
         Subscription: {
             newVoteRegistered: allow,

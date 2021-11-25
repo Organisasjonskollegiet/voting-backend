@@ -116,6 +116,9 @@ type Mutation {
   """Approve or disapprove a votation result"""
   reviewVotation(approved: Boolean!, votationId: String!): String
 
+  """Start the next votation in line for a meeting."""
+  startNextVotation(meetingId: String!): OpenVotationResult
+
   """"""
   updateMeeting(meeting: UpdateMeetingInput!): Meeting
 
@@ -123,8 +126,8 @@ type Mutation {
   updateParticipant(meetingId: String!, participant: ParticipantInput!): ParticipantOrInvite
   updateVotationIndexes(meetingId: String!, votations: [UpdateVotationIndexInput!]!): [Votation]
 
-  """"""
-  updateVotationStatus(status: VotationStatus!, votationId: String!): UpdateVotationStatusResult
+  """Update status of a votation, to anything other than OPEN."""
+  updateVotationStatus(status: VotationStatus!, votationId: String!): Votation
 
   """Update votations belonging to a meeting."""
   updateVotations(meetingId: String!, votations: [UpdateVotationInput!]!): [Votation]
@@ -140,6 +143,17 @@ type NewVoteRegisteredResponse {
 
 type NoReview {
   message: String!
+}
+
+type NoUpcomingVotations {
+  message: String!
+}
+
+union OpenVotationResult = MaxOneOpenVotationError | NoUpcomingVotations | OpenedVotation | VotationHasNoAlternatives
+
+type OpenedVotation {
+  title: String!
+  votationId: String!
 }
 
 type OwnerCannotBeRemovedFromParticipantError {
@@ -197,6 +211,9 @@ type Query {
 
   """Return participant belonging to the user for the meeting specified."""
   myParticipant(meetingId: String!): ParticipantOrInvite
+
+  """Get number of upcoming votations for a meeting."""
+  numberOfUpcomingVotations(meetingId: String!): Int
 
   """
   Return relevant information about invites and participants connected to meeting
@@ -312,8 +329,6 @@ input UpdateVotationInput {
   type: VotationType!
 }
 
-union UpdateVotationStatusResult = MaxOneOpenVotationError | Votation
-
 type User {
   email: String!
   emailVerified: Boolean!
@@ -338,6 +353,10 @@ type Votation {
   status: VotationStatus!
   title: String!
   type: VotationType!
+}
+
+type VotationHasNoAlternatives {
+  message: String!
 }
 
 """The results of a votation"""
