@@ -50,6 +50,7 @@ const checkIfUserCanVote = async (votationId: string, ctx: Context) => {
 };
 
 export const isAuthenticated = rule({ cache: 'contextual' })(async (_, __, ctx: Context) => {
+    console.log(ctx);
     return ctx.userId ? true : new AuthenticationError('User must be logged in');
 });
 
@@ -72,11 +73,14 @@ export const isParticipantOfVotation = rule({ cache: 'contextual' })(async (_, {
 });
 
 /**
- * Rule: The user is participant of the meeting the alternative is related to
+ * Rule: The meeting allows self registration
  */
-// export const isParticipantOfAlternativeId = rule({ cache: 'contextual' })(async (_, { alternativeId }, ctx: Context) => {
-
-// });
+export const meetingAllowsSelfRegistration = rule({ cache: 'contextual' })(async (_, { meetingId }, ctx: Context) => {
+    const meeting = await ctx.prisma.meeting.findUnique({
+        where: { id: meetingId },
+    });
+    return meeting ? meeting.allowSelfRegistration : false;
+});
 
 /**
  * Rule: The user is an Counter of the meeting

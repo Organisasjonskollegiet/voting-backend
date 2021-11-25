@@ -258,6 +258,23 @@ export const AddParticipantsMutation = mutationField('addParticipants', {
     },
 });
 
+export const RegisterAsParticipant = mutationField('registerAsParticipant', {
+    type: 'Participant',
+    description: 'Register the logged in user as a participant.',
+    args: {
+        meetingId: nonNull(stringArg()),
+    },
+    resolve: async (_, { meetingId }, ctx) => {
+        return await ctx.prisma.participant.create({
+            data: {
+                userId: ctx.userId,
+                meetingId,
+                role: RoleEnum.PARTICIPANT,
+            },
+        });
+    },
+});
+
 export const DeleteParticipantsMutation = mutationField('deleteParticipants', {
     type: list('String'),
     description: '',

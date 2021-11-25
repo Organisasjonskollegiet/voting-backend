@@ -113,6 +113,9 @@ type Mutation {
   """"""
   deleteVotation(votationId: String!): String
 
+  """Register the logged in user as a participant."""
+  registerAsParticipant(meetingId: String!): Participant
+
   """Approve or disapprove a votation result"""
   reviewVotation(approved: Boolean!, votationId: String!): String
 
