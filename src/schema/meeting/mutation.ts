@@ -23,6 +23,7 @@ export const CreateMeetingInput = inputObjectType({
         t.nonNull.string('title');
         t.nonNull.datetime('startTime');
         t.string('description');
+        t.nonNull.boolean('allowSelfRegistration');
     },
 });
 
@@ -35,6 +36,7 @@ export const UpdateMeetingInput = inputObjectType({
         t.datetime('startTime');
         t.string('description');
         t.field('status', { type: MeetingStatus });
+        t.boolean('allowSelfRegistration');
     },
 });
 
@@ -96,6 +98,7 @@ export const UpdateMeetingMutation = mutationField('updateMeeting', {
                 startTime: meeting.startTime ?? undefined,
                 description: meeting.description ?? undefined,
                 status: meeting.status ?? undefined,
+                allowSelfRegistration: meeting.allowSelfRegistration ?? undefined,
             },
             where: {
                 id: meeting.id,
@@ -265,6 +268,12 @@ export const RegisterAsParticipant = mutationField('registerAsParticipant', {
         meetingId: nonNull(stringArg()),
     },
     resolve: async (_, { meetingId }, ctx) => {
+        const existingParticipant = await ctx.prisma.participant.findUnique({
+            where: {
+                userId_meetingId: { meetingId, userId: ctx.userId },
+            },
+        });
+        if (existingParticipant) return existingParticipant;
         return await ctx.prisma.participant.create({
             data: {
                 userId: ctx.userId,

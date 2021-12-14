@@ -8,6 +8,7 @@ export interface StaticMeetingDataType {
     startTime: string;
     description: string;
     status: MeetingStatus;
+    allowSelfRegistration: boolean;
 }
 
 export interface StaticVotationDataType {
@@ -26,6 +27,7 @@ export const staticMeetingData: StaticMeetingDataType = {
     startTime: '2021-04-13T11:29:58.000Z',
     description: 'test description',
     status: MeetingStatus.UPCOMING,
+    allowSelfRegistration: false,
 };
 
 export const updatedMeetingData: StaticMeetingDataType = {
@@ -34,6 +36,7 @@ export const updatedMeetingData: StaticMeetingDataType = {
     startTime: '2021-05-13T14:06:30.000Z',
     description: 'New description',
     status: MeetingStatus.ONGOING,
+    allowSelfRegistration: true,
 };
 
 export const staticVotationData: StaticVotationDataType = {

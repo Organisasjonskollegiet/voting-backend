@@ -21,6 +21,7 @@ export const Meeting = objectType({
         t.nonNull.string('organization');
         t.nonNull.datetime('startTime');
         t.string('description');
+        t.nonNull.boolean('allowSelfRegistration');
         t.field('owner', {
             type: User,
             resolve: async (source, __, ctx) => {

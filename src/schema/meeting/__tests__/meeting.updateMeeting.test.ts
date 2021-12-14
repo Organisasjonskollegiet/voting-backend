@@ -16,6 +16,7 @@ it('should update meeting successfully', async () => {
                     description
                     startTime
                     status
+                    allowSelfRegistration
                 }
             }
         `,
@@ -44,6 +45,7 @@ it('should throw error for not authorized when trying to update meeting', async 
                         description
                         startTime
                         status
+                        allowSelfRegistration
                     }
                 }
             `,

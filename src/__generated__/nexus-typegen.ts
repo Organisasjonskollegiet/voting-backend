@@ -34,6 +34,7 @@ export interface NexusGenInputs {
     text: string; // String!
   }
   CreateMeetingInput: { // input type
+    allowSelfRegistration: boolean; // Boolean!
     description?: string | null; // String
     organization: string; // String!
     startTime: NexusGenScalars['DateTime']; // DateTime!
@@ -65,6 +66,7 @@ export interface NexusGenInputs {
     text: string; // String!
   }
   UpdateMeetingInput: { // input type
+    allowSelfRegistration?: boolean | null; // Boolean
     description?: string | null; // String
     id: string; // String!
     organization?: string | null; // String
@@ -139,6 +141,7 @@ export interface NexusGenObjects {
     message: string; // String!
   }
   Meeting: { // root type
+    allowSelfRegistration: boolean; // Boolean!
     description?: string | null; // String
     id: string; // ID!
     organization: string; // String!
@@ -309,6 +312,7 @@ export interface NexusGenFieldTypes {
     message: string; // String!
   }
   Meeting: { // field return type
+    allowSelfRegistration: boolean; // Boolean!
     description: string | null; // String
     id: string; // ID!
     organization: string; // String!
@@ -525,6 +529,7 @@ export interface NexusGenFieldTypeNames {
     message: 'String'
   }
   Meeting: { // field return type name
+    allowSelfRegistration: 'Boolean'
     description: 'String'
     id: 'ID'
     organization: 'String'
