@@ -61,11 +61,18 @@ export const alternative1Text = 'alternative1 text';
 
 export const alternative2Text = 'alternative2 text';
 
-export const createMeeting = async (ctx: TestContext, ownerId: string, role: Role, isVotingEligible: boolean) => {
+export const createMeeting = async (
+    ctx: TestContext,
+    ownerId: string,
+    role: Role,
+    isVotingEligible: boolean,
+    allowSelfRegistration?: boolean
+) => {
     return await ctx.prisma.meeting.create({
         data: {
             ...staticMeetingData,
             ownerId: ownerId,
+            allowSelfRegistration: allowSelfRegistration ?? false,
             participants: {
                 create: {
                     userId: ownerId,

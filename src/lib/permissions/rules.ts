@@ -50,7 +50,6 @@ const checkIfUserCanVote = async (votationId: string, ctx: Context) => {
 };
 
 export const isAuthenticated = rule({ cache: 'contextual' })(async (_, __, ctx: Context) => {
-    console.log(ctx);
     return ctx.userId ? true : new AuthenticationError('User must be logged in');
 });
 
