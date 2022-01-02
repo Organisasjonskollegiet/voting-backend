@@ -34,6 +34,7 @@ export interface NexusGenInputs {
     text: string; // String!
   }
   CreateMeetingInput: { // input type
+    allowSelfRegistration: boolean; // Boolean!
     description?: string | null; // String
     organization: string; // String!
     startTime: NexusGenScalars['DateTime']; // DateTime!
@@ -65,6 +66,7 @@ export interface NexusGenInputs {
     text: string; // String!
   }
   UpdateMeetingInput: { // input type
+    allowSelfRegistration?: boolean | null; // Boolean
     description?: string | null; // String
     id: string; // String!
     organization?: string | null; // String
@@ -139,6 +141,7 @@ export interface NexusGenObjects {
     message: string; // String!
   }
   Meeting: { // root type
+    allowSelfRegistration: boolean; // Boolean!
     description?: string | null; // String
     id: string; // ID!
     organization: string; // String!
@@ -309,6 +312,7 @@ export interface NexusGenFieldTypes {
     message: string; // String!
   }
   Meeting: { // field return type
+    allowSelfRegistration: boolean; // Boolean!
     description: string | null; // String
     id: string; // ID!
     organization: string; // String!
@@ -330,6 +334,7 @@ export interface NexusGenFieldTypes {
     deleteMeeting: NexusGenRootTypes['Meeting'] | null; // Meeting
     deleteParticipants: Array<string | null> | null; // [String]
     deleteVotation: string | null; // String
+    registerAsParticipant: NexusGenRootTypes['Participant'] | null; // Participant
     reviewVotation: string | null; // String
     startNextVotation: NexusGenRootTypes['OpenVotationResult'] | null; // OpenVotationResult
     updateMeeting: NexusGenRootTypes['Meeting'] | null; // Meeting
@@ -524,6 +529,7 @@ export interface NexusGenFieldTypeNames {
     message: 'String'
   }
   Meeting: { // field return type name
+    allowSelfRegistration: 'Boolean'
     description: 'String'
     id: 'ID'
     organization: 'String'
@@ -545,6 +551,7 @@ export interface NexusGenFieldTypeNames {
     deleteMeeting: 'Meeting'
     deleteParticipants: 'String'
     deleteVotation: 'String'
+    registerAsParticipant: 'Participant'
     reviewVotation: 'String'
     startNextVotation: 'OpenVotationResult'
     updateMeeting: 'Meeting'
@@ -745,6 +752,9 @@ export interface NexusGenArgTypes {
     }
     deleteVotation: { // args
       votationId: string; // String!
+    }
+    registerAsParticipant: { // args
+      meetingId: string; // String!
     }
     reviewVotation: { // args
       approved: boolean; // Boolean!

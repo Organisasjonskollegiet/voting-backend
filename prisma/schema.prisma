@@ -56,6 +56,7 @@ model Meeting {
   ownerId      String        @db.Uuid
   votations    Votation[]
   status       MeetingStatus @default(UPCOMING)
+  allowSelfRegistration Boolean @default(false)
   participants Participant[]
   Invite       Invite[]
 }

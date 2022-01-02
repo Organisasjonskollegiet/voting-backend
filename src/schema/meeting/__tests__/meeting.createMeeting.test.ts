@@ -8,6 +8,7 @@ const createMeetingVariables = {
         organization: 'Organisasjonskollegiet',
         startTime: '2021-04-13T11:45:43.000Z',
         description: 'description',
+        allowSelfRegistration: false,
     },
 };
 
@@ -20,6 +21,7 @@ it('should create a meeting successfully', async () => {
                     organization
                     description
                     startTime
+                    allowSelfRegistration
                     owner {
                         id
                     }

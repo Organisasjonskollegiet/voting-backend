@@ -14,6 +14,8 @@ import {
     votesNotHidden,
     votationsAreUpcoming,
     votationsBelongToMeeting,
+    isAuthenticated,
+    meetingAllowsSelfRegistration,
 } from './rules';
 
 const permissions = shield(
@@ -63,6 +65,7 @@ const permissions = shield(
             deleteMeeting: and(isOwnerOfMeeting),
             reviewVotation: or(isAdminOfVotationById, isCounterOfVotationById),
             startNextVotation: and(isAdminOfMeetingId),
+            registerAsParticipant: and(isAuthenticated, meetingAllowsSelfRegistration),
         },
         Subscription: {
             newVoteRegistered: allow,
