@@ -430,8 +430,22 @@ export const getParticipantId = async (votationId: string, ctx: Context) => {
     return participant.id;
 };
 
+const getNumberOfVotes = async (votationId: string, type: VotationType, ctx: Context) => {
+    switch (type) {
+        case VotationType.STV:
+            return await ctx.prisma.stvVote.count({ where: { votationId } });
+        default:
+            return await ctx.prisma.vote.count({ where: { alternative: { votationId } } });
+    }
+};
+
 export const getVoteCount = async (votationId: string, ctx: Context) => {
-    const hasVoted = await ctx.prisma.hasVoted.findMany({ where: { votationId: votationId }, select: { user: true } });
+    const votation = await ctx.prisma.votation.findUnique({
+        where: { id: votationId },
+        select: { type: true, hasVoted: { select: { user: true } } },
+    });
+    if (!votation) throw new Error('Votation does not exist.');
+    const voteCount = await getNumberOfVotes(votationId, votation.type, ctx);
     const participants = await ctx.prisma.participant.findMany({
         where: {
             meeting: {
@@ -447,10 +461,12 @@ export const getVoteCount = async (votationId: string, ctx: Context) => {
     });
     const votingEligibleParticipantsUserIds = participants.map((p) => p.user.id);
     // Users that has voted, but where their votingEligibility has been removed afterwards
-    const hasVotedAndNotVotingEligible = hasVoted.filter((h) => !votingEligibleParticipantsUserIds.includes(h.user.id));
+    const hasVotedAndNotVotingEligible = votation.hasVoted.filter(
+        (hasVoted) => !votingEligibleParticipantsUserIds.includes(hasVoted.user.id)
+    );
     return {
         votationId,
-        voteCount: hasVoted.length,
+        voteCount,
         votingEligibleCount: hasVotedAndNotVotingEligible.length + participants.length,
     };
 };
