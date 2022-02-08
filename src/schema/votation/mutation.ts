@@ -198,6 +198,7 @@ export const UpdateVotationsMutation = mutationField('updateVotations', {
                         blankVotes: votation.blankVotes,
                         hiddenVotes: votation.hiddenVotes,
                         type: votation.type,
+                        index: votation.index,
                         majorityThreshold: votation.majorityThreshold,
                         numberOfWinners: votation.numberOfWinners,
                     },

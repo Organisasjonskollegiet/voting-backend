@@ -29,7 +29,7 @@ it('should update votations successfully', async () => {
             {
                 id: votation1.id,
                 ...updatedStaticVotationData,
-                index: 1,
+                index: 2,
                 alternatives: [
                     {
                         id: alternative1.id,
@@ -46,7 +46,7 @@ it('should update votations successfully', async () => {
             {
                 id: votation2.id,
                 ...updatedStaticVotationData,
-                index: 2,
+                index: 1,
                 alternatives: [
                     {
                         id: alternative3.id,
