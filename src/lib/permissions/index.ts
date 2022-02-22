@@ -16,7 +16,6 @@ import {
     votationsBelongToMeeting,
     isAuthenticated,
     meetingAllowsSelfRegistration,
-    //isNotOwnerOfMeetingWithOpenVotation,
 } from './rules';
 
 const permissions = shield(
@@ -55,7 +54,7 @@ const permissions = shield(
             castVote: and(userCanVoteOnAlternative),
             castBlankVote: and(userCanVoteOnVotation),
             createVotations: and(isAdminOfMeetingId),
-            //deleteMe: and(isAuthenticated, isNotOwnerOfMeetingWithOpenVotation),
+            deleteMe: and(isAuthenticated),
             updateMeeting: and(isAdminOfMeetingByObject),
             updateVotations: and(votationsBelongToMeeting, isAdminOfMeetingId, votationsAreUpcoming),
             updateVotationIndexes: and(votationsBelongToMeeting, isAdminOfMeetingId, votationsAreUpcoming),

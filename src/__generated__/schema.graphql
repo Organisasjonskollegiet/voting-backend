@@ -391,6 +391,7 @@ enum VotationStatus {
 }
 
 type VotationStatusUpdatedResponse {
+  reason: String
   votationId: String!
   votationStatus: VotationStatus!
 }

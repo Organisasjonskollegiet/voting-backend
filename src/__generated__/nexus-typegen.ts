@@ -239,6 +239,7 @@ export interface NexusGenObjects {
     approved: boolean; // Boolean!
   }
   VotationStatusUpdatedResponse: { // root type
+    reason?: string | null; // String
     votationId: string; // String!
     votationStatus: NexusGenEnums['VotationStatus']; // VotationStatus!
   }
@@ -469,6 +470,7 @@ export interface NexusGenFieldTypes {
     approved: boolean; // Boolean!
   }
   VotationStatusUpdatedResponse: { // field return type
+    reason: string | null; // String
     votationId: string; // String!
     votationStatus: NexusGenEnums['VotationStatus']; // VotationStatus!
   }
@@ -687,6 +689,7 @@ export interface NexusGenFieldTypeNames {
     approved: 'Boolean'
   }
   VotationStatusUpdatedResponse: { // field return type name
+    reason: 'String'
     votationId: 'String'
     votationStatus: 'VotationStatus'
   }

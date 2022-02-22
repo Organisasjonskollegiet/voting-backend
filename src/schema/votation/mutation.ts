@@ -307,7 +307,11 @@ export const UpdateVotationStatusMutation = mutationField('updateVotationStatus'
                 id: votationId,
             },
         });
-        await pubsub.publish(`VOTATION_STATUS_UPDATED_FOR_${votationId}`, { votationId, votationStatus: status });
+        await pubsub.publish(`VOTATION_STATUS_UPDATED_FOR_${votationId}`, {
+            votationId,
+            votationStatus: status,
+            reason: status === VotationStatusDb.INVALID ? 'Voteringen ble avbrutt av en administrator.' : '',
+        });
         return { __typename: 'Votation', ...updatedVotation };
     },
 });

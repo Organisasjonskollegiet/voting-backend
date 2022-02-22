@@ -219,14 +219,3 @@ export const votesNotHidden = rule({ cache: 'strict' })(async (_, { votationId }
     if (!votationFromDB) return false;
     return !votationFromDB.hiddenVotes;
 });
-/*
-export const isNotOwnerOfMeetingWithOpenVotation = rule({ cache: 'strict' })(async (_, __, ctx: Context) => {
-    const numberOfOpenVotationsWhereUserIsOwner = await ctx.prisma.votation.count({
-        where: {
-            meeting: { ownerId: ctx.userId },
-            OR: [{ status: VotationStatus.OPEN }, { status: VotationStatus.CHECKING_RESULT }],
-        },
-    });
-    return numberOfOpenVotationsWhereUserIsOwner == 0;
-});
-*/
