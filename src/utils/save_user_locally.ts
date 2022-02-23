@@ -14,7 +14,7 @@ interface Auth0Profile {
 // This is mainly to make local development easier
 export const saveAuth0UserIfNotExist = async (prisma: PrismaClient, userId: string, authHeader?: string) => {
     const userCount = await prisma.user.count({ where: { id: userId } });
-    if (userCount == 0) {
+    if (userCount == 0 && authHeader) {
         const request = await axios.get<Auth0Profile>(`https://${process.env.AUTH0_DOMAIN}/userinfo`, {
             headers: {
                 Authorization: authHeader,
