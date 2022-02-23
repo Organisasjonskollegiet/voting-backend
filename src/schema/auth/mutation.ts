@@ -48,8 +48,7 @@ export const DeleteUserMutation = mutationField('deleteMe', {
                         pubsub.publish(`VOTATION_STATUS_UPDATED_FOR_${votation.id}`, {
                             votationId: votation.id,
                             votationStatus: VotationStatus.INVALID,
-                            reason:
-                                'Voteringen ble avbrutt ettersom en bruker som deltok i møtet ble slettet mens voteringen pågikk. Det kunne ført til feil resultat.',
+                            reason: 'Voteringen ble avbrutt ettersom en bruker som deltok i møtet ble slettet mens voteringen pågikk. Det kunne ført til feil resultat.',
                         })
                     );
                 });
