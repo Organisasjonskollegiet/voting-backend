@@ -239,6 +239,7 @@ export interface NexusGenObjects {
     approved: boolean; // Boolean!
   }
   VotationStatusUpdatedResponse: { // root type
+    reason?: string | null; // String
     votationId: string; // String!
     votationStatus: NexusGenEnums['VotationStatus']; // VotationStatus!
   }
@@ -331,9 +332,9 @@ export interface NexusGenFieldTypes {
     createMeeting: NexusGenRootTypes['Meeting'] | null; // Meeting
     createVotations: Array<NexusGenRootTypes['Votation'] | null> | null; // [Votation]
     deleteAlternatives: Array<string | null> | null; // [String]
+    deleteMe: string | null; // String
     deleteMeeting: NexusGenRootTypes['Meeting'] | null; // Meeting
     deleteParticipants: Array<string | null> | null; // [String]
-    deleteUser: boolean | null; // Boolean
     deleteVotation: string | null; // String
     registerAsParticipant: NexusGenRootTypes['Participant'] | null; // Participant
     reviewVotation: string | null; // String
@@ -469,6 +470,7 @@ export interface NexusGenFieldTypes {
     approved: boolean; // Boolean!
   }
   VotationStatusUpdatedResponse: { // field return type
+    reason: string | null; // String
     votationId: string; // String!
     votationStatus: NexusGenEnums['VotationStatus']; // VotationStatus!
   }
@@ -549,9 +551,9 @@ export interface NexusGenFieldTypeNames {
     createMeeting: 'Meeting'
     createVotations: 'Votation'
     deleteAlternatives: 'String'
+    deleteMe: 'String'
     deleteMeeting: 'Meeting'
     deleteParticipants: 'String'
-    deleteUser: 'Boolean'
     deleteVotation: 'String'
     registerAsParticipant: 'Participant'
     reviewVotation: 'String'
@@ -687,6 +689,7 @@ export interface NexusGenFieldTypeNames {
     approved: 'Boolean'
   }
   VotationStatusUpdatedResponse: { // field return type name
+    reason: 'String'
     votationId: 'String'
     votationStatus: 'VotationStatus'
   }
@@ -751,9 +754,6 @@ export interface NexusGenArgTypes {
     deleteParticipants: { // args
       emails: string[]; // [String!]!
       meetingId: string; // String!
-    }
-    deleteUser: { // args
-      userId: string; // String!
     }
     deleteVotation: { // args
       votationId: string; // String!

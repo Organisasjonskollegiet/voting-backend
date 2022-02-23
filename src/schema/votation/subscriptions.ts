@@ -30,6 +30,7 @@ export const VotationStatusUpdatedResponse = objectType({
     definition: (t) => {
         t.nonNull.string('votationId');
         t.nonNull.field('votationStatus', { type: 'VotationStatus' });
+        t.string('reason');
     },
 });
 
@@ -63,7 +64,7 @@ export const VotationStatusUpdated = subscriptionField('votationStatusUpdated', 
     subscribe: async (_, { id }, ___) => {
         return pubsub.asyncIterator([`VOTATION_STATUS_UPDATED_FOR_${id}`]);
     },
-    resolve: async (status: { votationId: string; votationStatus: VotationStatus }, __, ___) => {
+    resolve: async (status: { votationId: string; votationStatus: VotationStatus; reason: string }, __, ___) => {
         return status;
     },
 });

@@ -106,14 +106,14 @@ type Mutation {
   """"""
   deleteAlternatives(ids: [String!]!): [String]
 
+  """Delete your own user."""
+  deleteMe: String
+
   """"""
   deleteMeeting(id: String!): Meeting
 
   """"""
   deleteParticipants(emails: [String!]!, meetingId: String!): [String]
-
-  """Delete user."""
-  deleteUser(userId: String!): Boolean
 
   """"""
   deleteVotation(votationId: String!): String
@@ -391,6 +391,7 @@ enum VotationStatus {
 }
 
 type VotationStatusUpdatedResponse {
+  reason: String
   votationId: String!
   votationStatus: VotationStatus!
 }
