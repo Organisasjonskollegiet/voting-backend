@@ -48,7 +48,7 @@
   },
   "devDependencies": {
     "@types/auth0": "^2.34.13",
-    "@types/bcrypt": "^3.0.0",
+    "@types/bcrypt": "^5.0.0",
     "@types/cookie-parser": "^1.4.2",
     "@types/express-jwt": "^6.0.4",
     "@types/graphql-iso-date": "^3.4.0",
