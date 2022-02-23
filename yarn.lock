@@ -4786,10 +4786,10 @@ lru-memoizer@^2.1.4:
     lodash.clonedeep "^4.5.0"
     lru-cache "~4.0.0"
 
-mailersend@^1.1.0:
-  version "1.1.0"
-  resolved "https://registry.yarnpkg.com/mailersend/-/mailersend-1.1.0.tgz#ff8f012f3350513ab12e0dfbdac5675b5757cb25"
-  integrity sha512-hqUkm76n8WEqytoLnQ5woHI5eCN7b4o98zpru7ehoSCUL+Dek8nhMV6h4i4gfaSwOyv8kf9InEzkWsauqrF2WA==
+mailersend@^1.3.1:
+  version "1.3.1"
+  resolved "https://registry.yarnpkg.com/mailersend/-/mailersend-1.3.1.tgz#4923b96965507b265a71729b174d3cc5d87bc6d9"
+  integrity sha512-OyiTXfdiWy6eoOVQ1fjiJbc/M94OM5EP2cEMxCRilc2+wA/EONwpz8Zezcg5unL0vmBOAe9hTfakc1yDlI97jA==
   dependencies:
     isomorphic-unfetch "^3.1.0"
 
