@@ -1,6 +1,6 @@
 import { Role, Votation, VotationStatus } from '.prisma/client';
 import { AuthenticationError } from 'apollo-server-express';
-import { rule } from 'graphql-shield';
+import { or, rule } from 'graphql-shield';
 import { Context } from '../../context';
 import { canUserVoteOnVotation } from './utils';
 

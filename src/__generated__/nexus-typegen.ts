@@ -239,6 +239,7 @@ export interface NexusGenObjects {
     approved: boolean; // Boolean!
   }
   VotationStatusUpdatedResponse: { // root type
+    reason?: string | null; // String
     votationId: string; // String!
     votationStatus: NexusGenEnums['VotationStatus']; // VotationStatus!
   }
@@ -331,6 +332,7 @@ export interface NexusGenFieldTypes {
     createMeeting: NexusGenRootTypes['Meeting'] | null; // Meeting
     createVotations: Array<NexusGenRootTypes['Votation'] | null> | null; // [Votation]
     deleteAlternatives: Array<string | null> | null; // [String]
+    deleteMe: string | null; // String
     deleteMeeting: NexusGenRootTypes['Meeting'] | null; // Meeting
     deleteParticipants: Array<string | null> | null; // [String]
     deleteVotation: string | null; // String
@@ -468,6 +470,7 @@ export interface NexusGenFieldTypes {
     approved: boolean; // Boolean!
   }
   VotationStatusUpdatedResponse: { // field return type
+    reason: string | null; // String
     votationId: string; // String!
     votationStatus: NexusGenEnums['VotationStatus']; // VotationStatus!
   }
@@ -548,6 +551,7 @@ export interface NexusGenFieldTypeNames {
     createMeeting: 'Meeting'
     createVotations: 'Votation'
     deleteAlternatives: 'String'
+    deleteMe: 'String'
     deleteMeeting: 'Meeting'
     deleteParticipants: 'String'
     deleteVotation: 'String'
@@ -685,6 +689,7 @@ export interface NexusGenFieldTypeNames {
     approved: 'Boolean'
   }
   VotationStatusUpdatedResponse: { // field return type name
+    reason: 'String'
     votationId: 'String'
     votationStatus: 'VotationStatus'
   }

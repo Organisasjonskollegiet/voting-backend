@@ -54,6 +54,7 @@ const permissions = shield(
             castVote: and(userCanVoteOnAlternative),
             castBlankVote: and(userCanVoteOnVotation),
             createVotations: and(isAdminOfMeetingId),
+            deleteMe: and(isAuthenticated),
             updateMeeting: and(isAdminOfMeetingByObject),
             updateVotations: and(votationsBelongToMeeting, isAdminOfMeetingId, votationsAreUpcoming),
             updateVotationIndexes: and(votationsBelongToMeeting, isAdminOfMeetingId, votationsAreUpcoming),

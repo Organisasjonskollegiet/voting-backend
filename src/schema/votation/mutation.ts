@@ -307,7 +307,11 @@ export const UpdateVotationStatusMutation = mutationField('updateVotationStatus'
                 id: votationId,
             },
         });
-        await pubsub.publish(`VOTATION_STATUS_UPDATED_FOR_${votationId}`, { votationId, votationStatus: status });
+        await pubsub.publish(`VOTATION_STATUS_UPDATED_FOR_${votationId}`, {
+            votationId,
+            votationStatus: status,
+            reason: status === VotationStatusDb.INVALID ? 'Voteringen ble avbrutt av en administrator.' : '',
+        });
         return { __typename: 'Votation', ...updatedVotation };
     },
 });
@@ -319,10 +323,6 @@ export const DeleteVotationMutation = mutationField('deleteVotation', {
         votationId: nonNull(stringArg()),
     },
     resolve: async (_, { votationId }, ctx) => {
-        await ctx.prisma.votationResultReview.deleteMany({ where: { votationId } });
-        await ctx.prisma.hasVoted.deleteMany({ where: { votationId } });
-        await ctx.prisma.vote.deleteMany({ where: { alternative: { votationId } } });
-        await ctx.prisma.alternative.deleteMany({ where: { votationId } });
         const votation = await ctx.prisma.votation.delete({
             where: {
                 id: votationId,
