@@ -118,17 +118,6 @@ export const DeleteMeetingMutation = mutationField('deleteMeeting', {
         await ctx.prisma.alternativeRoundVoteCount.deleteMany({
             where: { alternative: { votation: { meetingId: id } } },
         });
-        await ctx.prisma.stvRoundResult.deleteMany({ where: { stvResult: { votation: { meetingId: id } } } });
-        await ctx.prisma.stvResult.deleteMany({ where: { votation: { meetingId: id } } });
-        await ctx.prisma.votationResult.deleteMany({ where: { votation: { meetingId: id } } });
-        await ctx.prisma.vote.deleteMany({ where: { alternative: { votation: { meetingId: id } } } });
-        await ctx.prisma.stvVote.deleteMany({ where: { votation: { meetingId: id } } });
-        await ctx.prisma.hasVoted.deleteMany({ where: { votation: { meetingId: id } } });
-        await ctx.prisma.alternative.deleteMany({ where: { votation: { meetingId: id } } });
-        await ctx.prisma.votationResultReview.deleteMany({ where: { votation: { meetingId: id } } });
-        await ctx.prisma.votation.deleteMany({ where: { meetingId: id } });
-        await ctx.prisma.participant.deleteMany({ where: { meetingId: id } });
-        await ctx.prisma.invite.deleteMany({ where: { meetingId: id } });
         const deletedMeeting = await ctx.prisma.meeting.delete({ where: { id } });
         return deletedMeeting;
     },
@@ -308,14 +297,6 @@ export const DeleteParticipantsMutation = mutationField('deleteParticipants', {
                     });
                     if (user) {
                         if (meeting?.ownerId !== user?.id) {
-                            await ctx.prisma.votationResultReview.deleteMany({
-                                where: {
-                                    participant: {
-                                        userId: user.id,
-                                        meetingId: meetingId,
-                                    },
-                                },
-                            });
                             await ctx.prisma.participant.delete({
                                 where: {
                                     userId_meetingId: { userId: user.id, meetingId },

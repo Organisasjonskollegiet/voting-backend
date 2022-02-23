@@ -112,6 +112,9 @@ type Mutation {
   """"""
   deleteParticipants(emails: [String!]!, meetingId: String!): [String]
 
+  """Delete user."""
+  deleteUser(userId: String!): Boolean
+
   """"""
   deleteVotation(votationId: String!): String
 
