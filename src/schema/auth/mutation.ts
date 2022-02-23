@@ -10,8 +10,8 @@ export const DeleteUserMutation = mutationField('deleteMe', {
     resolve: async (_, __, ctx) => {
         var auth0 = new ManagementClient({
             domain: process.env.AUTH0_DOMAIN!,
-            clientId: 'wdRfxZqUoWxe7DFDTcx7bNvtnTfARDj0',
-            clientSecret: 'IczbE0vqrCt49jCQAbfo_pUQXQnOeWDLcHCcrdoZQEkUaB7s4g-NF3BQPK1MsYGP',
+            clientId: process.env.CLIENT_ID,
+            clientSecret: process.env.CLIENT_SECRET,
             scope: 'delete:users',
         });
 
