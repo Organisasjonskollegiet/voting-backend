@@ -44,7 +44,7 @@
     "moment": "^2.29.1",
     "nexus": "^1.2.0",
     "subscriptions-transport-ws": "^0.11.0",
-    "ws": "^7.4.6"
+    "ws": "^8.5.0"
   },
   "devDependencies": {
     "@types/auth0": "^2.34.13",
