@@ -459,7 +459,7 @@ export interface NexusGenFieldTypes {
     message: string; // String!
   }
   VotationResults: { // field return type
-    alternatives: Array<NexusGenRootTypes['AlternativeResult'] | null>; // [AlternativeResult]!
+    alternatives: NexusGenRootTypes['AlternativeResult'][]; // [AlternativeResult!]!
     blankVoteCount: number; // Int!
     blankVotes: boolean; // Boolean!
     id: string; // String!

@@ -370,7 +370,7 @@ type VotationHasNoAlternatives {
 
 """The results of a votation"""
 type VotationResults {
-  alternatives: [AlternativeResult]!
+  alternatives: [AlternativeResult!]!
   blankVoteCount: Int!
   blankVotes: Boolean!
   id: String!

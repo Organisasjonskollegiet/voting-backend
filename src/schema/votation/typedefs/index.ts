@@ -277,7 +277,7 @@ export const VotationResults = objectType({
     name: 'VotationResults',
     description: 'The results of a votation',
     definition(t) {
-        t.nonNull.list.field('alternatives', {
+        t.nonNull.list.nonNull.field('alternatives', {
             type: AlternativeResult,
             resolve: async (source, __, ctx) => {
                 const { id } = source;
