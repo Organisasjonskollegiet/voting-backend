@@ -8,7 +8,7 @@ export const DeleteUserMutation = mutationField('deleteMe', {
     description: 'Delete your own user.',
     args: {},
     resolve: async (_, __, ctx) => {
-        var auth0 = new ManagementClient({
+        const auth0 = new ManagementClient({
             domain: process.env.AUTH0_DOMAIN!,
             clientId: process.env.CLIENT_ID,
             clientSecret: process.env.CLIENT_SECRET,

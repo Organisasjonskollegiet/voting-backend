@@ -392,6 +392,7 @@ export interface NexusGenFieldTypes {
     participants: Array<NexusGenRootTypes['ParticipantOrInvite'] | null> | null; // [ParticipantOrInvite]
     result: NexusGenRootTypes['Result'] | null; // Result
     resultsOfPublishedVotations: Array<NexusGenRootTypes['VotationWithWinner'] | null> | null; // [VotationWithWinner]
+    updateMyPassword: string | null; // String
     user: NexusGenRootTypes['GetUserResult'] | null; // GetUserResult
     votationById: NexusGenRootTypes['Votation'] | null; // Votation
   }
@@ -611,6 +612,7 @@ export interface NexusGenFieldTypeNames {
     participants: 'ParticipantOrInvite'
     result: 'Result'
     resultsOfPublishedVotations: 'VotationWithWinner'
+    updateMyPassword: 'String'
     user: 'GetUserResult'
     votationById: 'Votation'
   }
