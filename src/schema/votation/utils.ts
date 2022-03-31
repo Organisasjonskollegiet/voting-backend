@@ -435,7 +435,10 @@ const getNumberOfVotes = async (votationId: string, type: VotationType, ctx: Con
         case VotationType.STV:
             return await ctx.prisma.stvVote.count({ where: { votationId } });
         default:
-            return await ctx.prisma.vote.count({ where: { alternative: { votationId } } });
+            const regularVotesCount = await ctx.prisma.vote.count({ where: { alternative: { votationId } } });
+            const blankVoteCount =
+                (await ctx.prisma.votation.findUnique({ where: { id: votationId } }))?.blankVoteCount ?? 0;
+            return regularVotesCount + blankVoteCount;
     }
 };
 
