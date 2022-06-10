@@ -235,6 +235,9 @@ type Query {
   Return the results of all the votations with votationStatus === "PUBLISHED_RESULT" of that meeting
   """
   resultsOfPublishedVotations(meetingId: String!): [VotationWithWinner]
+
+  """Provides a ticket to change Auth0 password."""
+  updateMyPassword: String
   user: GetUserResult
   votationById(votationId: String!): Votation
 }
