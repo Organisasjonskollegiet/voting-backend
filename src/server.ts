@@ -2,14 +2,14 @@
 
 import { PrismaClient } from '@prisma/client';
 import { ApolloServer } from 'apollo-server-express';
-import express from 'express';
-import simpleMock from './lib/mocks/mock';
-import { protectedSchema } from './schema';
+import cors from 'cors';
 import 'dotenv/config';
+import express from 'express';
 import { Context } from './context';
 import { checkJwt, DecodedToken } from './lib/auth/verifyToken';
+import simpleMock from './lib/mocks/mock';
+import { protectedSchema } from './schema';
 import { saveAuth0UserIfNotExist } from './utils/save_user_locally';
-import cors from 'cors';
 
 export const createApollo = (prisma: PrismaClient) => {
     const server = new ApolloServer({
@@ -34,7 +34,11 @@ export const createApollo = (prisma: PrismaClient) => {
 export const createGraphqlServer = async (server: ApolloServer, prisma: PrismaClient) => {
     const app = express();
     app.use(checkJwt);
-    app.use(cors());
+    app.use(
+        cors({
+            origin: 'http://localhost:3000/',
+        })
+    );
     if (process.env.MOCKING != 'true') await prisma.$connect();
     // Connect to database
     if (process.env.NODE_ENV != 'development') await prisma.$connect();
