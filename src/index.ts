@@ -1,9 +1,9 @@
 import { PrismaClient } from '@prisma/client';
-import { createApollo, createGraphqlServer } from './server';
-import { SubscriptionServer } from 'subscriptions-transport-ws';
-import { protectedSchema } from './schema';
 import { execute, subscribe } from 'graphql';
 import { createServer } from 'http';
+import { SubscriptionServer } from 'subscriptions-transport-ws';
+import { protectedSchema } from './schema';
+import { createApollo, createGraphqlServer } from './server';
 
 const PORT = parseInt(process.env.PORT || '') || 4000;
 
@@ -29,3 +29,5 @@ app.then((expressApp) => {
         );
     });
 });
+
+export default app;
