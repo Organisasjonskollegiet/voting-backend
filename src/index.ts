@@ -13,6 +13,9 @@ const app = createGraphqlServer(apollo, prisma);
 
 app.then((expressApp) => {
     const server = createServer(expressApp);
+
+    expressApp.get("/health", (req, res) => res.end("Ok!"));
+
     server.listen(PORT, () => {
         console.log(`🚀 GraphQL service ready at http://localhost:${PORT}/graphql`);
         console.log(`🚀 Subscriptions ready at ws://localhost:${PORT}${apollo.subscriptionsPath}`);
