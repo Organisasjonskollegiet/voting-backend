@@ -37,7 +37,7 @@ enum VotationStatus {
 }
 
 model User {
-  id            String        @id @default(uuid()) @db.Uuid
+  id            String        @id @db.VarChar(255)
   email         String        @unique @db.VarChar(255)
   emailVerified Boolean       @default(false)
   password      String
@@ -53,7 +53,7 @@ model Meeting {
   startTime    DateTime
   description  String?
   owner        User          @relation(fields: [ownerId], references: [id], onDelete: Cascade)
-  ownerId      String        @db.Uuid
+  ownerId      String        @db.VarChar(255)
   votations    Votation[]
   status       MeetingStatus @default(UPCOMING)
   allowSelfRegistration Boolean @default(false)
@@ -64,7 +64,7 @@ model Meeting {
 model Participant {
   id               String  @id @default(uuid()) @db.Uuid
   role             Role
-  userId           String  @db.Uuid
+  userId           String  @db.VarChar(255)
   meetingId        String  @db.Uuid
   isVotingEligible Boolean @default(true)
   user             User    @relation(fields: [userId], references: [id], onDelete: Cascade)
@@ -118,7 +118,7 @@ model Votation {
 
 model HasVoted {
   votationId String   @db.Uuid
-  userId     String   @db.Uuid
+  userId     String   @db.VarChar(255)
   createdAt  DateTime @default(now())
   votation   Votation @relation(fields: [votationId], references: [id], onDelete: Cascade)
   user       User     @relation(fields: [userId], references: [id], onDelete: Cascade)

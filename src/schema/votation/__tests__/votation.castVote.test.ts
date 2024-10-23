@@ -2,6 +2,7 @@ import { createMeeting, createVotation, createAlternative } from '../../../lib/t
 import { createTestContext } from '../../../lib/tests/testContext';
 import { VotationStatus, Role } from '.prisma/client';
 import { gql } from 'graphql-request';
+
 const ctx = createTestContext();
 
 const alternativeText = 'alt';
@@ -70,6 +71,7 @@ it('should not cast vote successfully since votation is not ongoing', async () =
 it('should not cast vote successfully since user is not participant', async () => {
     const meetingOwner = await ctx.prisma.user.create({
         data: {
+            id: '234', // Generate a new UUID for the test user
             email: 'e@mail.com',
             password: 'password',
         },

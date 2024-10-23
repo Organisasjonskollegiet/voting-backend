@@ -130,6 +130,7 @@ export const createAlternative = async (
 export const createUser = async (ctx: TestContext) => {
     return await ctx.prisma.user.create({
         data: {
+            id: '1',
             email: casual.email,
             password: casual.password,
         },
