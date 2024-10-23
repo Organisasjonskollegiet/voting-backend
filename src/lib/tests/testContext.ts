@@ -16,6 +16,7 @@ export type TestContext = {
     client: GraphQLClient;
     prisma: PrismaClient;
     userId: string;
+    email: string;
 };
 
 export const createTestContext = (): TestContext => {

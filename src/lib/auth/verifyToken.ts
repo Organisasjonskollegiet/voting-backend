@@ -2,6 +2,7 @@ import jwt from 'express-jwt';
 import jwksRsa from 'jwks-rsa';
 
 export interface DecodedToken {
+    email: string;
     iss: string;
     sub: string;
     aud: string[];
