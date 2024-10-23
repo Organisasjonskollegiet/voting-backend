@@ -24,7 +24,7 @@
     "apollo-server-express": "2.25.3",
     "auth0": "^2.40.0",
     "axios": "^0.26.0",
-    "bcrypt": "^5.0.1",
+    "bcryptjs": "^2.4.3",
     "casual": "^1.6.2",
     "cookie-parser": "^1.4.6",
     "cors": "^2.8.5",
@@ -48,7 +48,7 @@
   },
   "devDependencies": {
     "@types/auth0": "^2.34.13",
-    "@types/bcrypt": "^5.0.0",
+    "@types/bcryptjs": "2.4.6",
     "@types/cookie-parser": "^1.4.2",
     "@types/express-jwt": "^6.0.4",
     "@types/graphql-iso-date": "^3.4.0",

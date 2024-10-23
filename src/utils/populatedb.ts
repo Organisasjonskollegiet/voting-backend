@@ -1,7 +1,7 @@
 import { PrismaClient } from '@prisma/client';
 import 'dotenv/config';
 import casual from 'casual';
-import bcrypt from 'bcrypt';
+import bcryptjs from 'bcryptjs';
 
 export const populatedb = async () => {
     const prisma = new PrismaClient();
@@ -11,9 +11,9 @@ export const populatedb = async () => {
     const users = await Promise.all(
         [...new Array(5)].map(async () => {
             // Replicates a hashed password
-            const password = await bcrypt.hash(casual.password, 3);
+            const password = await bcryptjs.hash(casual.password, 3);
             const user = await prisma.user.create({
-                data: { email: casual.email, password: password },
+                data: { id: casual.uuid, email: casual.email, password: password },
             });
             return user;
         })
