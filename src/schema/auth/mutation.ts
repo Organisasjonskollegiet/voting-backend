@@ -2,6 +2,7 @@ import { mutationField } from 'nexus';
 import { ManagementClient } from 'auth0';
 import { VotationStatus } from '@prisma/client';
 import { pubsub } from '../../lib/pubsub';
+import { print } from 'graphql';
 
 export const DeleteUserMutation = mutationField('deleteMe', {
     type: 'String',
@@ -12,11 +13,26 @@ export const DeleteUserMutation = mutationField('deleteMe', {
             domain: process.env.AUTH0_DOMAIN!,
             clientId: process.env.CLIENT_ID,
             clientSecret: process.env.CLIENT_SECRET,
-            scope: 'delete:users',
+            scope: 'read:users delete:users',
         });
 
+        const auth0Users = await auth0.getUsers({
+            q: `email:"${ctx.email}" AND identities.connection:"Username-Password-Authentication"`,
+            search_engine: 'v3',
+        });
+
+        if (!auth0Users || auth0Users.length === 0) {
+            console.log('Auth0 user not found');
+        }
+
+        const auth0User = auth0Users[0];
+
+        if (!auth0User || !auth0User.user_id) {
+            throw new Error('User not found or user_id is missing');
+        }
+
         return auth0
-            .deleteUser({ id: `auth0|${ctx.userId}` })
+            .deleteUser({ id: auth0User.user_id })
             .then(async () => {
                 // invalidate all open votations where this user is participant
                 const votationsToInvalidate = await ctx.prisma.votation.findMany({
@@ -55,7 +71,9 @@ export const DeleteUserMutation = mutationField('deleteMe', {
                 await Promise.all(publishPromises);
                 return 'Bruker slettet.';
             })
-            .catch(() => {
+            .catch((e) => {
+                console.log('Kunne ikke slette bruker.');
+                console.log(e);
                 return 'Kunne ikke slette bruker.';
             });
     },
