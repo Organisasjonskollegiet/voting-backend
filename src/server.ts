@@ -26,7 +26,7 @@ export const createApollo = (prisma: PrismaClient) => {
             if (req.user) {
                 const decodedToken = req.user as DecodedToken;
                 const userId = decodedToken.sub.split('|')[1];
-                console.log('\n\n\nasdflasdfpasdf');
+
                 const request = await axios.get<Auth0Profile>(`https://${process.env.AUTH0_DOMAIN}/userinfo`, {
                     headers: {
                         Authorization: req.headers['authorization'] as string,
@@ -34,7 +34,6 @@ export const createApollo = (prisma: PrismaClient) => {
                     },
                 });
                 const email = request.data.email;
-
                 const user = await saveAuth0UserIfNotExist(prisma, email, userId);
 
                 return { userId: user.id, email: user.email, prisma };

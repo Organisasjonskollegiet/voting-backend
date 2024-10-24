@@ -24,16 +24,20 @@ export const UpdatePasswordLinkQuery = queryField('updateMyPassword', {
             domain: process.env.AUTH0_DOMAIN!,
             clientId: process.env.CLIENT_ID,
             clientSecret: process.env.CLIENT_SECRET,
-            // scope: 'delete:users'
         });
 
-        const res = auth0.createPasswordChangeTicket({
-            user_id: `auth0|${ctx.userId}`,
-            ttl_sec: 1200,
-            includeEmailInRedirect: false,
-            result_url: process.env.AUTH0_CALLBACK_URL,
-        });
+        try {
+            const res = await auth0.createPasswordChangeTicket({
+                user_id: `auth0|${ctx.userId}`,
+                ttl_sec: 1200,
+                includeEmailInRedirect: false,
+                result_url: process.env.AUTH0_CALLBACK_URL,
+            });
 
-        return (await res).ticket;
+            return res.ticket;
+        } catch (error) {
+            console.error(error);
+            return null; // Return null instead of undefined
+        }
     },
 });
